@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ScalaSbtSettings">
+    <option name="linkedExternalProjectsSettings">
+      <SbtProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="jdk" value="1.8" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/censys-api" />
+            <option value="$PROJECT_DIR$/censys-api/project" />
+            <option value="$PROJECT_DIR$/gatherbox-api" />
+            <option value="$PROJECT_DIR$/gatherbox-api/project" />
+            <option value="$PROJECT_DIR$/gatherbox-impl" />
+            <option value="$PROJECT_DIR$/gatherbox-impl/project" />
+            <option value="$PROJECT_DIR$/gatherbox-stream-api" />
+            <option value="$PROJECT_DIR$/gatherbox-stream-api/project" />
+            <option value="$PROJECT_DIR$/gatherbox-stream-impl" />
+            <option value="$PROJECT_DIR$/gatherbox-stream-impl/project" />
+            <option value="$PROJECT_DIR$/project" />
+            <option value="$PROJECT_DIR$/scan-api" />
+            <option value="$PROJECT_DIR$/scan-api/project" />
+            <option value="$PROJECT_DIR$/scan-impl" />
+            <option value="$PROJECT_DIR$/scan-impl/project" />
+            <option value="$PROJECT_DIR$/utils" />
+            <option value="$PROJECT_DIR$/utils/project" />
+          </set>
+        </option>
+        <option name="resolveSbtClassifiers" value="true" />
+        <option name="sbtVersion" value="0.13.13" />
+        <option name="useAutoImport" value="true" />
+        <option name="useOurOwnAutoImport" value="true" />
+      </SbtProjectSettings>
+    </option>
+    <option name="maximumHeapSize" value="2048" />
+    <option name="vmParameters" value="-XX:MaxPermSize=1024" />
+  </component>
+</project>

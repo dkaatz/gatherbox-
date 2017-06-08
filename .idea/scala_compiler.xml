@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ScalaCompilerConfiguration">
+    <profile name="SBT 1" modules="censys-impl,gatherbox-censysscan-api,censysscan-impl,gatherbox,censys-api,gatherbox-api,gatherbox-impl,gatherbox-stream-api,gatherbox-stream-impl,scan-api,scan-impl,utils" />
+  </component>
+</project>
