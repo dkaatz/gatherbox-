@@ -8,6 +8,7 @@ import play.api.libs.json.{Format, Json, Reads, Writes, _}
 import play.api.libs.functional.syntax._
 import java.util.Base64
 import java.nio.charset.StandardCharsets
+import scala.collection.immutable.Seq
 
 
 trait CensysService extends Service {
@@ -62,7 +63,7 @@ case class CensysMetaData(count: Int, query: String, backend_time: Int, page: In
 
 object CensysMetaData { implicit val format: Format[CensysMetaData] = Json.format[CensysMetaData] }
 
-case class CensysIpv4Result(ip: String, protocols: Seq[String], location: Location, autonomous_system: AutonomousSystem, metadata: MetaData, tags: Option[Seq[String]], heartbleed: Option[HeartBleed], dns: Option[DNS])
+case class CensysIpv4Result(ip: String, protocols: Seq[String], location: Location, autonomous_system: Option[AutonomousSystem], metadata: MetaData, tags: Option[Seq[String]], heartbleed: Option[HeartBleed], dns: Option[DNS])
 
 object CensysIpv4Result {
   implicit val write: Writes[CensysIpv4Result] = Json.writes[CensysIpv4Result]
@@ -70,7 +71,7 @@ object CensysIpv4Result {
       (__ \ "ip").read[String] and
       (__ \ "protocols").read[Seq[String]] and
       (__ \ "location").read[Location] and
-      (__ \ "autonomous_system").read[AutonomousSystem] and
+      (__ \ "autonomous_system").readNullable[AutonomousSystem] and
       (__ \ "metadata").read[MetaData] and
       (__ \ "tags").readNullable[Seq[String]] and
       (__ \\ "heartbleed").readNullable[HeartBleed] and

@@ -2,13 +2,14 @@ package de.beuth.gatherbox.impl
 
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
+import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaClientComponents
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
 import com.lightbend.lagom.scaladsl.server._
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import play.api.libs.ws.ahc.AhcWSComponents
 import de.beuth.gatherbox.api.GatherboxService
-import de.beuth.censys.api.CensysService
 import com.softwaremill.macwire._
+import de.beuth.scan.api.ScanService
 
 class GatherboxLoader extends LagomApplicationLoader {
 
@@ -28,9 +29,11 @@ class GatherboxLoader extends LagomApplicationLoader {
 abstract class GatherboxApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
     with CassandraPersistenceComponents
-    with AhcWSComponents {
+    with AhcWSComponents
+    with LagomKafkaClientComponents
+{
 
-  lazy val censysService = serviceClient.implement[CensysService]
+  lazy val scanService = serviceClient.implement[ScanService]
 
   // Bind the services that this server provides
   override lazy val lagomServer = LagomServer.forServices(

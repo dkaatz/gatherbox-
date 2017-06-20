@@ -7,7 +7,7 @@ scalaVersion in ThisBuild := "2.11.8"
 val macwire = "com.softwaremill.macwire" %% "macros" % "2.2.5" % "provided"
 val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % Test
 val playJsonDerivedCodecs = "org.julienrf" %% "play-json-derived-codecs" % "3.3"
-
+val scalaScraper = "net.ruippeixotog" %% "scala-scraper" % "2.0.0-RC2"
 
 
 lazy val `gatherbox` = (project in file("."))
@@ -30,12 +30,13 @@ lazy val `gatherbox-impl` = (project in file("gatherbox-impl"))
     libraryDependencies ++= Seq(
       lagomScaladslPersistenceCassandra,
       lagomScaladslTestKit,
+      lagomScaladslKafkaClient,
       macwire,
       scalaTest
     )
   )
   .settings(lagomForkedTestSettings: _*)
-  .dependsOn(`gatherbox-api`, `censys-api`)
+  .dependsOn(`gatherbox-api`, `scan-impl`,`scan-api`)
 
 lazy val `gatherbox-stream-api` = (project in file("gatherbox-stream-api"))
   .settings(
@@ -92,12 +93,66 @@ lazy val `scan-impl` = (project in file("scan-impl"))
     libraryDependencies ++= Seq(
       lagomScaladslPersistenceCassandra,
       lagomScaladslTestKit,
+      lagomScaladslKafkaBroker,
       macwire,
       scalaTest
     )
   )
   .settings(lagomForkedTestSettings: _*)
-  .dependsOn(`censys-api`, `scan-api`, `utils`)
+  .dependsOn(`scan-api`, `utils`)
 
 
+lazy val `censys-scanner-api`= (project in file("censys-scanner-api"))
+  .settings(
+    version := "1.0-SNAPSHOT",
+    libraryDependencies ++= Seq(
+      lagomScaladslApi,
+      lagomScaladslServer % Optional,
+      playJsonDerivedCodecs,
+      scalaTest
+    )
+  ).dependsOn(`censys-api`)
+
+lazy val `censys-scanner-impl` = (project in file("censys-scanner-impl"))
+  .enablePlugins(LagomScala)
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslPersistenceCassandra,
+      lagomScaladslTestKit,
+      lagomScaladslKafkaClient,
+      macwire,
+      scalaTest
+    )
+  )
+  .settings(lagomForkedTestSettings: _*)
+  .dependsOn(`scan-api`, `utils`, `censys-api`, `censys-scanner-api`)
+
+lazy val `ixquick-scanner-api`= (project in file("ixquick-scanner-api"))
+  .settings(
+    version := "1.0-SNAPSHOT",
+    libraryDependencies ++= Seq(
+      lagomScaladslApi,
+      lagomScaladslServer % Optional,
+      playJsonDerivedCodecs,
+      scalaTest
+    )
+  )
+
+lazy val `ixquick-scanner-impl` = (project in file("ixquick-scanner-impl"))
+  .enablePlugins(LagomScala)
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslPersistenceCassandra,
+      lagomScaladslTestKit,
+      lagomScaladslKafkaBroker,
+      scalaScraper,
+      macwire,
+      scalaTest
+    )
+  )
+  .settings(lagomForkedTestSettings: _*)
+  .dependsOn(`scan-api`, `utils`, `ixquick-scanner-api`)
+
+
+lagomCassandraCleanOnStart in ThisBuild := true
 lagomUnmanagedServices in ThisBuild := Map("censys" -> "https://www.censys.io:443")

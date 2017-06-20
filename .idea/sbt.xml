@@ -10,6 +10,10 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/censys-api" />
             <option value="$PROJECT_DIR$/censys-api/project" />
+            <option value="$PROJECT_DIR$/censys-scanner-api" />
+            <option value="$PROJECT_DIR$/censys-scanner-api/project" />
+            <option value="$PROJECT_DIR$/censys-scanner-impl" />
+            <option value="$PROJECT_DIR$/censys-scanner-impl/project" />
             <option value="$PROJECT_DIR$/gatherbox-api" />
             <option value="$PROJECT_DIR$/gatherbox-api/project" />
             <option value="$PROJECT_DIR$/gatherbox-impl" />
@@ -18,6 +22,10 @@
             <option value="$PROJECT_DIR$/gatherbox-stream-api/project" />
             <option value="$PROJECT_DIR$/gatherbox-stream-impl" />
             <option value="$PROJECT_DIR$/gatherbox-stream-impl/project" />
+            <option value="$PROJECT_DIR$/ixquick-scanner-api" />
+            <option value="$PROJECT_DIR$/ixquick-scanner-api/project" />
+            <option value="$PROJECT_DIR$/ixquick-scanner-impl" />
+            <option value="$PROJECT_DIR$/ixquick-scanner-impl/project" />
             <option value="$PROJECT_DIR$/project" />
             <option value="$PROJECT_DIR$/scan-api" />
             <option value="$PROJECT_DIR$/scan-api/project" />
