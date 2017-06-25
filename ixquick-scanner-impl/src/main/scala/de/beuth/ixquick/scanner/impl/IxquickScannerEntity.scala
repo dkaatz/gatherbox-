@@ -29,35 +29,19 @@ class IxquickScannerEntity extends PersistentEntity {
         ) {
           _ => ctx.reply(Done)
         }
-    }.onCommand[UpdateLinkedIn, Seq[String]] {
+    }.onCommand[UpdateLinkedIn, Done] {
       case (UpdateLinkedIn(profiles), ctx, state) =>
-        if(state.profiles.linkedin.find(x => profiles.find(_ != x).isEmpty).isEmpty) {
-          ctx.thenPersist(
-            ScanFinished(Instant.now())
-          ) {
-            _ => ctx.reply(state.profiles.linkedin)
-          }
-        } else {
-          ctx.thenPersist(
-            LinkedinUpdated(profiles)
-          ) {
-            _ => ctx.reply(state.updateLinkedinProfiles(profiles).profiles.linkedin)
-          }
+        ctx.thenPersist(
+          LinkedinUpdated(profiles)
+        ) {
+          _ => ctx.reply(Done)
         }
     }.onCommand[UpdateXing, Done] {
       case (UpdateXing(profiles), ctx, state) =>
-        if(state.profiles.xing.find(x => profiles.find(_ != x).isEmpty).isEmpty) {
-          ctx.thenPersist(
-            ScanFinished(Instant.now())
-          ) {
-            _ => ctx.reply(Done)
-          }
-        } else {
-          ctx.thenPersist(
-            XingUpdated(profiles)
-          ) {
-            _ => ctx.reply(Done)
-          }
+        ctx.thenPersist(
+          XingUpdated(profiles)
+        ) {
+          _ => ctx.reply(Done)
         }
     }.onCommand[FinishScan, Done] {
       case (FinishScan(timestamp), ctx, state) =>
@@ -80,15 +64,19 @@ class IxquickScannerEntity extends PersistentEntity {
 
 case class Scan(startedAt: Option[Instant], profiles: Profiles) {
   def start(timestamp: Instant): Scan = copy(startedAt=Some(timestamp), profiles = Profiles())
-  def updateLinkedinProfiles(profileLinks: Seq[String]): Scan = copy(profiles = this.profiles.copy(this.profiles.linkedin ++ profileLinks))
-  def updateXingProfiles(profileLinks: Seq[String]): Scan = copy(profiles = this.profiles.copy(this.profiles.xing ++ profileLinks))
+  def updateLinkedinProfiles(profileLinks: Seq[String]): Scan = copy(profiles = this.profiles.updateLinkedin(profileLinks))
+  def updateXingProfiles(profileLinks: Seq[String]): Scan = copy(profiles = this.profiles.updateXing(profileLinks))
 }
 object Scan {
   implicit val format: Format[Scan] = Json.format
 }
 
 
-case class Profiles(linkedin: Seq[String] = Seq[String](), xing: Seq[String] = Seq[String]())
+case class Profiles(linkedin: Seq[String] = Seq[String](), xing: Seq[String] = Seq[String]()) {
+  def updateLinkedin(profiles: Seq[String]) = copy(linkedin = (linkedin ++ profiles).distinct)
+  def updateXing(profiles: Seq[String]) = copy(xing = (xing ++ profiles).distinct)
+}
+
 object Profiles {
   implicit val format: Format[Profiles] = Json.format
 }
@@ -105,7 +93,7 @@ object FinishScan {
   implicit val format: Format[FinishScan] = Json.format
 }
 
-case class UpdateLinkedIn(profiles: Seq[String]) extends IxquickScannerCommand with ReplyType[Seq[String]]
+case class UpdateLinkedIn(profiles: Seq[String]) extends IxquickScannerCommand with ReplyType[Done]
 object UpdateLinkedIn {
   implicit val format: Format[UpdateLinkedIn] = Json.format
 }

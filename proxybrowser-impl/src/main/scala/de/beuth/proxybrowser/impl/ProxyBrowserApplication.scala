@@ -1,53 +1,48 @@
-package de.beuth.ixquick.scanner.impl
+package de.beuth.proxybrowser.impl
 
-
-import akka.actor.Scheduler
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
-import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaClientComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
 import com.lightbend.lagom.scaladsl.server.{LagomApplication, LagomApplicationContext, LagomApplicationLoader, LagomServer}
 import com.softwaremill.macwire.wire
-import de.beuth.ixquick.scanner.api.IxquickScannerService
 import de.beuth.proxybrowser.api.ProxyBrowserService
-import de.beuth.scan.api.ScanService
 import play.api.libs.ws.ahc.AhcWSComponents
 
+/**
+  * Created by David on 20.06.17.
+  */
 
-class IxquickScannerLoader extends LagomApplicationLoader {
+
+class ProxyBrowserLoader extends LagomApplicationLoader {
 
   override def load(context: LagomApplicationContext): LagomApplication =
-    new IxquickScannerApplication(context) {
+    new ProxyBrowserApplication(context) {
       override def serviceLocator: ServiceLocator = NoServiceLocator
     }
 
   override def loadDevMode(context: LagomApplicationContext): LagomApplication =
-    new IxquickScannerApplication(context) with LagomDevModeComponents
+    new ProxyBrowserApplication(context) with LagomDevModeComponents
 
   override def describeServices = List(
-    readDescriptor[IxquickScannerService]
+    readDescriptor[ProxyBrowserService]
   )
 }
 
-abstract class IxquickScannerApplication(context: LagomApplicationContext)
+abstract class ProxyBrowserApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
     with CassandraPersistenceComponents
     with AhcWSComponents
-    with LagomKafkaClientComponents
 {
-
-  lazy val scanService = serviceClient.implement[ScanService]
-  lazy val proxyBrowserService = serviceClient.implement[ProxyBrowserService]
 
   // Bind the services that this server provides
   override lazy val lagomServer = LagomServer.forServices(
-    bindService[IxquickScannerService].to(wire[IxquickScannerImpl])
+    bindService[ProxyBrowserService].to(wire[ProxyBrowser])
   )
 
   // Register the JSON serializer registry
-  override lazy val jsonSerializerRegistry = IxquickScanSerializerRegistry
+  override lazy val jsonSerializerRegistry = ProxyBorwserSerializerRegistry
 
-  persistentEntityRegistry.register(wire[IxquickScannerEntity])
+  persistentEntityRegistry.register(wire[ProxyBrowserEntity])
 }
 

@@ -8,6 +8,7 @@
       <module name="gatherbox-impl" target="1.8" />
       <module name="gatherbox-stream-impl" target="1.8" />
       <module name="ixquick-scanner-impl" target="1.8" />
+      <module name="proxybrowser-impl" target="1.8" />
       <module name="scan-impl" target="1.8" />
     </bytecodeTargetLevel>
   </component>

@@ -151,8 +151,31 @@ lazy val `ixquick-scanner-impl` = (project in file("ixquick-scanner-impl"))
     )
   )
   .settings(lagomForkedTestSettings: _*)
-  .dependsOn(`scan-api`, `utils`, `ixquick-scanner-api`)
+  .dependsOn(`scan-api`, `utils`, `ixquick-scanner-api`, `proxybrowser-impl`, `proxybrowser-api`)
 
+lazy val `proxybrowser-api`= (project in file("proxybrowser-api"))
+  .settings(
+    version := "1.0-SNAPSHOT",
+    libraryDependencies ++= Seq(
+      lagomScaladslApi,
+      lagomScaladslServer % Optional,
+      playJsonDerivedCodecs,
+      scalaTest
+    )
+  )
+
+lazy val `proxybrowser-impl` = (project in file("proxybrowser-impl"))
+  .enablePlugins(LagomScala)
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslPersistenceCassandra,
+      lagomScaladslTestKit,
+      macwire,
+      scalaTest
+    )
+  )
+  .settings(lagomForkedTestSettings: _*)
+  .dependsOn(`proxybrowser-api`, `utils`)
 
 lagomCassandraCleanOnStart in ThisBuild := true
 lagomUnmanagedServices in ThisBuild := Map("censys" -> "https://www.censys.io:443")

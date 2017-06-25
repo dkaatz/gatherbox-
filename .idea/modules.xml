@@ -23,6 +23,10 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/ixquick-scanner-api-build.iml" filepath="$PROJECT_DIR$/.idea/modules/ixquick-scanner-api-build.iml" />
       <module fileurl="file://$PROJECT_DIR$/ixquick-scanner-impl/ixquick-scanner-impl.iml" filepath="$PROJECT_DIR$/ixquick-scanner-impl/ixquick-scanner-impl.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/ixquick-scanner-impl-build.iml" filepath="$PROJECT_DIR$/.idea/modules/ixquick-scanner-impl-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/proxybrowser-api/proxybrowser-api.iml" filepath="$PROJECT_DIR$/proxybrowser-api/proxybrowser-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/proxybrowser-api-build.iml" filepath="$PROJECT_DIR$/.idea/modules/proxybrowser-api-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/proxybrowser-impl/proxybrowser-impl.iml" filepath="$PROJECT_DIR$/proxybrowser-impl/proxybrowser-impl.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/proxybrowser-impl-build.iml" filepath="$PROJECT_DIR$/.idea/modules/proxybrowser-impl-build.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/scan-api.iml" filepath="$PROJECT_DIR$/.idea/modules/scan-api.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/scan-api-scan-api-build.iml" filepath="$PROJECT_DIR$/.idea/modules/scan-api-scan-api-build.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/scan-impl.iml" filepath="$PROJECT_DIR$/.idea/modules/scan-impl.iml" />
