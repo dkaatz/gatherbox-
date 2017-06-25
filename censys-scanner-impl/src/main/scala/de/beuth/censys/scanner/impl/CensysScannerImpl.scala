@@ -29,21 +29,21 @@ class CensysScannerImpl(registry: PersistentEntityRegistry, censysService: Censy
     LoggerFactory.getLogger(classOf[CensysScannerImpl])
 
 
-//  scanService.scanStartedTopic().subscribe.atLeastOnce(
-//    Flow[ScanStartedMessage].map{ msg =>
-//      log.info("Received ScanStartedMessage: " + msg.keyword)
-//      scanService.register(msg.keyword, CensysScanner.name).invoke().onComplete {
-//        _ => {
-//          scanService.update(msg.keyword, CensysScanner.name, "Scanning").invoke()
-//          this.search(msg.keyword).invoke()
-//        }
-//      }
-//
-//      log.info("Searching: " + msg.keyword)
-//
-//      Done
-//    }
-//  )
+  scanService.scanStartedTopic().subscribe.atLeastOnce(
+    Flow[ScanStartedMessage].map{ msg =>
+      log.info("Received ScanStartedMessage: " + msg.keyword)
+      scanService.register(msg.keyword, CensysScanner.name).invoke().onComplete {
+        _ => {
+          scanService.update(msg.keyword, CensysScanner.name, "Scanning").invoke()
+          this.search(msg.keyword).invoke()
+        }
+      }
+
+      log.info("Searching: " + msg.keyword)
+
+      Done
+    }
+  )
 
   def search(keyword: String) = ServiceCall { _ => {
     log.info("Start Searching with: " + keyword)

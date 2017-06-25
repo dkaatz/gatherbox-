@@ -4,6 +4,7 @@ import java.io.{File, InputStream}
 
 import akka.actor.{ActorSystem, Scheduler}
 import akka.stream.Materializer
+import akka.stream.scaladsl.Flow
 import akka.{Done, NotUsed}
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRegistry
@@ -24,16 +25,38 @@ import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 import de.beuth.proxybrowser.api.{ProxyBrowserService, ProxyServer}
+import de.beuth.scan.api.{ScanService, ScanStartedMessage}
+import java.time.Instant
 
 /**
   * Created by David on 13.06.17.
   */
-class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem, wsClient: WSClient, proxyBrowserService: ProxyBrowserService)(implicit ec: ExecutionContext, mat: Materializer)
+class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem, wsClient: WSClient, scanService: ScanService, proxyBrowserService: ProxyBrowserService)(implicit ec: ExecutionContext, mat: Materializer)
   extends IxquickScannerService {
 
   private final val log: Logger = LoggerFactory.getLogger(classOf[IxquickScannerImpl])
+
+  scanService.scanStartedTopic().subscribe.atLeastOnce(
+    Flow[ScanStartedMessage].map{ msg =>
+      log.info("Received ScanStartedMessage: " + msg.keyword)
+      val ref = refFor(msg.keyword);
+      val startScanFuture = ref.ask(StartScan(Instant.now()))
+      val scanLinkedinFuture = this.scanLinkedin(msg.keyword).invoke()
+      val scanXingFuture = this.scanXing(msg.keyword).invoke()
+      (for {
+        start <- startScanFuture
+        linkedin <- scanLinkedinFuture
+        xing <- scanXingFuture
+        finish <- ref.ask(FinishScan(Instant.now()))
+      } yield finish).recoverWith {
+        case e: Exception => ref.ask(ScanFailure(Instant.now(), e.getMessage))
+      }
+      Done
+    }
+  )
+
   def scanLinkedin(keyword: String) = ServiceCall { _ => {
-      log.info("calling scanLinkedin")
+      log.info(s"Scanning Linkedin Profiles with keyword: $keyword")
       val linkedIn1 = processKeyword(keyword, "de.linkedin.com/in", doUpdateLinkedIn)
       val linkedIn2 = processKeyword(keyword, "www.linkedin.com/in", doUpdateLinkedIn)
       for {
@@ -44,10 +67,14 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
     }
   }
 
-  def scanXing(keyword: String)= ServiceCall { _ => {
+  def scanXing(keyword: String) = ServiceCall { _ => {
+      log.info(s"Scanning Xing Profiles with keyword: $keyword")
       processKeyword(keyword, "www.xing.com/profile", doUpdateXing)
     }
   }
+
+
+
 
   private def doUpdateLinkedIn(keyword: String, profiles: Seq[String]): Future[Done] = refFor(keyword).ask(UpdateXing(profiles))
   private def doUpdateXing(keyword: String, profiles: Seq[String]) = refFor(keyword).ask(UpdateXing(profiles))

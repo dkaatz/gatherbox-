@@ -8,7 +8,7 @@ import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
   * Created by David on 13.06.17.
   */
 trait IxquickScannerService extends Service {
-
+  
   def scanLinkedin(keyword: String): ServiceCall[NotUsed, Done]
   def scanXing(keyword: String): ServiceCall[NotUsed, Done]
 

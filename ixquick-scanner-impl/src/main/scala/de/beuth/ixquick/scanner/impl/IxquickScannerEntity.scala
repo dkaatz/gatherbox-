@@ -3,7 +3,7 @@ package de.beuth.ixquick.scanner.impl
 import java.time.Instant
 
 import akka.Done
-import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
+import com.lightbend.lagom.scaladsl.persistence.{AggregateEvent, AggregateEventTag, PersistentEntity}
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 import de.beuth.utils.JsonFormats.singletonFormat
@@ -50,23 +50,39 @@ class IxquickScannerEntity extends PersistentEntity {
         ) {
           _ => ctx.reply(Done)
         }
+    }.onCommand[FinishScan, Done] {
+    case (ScanFailure(timestamp, msg), ctx, state) =>
+      ctx.thenPersist(
+        ScanFailed(timestamp, msg)
+      ) {
+        _ => ctx.reply(Done)
+      }
     }.onEvent {
       case (ScanStarted(timestamp), state) => state.start(timestamp)
       case (LinkedinUpdated(profiles), state) => state.updateLinkedinProfiles(profiles)
       case (XingUpdated(profiles), state) => state.updateXingProfiles(profiles)
       case (ScanFinished(timestamp), state) => state
+      case (ScanFailed(timestamp, msg), state) => state
     }.orElse(getScan)
   }
 
-  private val getScan = Actions().onReadOnlyCommand[GetScan.type, Scan] {  case (GetScan, ctx, state) => ctx.reply(state) }
+  private val getScan = Actions().onReadOnlyCommand[GetScan.type, Scan] { case (GetScan, ctx, state) => ctx.reply(state) }
 
 }
 
+/**
+  * State
+  * @param startedAt
+  * @param profiles
+  */
 case class Scan(startedAt: Option[Instant], profiles: Profiles) {
-  def start(timestamp: Instant): Scan = copy(startedAt=Some(timestamp), profiles = Profiles())
+  def start(timestamp: Instant): Scan = copy(startedAt = Some(timestamp), profiles = Profiles())
+
   def updateLinkedinProfiles(profileLinks: Seq[String]): Scan = copy(profiles = this.profiles.updateLinkedin(profileLinks))
+
   def updateXingProfiles(profileLinks: Seq[String]): Scan = copy(profiles = this.profiles.updateXing(profileLinks))
 }
+
 object Scan {
   implicit val format: Format[Scan] = Json.format
 }
@@ -74,6 +90,7 @@ object Scan {
 
 case class Profiles(linkedin: Seq[String] = Seq[String](), xing: Seq[String] = Seq[String]()) {
   def updateLinkedin(profiles: Seq[String]) = copy(linkedin = (linkedin ++ profiles).distinct)
+
   def updateXing(profiles: Seq[String]) = copy(xing = (xing ++ profiles).distinct)
 }
 
@@ -81,42 +98,80 @@ object Profiles {
   implicit val format: Format[Profiles] = Json.format
 }
 
+/**
+  * Commands
+  */
 sealed trait IxquickScannerCommand
 
 case class StartScan(timestamp: Instant) extends IxquickScannerCommand with ReplyType[Done]
+
 object StartScan {
   implicit val format: Format[StartScan] = Json.format[StartScan]
 }
 
 case class FinishScan(time: Instant) extends IxquickScannerCommand with ReplyType[Done]
+
 object FinishScan {
   implicit val format: Format[FinishScan] = Json.format
 }
 
+case class ScanFailure(times: Instant, errorMsg: String) extends IxquickScannerCommand with ReplyType[Done]
+
+object ScanFailure {
+  implicit val format: Format[ScanFailure] = Json.format
+}
+
 case class UpdateLinkedIn(profiles: Seq[String]) extends IxquickScannerCommand with ReplyType[Done]
+
 object UpdateLinkedIn {
   implicit val format: Format[UpdateLinkedIn] = Json.format
 }
 
 case class UpdateXing(profiles: Seq[String]) extends IxquickScannerCommand with ReplyType[Done]
+
 object UpdateXing {
   implicit val format: Format[UpdateXing] = Json.format
 }
 
-sealed trait IxquickScannerEvent
+
+/**
+  * Events
+  */
+object IxquickScannerEvent {
+  val Tag = AggregateEventTag[IxquickScannerEvent]
+}
+sealed trait IxquickScannerEvent extends AggregateEvent[IxquickScannerEvent] {
+  override def aggregateTag: AggregateEventTag[IxquickScannerEvent] = IxquickScannerEvent.Tag
+}
 
 case class ScanStarted(timestamp: Instant) extends IxquickScannerEvent
-object ScanStarted { implicit val format: Format[ScanStarted] = Json.format }
+
+object ScanStarted {
+  implicit val format: Format[ScanStarted] = Json.format
+}
 
 case class ScanFinished(timestamp: Instant) extends IxquickScannerEvent
-object ScanFinished { implicit val format: Format[ScanFinished] = Json.format }
+
+object ScanFinished {
+  implicit val format: Format[ScanFinished] = Json.format
+}
+
+case class ScanFailed(timestamp: Instant, errorMsg: String) extends IxquickScannerEvent
+object ScanFailed {
+  implicit val format: Format[ScanFailed] = Json.format
+}
 
 case class LinkedinUpdated(profiles: Seq[String]) extends IxquickScannerEvent
-object LinkedinUpdated { implicit val format: Format[LinkedinUpdated] = Json.format }
+
+object LinkedinUpdated {
+  implicit val format: Format[LinkedinUpdated] = Json.format
+}
 
 case class XingUpdated(profiles: Seq[String]) extends IxquickScannerEvent
-object XingUpdated { implicit val format: Format[XingUpdated] = Json.format }
 
+object XingUpdated {
+  implicit val format: Format[XingUpdated] = Json.format
+}
 
 
 case object GetScan extends IxquickScannerCommand with ReplyType[Scan] {
@@ -135,6 +190,8 @@ object IxquickScanSerializerRegistry extends JsonSerializerRegistry {
     JsonSerializer[XingUpdated],
     JsonSerializer[UpdateLinkedIn],
     JsonSerializer[LinkedinUpdated],
+    JsonSerializer[ScanFailed],
+    JsonSerializer[ScanFailure],
     JsonSerializer[GetScan.type]
   )
 }

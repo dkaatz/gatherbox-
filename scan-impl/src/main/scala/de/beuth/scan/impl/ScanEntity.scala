@@ -6,7 +6,6 @@ import akka.Done
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEvent, AggregateEventTag, PersistentEntity}
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
-import de.beuth.scan.impl
 import de.beuth.utils.JsonFormats._
 import play.api.libs.json.{Format, Json}
 
