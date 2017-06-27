@@ -55,8 +55,8 @@ class ScanEntity extends PersistentEntity {
       ) {
         _ => ctx.reply(state.updateScannerStatus(name, status))
       }
-    }.onCommand[ScanFailed, Done] {
-    case (ScanFailed(timestamp, errorMsg), ctx, state) =>
+    }.onCommand[FailedScan, Done] {
+    case (FailedScan(timestamp, errorMsg), ctx, state) =>
       ctx.thenPersist(
         ScanFailed(timestamp, errorMsg)
       ) {

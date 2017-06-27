@@ -9,7 +9,7 @@ import akka.{Done, NotUsed}
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.persistence.{EventStreamElement, PersistentEntityRegistry}
 import de.beuth.utils.UserAgentList
-import de.beuth.ixquick.scanner.api.IxquickScannerService
+import de.beuth.ixquick.scanner.api.{IxquickScanUpdateEvent, IxquickScannerService, LinkedInUpdateEvent, XingUpdateEvent}
 import org.slf4j.{Logger, LoggerFactory}
 import net.ruippeixotog.scalascraper.browser.{Browser, JsoupBrowser}
 import net.ruippeixotog.scalascraper.dsl.DSL._
@@ -25,7 +25,7 @@ import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 import de.beuth.proxybrowser.api.{ProxyBrowserService, ProxyServer}
-import de.beuth.scan.api.{ScanService}
+import de.beuth.scan.api.ScanService
 import java.time.Instant
 
 import com.lightbend.lagom.scaladsl.api.broker.Topic
@@ -40,24 +40,24 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
 
   private final val log: Logger = LoggerFactory.getLogger(classOf[IxquickScannerImpl])
 
-//  scanService.scanStartedTopic().subscribe.atLeastOnce(
-//    Flow[ScanStartedMessage].map{ msg =>
-//      log.info("Received ScanStartedMessage: " + msg.keyword)
-//      val ref = refFor(msg.keyword);
-//      val startScanFuture = ref.ask(StartScan(Instant.now()))
-//      val scanLinkedinFuture = this.scanLinkedin(msg.keyword).invoke()
-//      val scanXingFuture = this.scanXing(msg.keyword).invoke()
-//      (for {
-//        start <- startScanFuture
-//        linkedin <- scanLinkedinFuture
-//        xing <- scanXingFuture
-//        finish <- ref.ask(FinishScan(Instant.now()))
-//      } yield finish).recoverWith {
-//        case e: Exception => ref.ask(ScanFailure(Instant.now(), e.getMessage))
-//      }
-//      Done
-//    }
-//  )
+  scanService.statusTopic().subscribe.atLeastOnce(
+    Flow[ScanStatusEvent].mapAsync(1) {
+      case ev: ScanStartedEvent => {
+        log.info("ScanStarted Event received. Starting Ixquick scans")
+        val linkedInFuture = this.scanLinkedin(ev.keyword).invoke()
+        val xingFuture = this.scanXing(ev.keyword).invoke()
+        (for {
+          linkedin <- linkedInFuture
+          xing <- xingFuture
+          finish <- refFor(ev.keyword).ask(FinishScan(Instant.now()))
+        } yield finish).recoverWith {
+          case e: Exception => refFor(ev.keyword).ask(ScanFailure(Instant.now(), e.getMessage))
+        }
+      }
+      //ignore other events
+      case _ => Future.successful(Done)
+    }
+  )
 
   def scanLinkedin(keyword: String) = ServiceCall { _ => {
       log.info(s"Scanning Linkedin Profiles with keyword: $keyword")
@@ -177,12 +177,16 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
   /**
     * Message Broking
     */
-
   override def statusTopic(): Topic[ScanStatusEvent] =
     TopicProducer.singleStreamWithOffset {
       fromOffset =>
         registry.eventStream(IxquickScannerEvent.Tag , fromOffset)
-          .map(ev => (convertStatusEvent(ev.entityId, ev), ev.offset))
+          .filter {
+              _.event match {
+                case x@(_: ScanStarted | _: ScanFinished | _: ScanFailed) => true
+                case _ => false
+              }
+          }.map(ev => (convertStatusEvent(ev.entityId, ev), ev.offset))
     }
 
   private def convertStatusEvent(keyword: String, scanEvent: EventStreamElement[IxquickScannerEvent]): ScanStatusEvent = {
@@ -190,6 +194,26 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
       case ScanStarted(timestamp) => ScanStartedEvent(keyword, timestamp)
       case ScanFinished(timestamp) => ScanFinishedEvent(keyword, timestamp)
       case ScanFailed(timestamp, errorMsg) => ScanFailedEvent(keyword, timestamp, errorMsg)
+    }
+  }
+
+  override def updateTopic(): Topic[IxquickScanUpdateEvent] =
+    TopicProducer.singleStreamWithOffset {
+      fromOffset =>
+        registry.eventStream(IxquickScannerEvent.Tag , fromOffset)
+          .filter {
+            _.event match {
+              case x@(_: LinkedinUpdated | _: XingUpdated) => true
+              case _ => false
+            }
+          }
+          .map(ev => (convertUpdateEvent(ev.entityId, ev), ev.offset))
+    }
+
+  private def convertUpdateEvent(keyword: String, scanEvent: EventStreamElement[IxquickScannerEvent]): IxquickScanUpdateEvent = {
+    scanEvent.event match {
+      case LinkedinUpdated(profiles) => LinkedInUpdateEvent(keyword, profiles)
+      case XingUpdated(profiles) => XingUpdateEvent(keyword, profiles)
     }
   }
 }

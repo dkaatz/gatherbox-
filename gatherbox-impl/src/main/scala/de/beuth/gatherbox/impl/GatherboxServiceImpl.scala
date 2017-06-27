@@ -6,7 +6,7 @@ import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRegistry
 import de.beuth.gatherbox.api.GatherboxService
 import de.beuth.censys.api.{CensysQuery, CensysService}
-import de.beuth.scan.api.{ScanService, ScanStartedMessage}
+import de.beuth.scan.api.{ScanService}
 import de.beuth.scan.impl.ScanServiceImpl
 import org.slf4j.{Logger, LoggerFactory}
 

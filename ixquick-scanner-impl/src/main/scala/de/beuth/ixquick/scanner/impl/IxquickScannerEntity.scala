@@ -50,7 +50,7 @@ class IxquickScannerEntity extends PersistentEntity {
         ) {
           _ => ctx.reply(Done)
         }
-    }.onCommand[FinishScan, Done] {
+    }.onCommand[ScanFailure, Done] {
     case (ScanFailure(timestamp, msg), ctx, state) =>
       ctx.thenPersist(
         ScanFailed(timestamp, msg)

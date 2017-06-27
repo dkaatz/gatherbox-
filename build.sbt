@@ -185,5 +185,32 @@ lazy val `proxybrowser-impl` = (project in file("proxybrowser-impl"))
   .settings(lagomForkedTestSettings: _*)
   .dependsOn(`proxybrowser-api`, `utils`)
 
+lazy val `linkedin-scanner-api`= (project in file("linkedin-scanner-api"))
+  .settings(
+    version := "1.0-SNAPSHOT",
+    libraryDependencies ++= Seq(
+      lagomScaladslApi,
+      lagomScaladslServer % Optional,
+      playJsonDerivedCodecs,
+      scalaTest
+    )
+  ).dependsOn(`scanner-commons`)
+
+lazy val `linkedin-scanner-impl` = (project in file("linkedin-scanner-impl"))
+  .enablePlugins(LagomScala)
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslPersistenceCassandra,
+      lagomScaladslTestKit,
+      lagomScaladslKafkaBroker,
+      scalaScraper,
+      macwire,
+      scalaTest
+    )
+  )
+  .settings(lagomForkedTestSettings: _*)
+  .dependsOn(`scan-api`, `utils`,`scanner-commons`, `linkedin-scanner-api`, `proxybrowser-impl`, `proxybrowser-api`)
+
+
 lagomCassandraCleanOnStart in ThisBuild := true
 lagomUnmanagedServices in ThisBuild := Map("censys" -> "https://www.censys.io:443")
