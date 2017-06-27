@@ -11,6 +11,7 @@ import com.lightbend.lagom.scaladsl.broker.TopicProducer
 import com.lightbend.lagom.scaladsl.persistence.{EventStreamElement, PersistentEntityRegistry}
 import de.beuth.censys.api.{CensysQuery, CensysService}
 import de.beuth.scan.api._
+import de.beuth.scanner.commons.{ScanFailedEvent, ScanFinishedEvent, ScanStartedEvent, ScanStatusEvent}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.util.{Failure, Success}
@@ -65,7 +66,6 @@ class ScanServiceImpl(registry: PersistentEntityRegistry, system: ActorSystem, c
       }
     }
   }
-
   private def covertStatusString(status: String): ScannerStatus.Status = status match {
     case "Unscanned" => ScannerStatus.Scanned
     case "Scanning" => ScannerStatus.Scanning
@@ -73,16 +73,18 @@ class ScanServiceImpl(registry: PersistentEntityRegistry, system: ActorSystem, c
     case _ => ScannerStatus.Unscanned
   }
 
-  override def scanStartedTopic(): Topic[ScanStartedMessage] =
+  override def statusTopic(): Topic[ScanStatusEvent] =
     TopicProducer.singleStreamWithOffset {
       fromOffset =>
         registry.eventStream(ScanEvent.Tag , fromOffset)
-          .map(ev => (convertEvent(ev), ev.offset))
+          .map(ev => (convertEvent(ev.entityId, ev), ev.offset))
     }
 
-  private def convertEvent(scanEvent: EventStreamElement[ScanEvent]): ScanStartedMessage = {
+  private def convertEvent(keyword: String, scanEvent: EventStreamElement[ScanEvent]): ScanStatusEvent = {
     scanEvent.event match {
-      case ScanStarted(keyword, timestamp) => ScanStartedMessage(keyword, timestamp)
+      case ScanStarted(timestamp) => ScanStartedEvent(keyword, timestamp)
+      case ScanFinished(timestamp) => ScanFinishedEvent(keyword, timestamp)
+      case ScanFailed(timestamp, errorMsg) => ScanFailedEvent(keyword, timestamp, errorMsg)
     }
   }
 //    refFor(keyword).ask(GetScan).map {

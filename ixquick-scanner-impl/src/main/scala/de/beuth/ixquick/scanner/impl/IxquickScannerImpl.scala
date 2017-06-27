@@ -7,7 +7,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Flow
 import akka.{Done, NotUsed}
 import com.lightbend.lagom.scaladsl.api.ServiceCall
-import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRegistry
+import com.lightbend.lagom.scaladsl.persistence.{EventStreamElement, PersistentEntityRegistry}
 import de.beuth.utils.UserAgentList
 import de.beuth.ixquick.scanner.api.IxquickScannerService
 import org.slf4j.{Logger, LoggerFactory}
@@ -25,8 +25,12 @@ import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 import de.beuth.proxybrowser.api.{ProxyBrowserService, ProxyServer}
-import de.beuth.scan.api.{ScanService, ScanStartedMessage}
+import de.beuth.scan.api.{ScanService}
 import java.time.Instant
+
+import com.lightbend.lagom.scaladsl.api.broker.Topic
+import com.lightbend.lagom.scaladsl.broker.TopicProducer
+import de.beuth.scanner.commons._
 
 /**
   * Created by David on 13.06.17.
@@ -36,24 +40,24 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
 
   private final val log: Logger = LoggerFactory.getLogger(classOf[IxquickScannerImpl])
 
-  scanService.scanStartedTopic().subscribe.atLeastOnce(
-    Flow[ScanStartedMessage].map{ msg =>
-      log.info("Received ScanStartedMessage: " + msg.keyword)
-      val ref = refFor(msg.keyword);
-      val startScanFuture = ref.ask(StartScan(Instant.now()))
-      val scanLinkedinFuture = this.scanLinkedin(msg.keyword).invoke()
-      val scanXingFuture = this.scanXing(msg.keyword).invoke()
-      (for {
-        start <- startScanFuture
-        linkedin <- scanLinkedinFuture
-        xing <- scanXingFuture
-        finish <- ref.ask(FinishScan(Instant.now()))
-      } yield finish).recoverWith {
-        case e: Exception => ref.ask(ScanFailure(Instant.now(), e.getMessage))
-      }
-      Done
-    }
-  )
+//  scanService.scanStartedTopic().subscribe.atLeastOnce(
+//    Flow[ScanStartedMessage].map{ msg =>
+//      log.info("Received ScanStartedMessage: " + msg.keyword)
+//      val ref = refFor(msg.keyword);
+//      val startScanFuture = ref.ask(StartScan(Instant.now()))
+//      val scanLinkedinFuture = this.scanLinkedin(msg.keyword).invoke()
+//      val scanXingFuture = this.scanXing(msg.keyword).invoke()
+//      (for {
+//        start <- startScanFuture
+//        linkedin <- scanLinkedinFuture
+//        xing <- scanXingFuture
+//        finish <- ref.ask(FinishScan(Instant.now()))
+//      } yield finish).recoverWith {
+//        case e: Exception => ref.ask(ScanFailure(Instant.now(), e.getMessage))
+//      }
+//      Done
+//    }
+//  )
 
   def scanLinkedin(keyword: String) = ServiceCall { _ => {
       log.info(s"Scanning Linkedin Profiles with keyword: $keyword")
@@ -168,6 +172,25 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
       )
       .withRequestTimeout(30.seconds)
       .post(query.asFormData)
+  }
+
+  /**
+    * Message Broking
+    */
+
+  override def statusTopic(): Topic[ScanStatusEvent] =
+    TopicProducer.singleStreamWithOffset {
+      fromOffset =>
+        registry.eventStream(IxquickScannerEvent.Tag , fromOffset)
+          .map(ev => (convertStatusEvent(ev.entityId, ev), ev.offset))
+    }
+
+  private def convertStatusEvent(keyword: String, scanEvent: EventStreamElement[IxquickScannerEvent]): ScanStatusEvent = {
+    scanEvent.event match {
+      case ScanStarted(timestamp) => ScanStartedEvent(keyword, timestamp)
+      case ScanFinished(timestamp) => ScanFinishedEvent(keyword, timestamp)
+      case ScanFailed(timestamp, errorMsg) => ScanFailedEvent(keyword, timestamp, errorMsg)
+    }
   }
 }
 

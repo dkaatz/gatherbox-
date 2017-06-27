@@ -71,6 +71,14 @@ lazy val `utils`= (project in file("utils"))
       scalaTest
     )
   )
+
+lazy val `scanner-commons`= (project in file("scanner-commons"))
+  .settings(
+    version := "1.0-SNAPSHOT",
+    libraryDependencies ++= Seq(
+      lagomScaladslApi
+    )
+  )
 //
 lazy val `censys-api` = (project in file("censys-api"))
   .settings(
@@ -85,7 +93,7 @@ lazy val `scan-api` = (project in file("scan-api"))
       lagomScaladslApi,
       playJsonDerivedCodecs
     )
-  ).dependsOn(`censys-api`)
+  ).dependsOn(`censys-api`, `scanner-commons`)
 
 lazy val `scan-impl` = (project in file("scan-impl"))
   .enablePlugins(LagomScala)
@@ -99,7 +107,7 @@ lazy val `scan-impl` = (project in file("scan-impl"))
     )
   )
   .settings(lagomForkedTestSettings: _*)
-  .dependsOn(`scan-api`, `utils`)
+  .dependsOn(`scan-api`, `utils`, `scanner-commons`)
 
 
 lazy val `censys-scanner-api`= (project in file("censys-scanner-api"))
@@ -136,7 +144,7 @@ lazy val `ixquick-scanner-api`= (project in file("ixquick-scanner-api"))
       playJsonDerivedCodecs,
       scalaTest
     )
-  )
+  ).dependsOn(`scanner-commons`)
 
 lazy val `ixquick-scanner-impl` = (project in file("ixquick-scanner-impl"))
   .enablePlugins(LagomScala)
@@ -151,7 +159,7 @@ lazy val `ixquick-scanner-impl` = (project in file("ixquick-scanner-impl"))
     )
   )
   .settings(lagomForkedTestSettings: _*)
-  .dependsOn(`scan-api`, `utils`, `ixquick-scanner-api`, `proxybrowser-impl`, `proxybrowser-api`)
+  .dependsOn(`scan-api`, `utils`,`scanner-commons`, `ixquick-scanner-api`, `proxybrowser-impl`, `proxybrowser-api`)
 
 lazy val `proxybrowser-api`= (project in file("proxybrowser-api"))
   .settings(

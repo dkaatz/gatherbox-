@@ -4,7 +4,7 @@ package de.beuth.ixquick.scanner.impl
 import akka.actor.Scheduler
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
-import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaClientComponents
+import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
 import com.lightbend.lagom.scaladsl.server.{LagomApplication, LagomApplicationContext, LagomApplicationLoader, LagomServer}
@@ -34,7 +34,7 @@ abstract class IxquickScannerApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
     with CassandraPersistenceComponents
     with AhcWSComponents
-    with LagomKafkaClientComponents
+    with LagomKafkaComponents
 {
 
   lazy val scanService = serviceClient.implement[ScanService]

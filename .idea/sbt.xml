@@ -35,6 +35,8 @@
             <option value="$PROJECT_DIR$/scan-api/project" />
             <option value="$PROJECT_DIR$/scan-impl" />
             <option value="$PROJECT_DIR$/scan-impl/project" />
+            <option value="$PROJECT_DIR$/scanner-commons" />
+            <option value="$PROJECT_DIR$/scanner-commons/project" />
             <option value="$PROJECT_DIR$/utils" />
             <option value="$PROJECT_DIR$/utils/project" />
           </set>

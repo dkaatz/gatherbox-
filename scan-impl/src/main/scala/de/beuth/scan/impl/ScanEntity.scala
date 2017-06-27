@@ -30,7 +30,7 @@ class ScanEntity extends PersistentEntity {
   private val updateScan = Actions().onCommand[StartScan, Scan] {
     case (StartScan(startedAt), ctx, state) =>
       ctx.thenPersist(
-        ScanStarted(this.entityId, startedAt)
+        ScanStarted(startedAt)
       ) {
         _ => ctx.reply(state.start(startedAt))
       }
@@ -55,11 +55,20 @@ class ScanEntity extends PersistentEntity {
       ) {
         _ => ctx.reply(state.updateScannerStatus(name, status))
       }
-    }.onEvent {
-      case (ScanStarted(keyword, timestamp), scan) => scan.start(timestamp)
+    }.onCommand[ScanFailed, Done] {
+    case (ScanFailed(timestamp, errorMsg), ctx, state) =>
+      ctx.thenPersist(
+        ScanFailed(timestamp, errorMsg)
+      ) {
+        _ => Done
+      }
+    }
+    .onEvent {
+      case (ScanStarted(timestamp), scan) => scan.start(timestamp)
       case (ScannerRegistered(timestamp, name), scan) => scan.registerScanner(name, timestamp)
       case (ScannerUnregistered(name), scan) => scan.unregisterScanner(name)
       case (ScannerUpdated(name, status), scan) => scan.updateScannerStatus(name, status)
+      case (ScanFailed(timestamp, errorMsg), scan) => scan
     }.orElse(getScan)
 }
 
@@ -135,7 +144,12 @@ sealed trait ScanEvent extends AggregateEvent[ScanEvent] {
   override def aggregateTag: AggregateEventTag[ScanEvent] = ScanEvent.Tag
 }
 
-case class ScanStarted(keyword: String, timestamp: Instant) extends ScanEvent
+case class ScanFailed(timestamp: Instant, errorMsg: String) extends ScanEvent
+object ScanFailed {
+  implicit val format: Format[ScanFailed] = Json.format
+}
+
+case class ScanStarted(timestamp: Instant) extends ScanEvent
 object ScanStarted {
   implicit val format: Format[ScanStarted] = Json.format
 }
@@ -164,6 +178,13 @@ object ScannerUpdated {
   * Commands
   */
 sealed trait ScanCommand
+
+case class FailedScan(timestamp: Instant, errorMsg: String) extends ScanCommand with ReplyType[Done]
+
+object FailedScan {
+  implicit val format: Format[FailedScan] = Json.format
+}
+
 
 case class StartScan(timestamp: Instant) extends ScanCommand with ReplyType[Scan]
 
