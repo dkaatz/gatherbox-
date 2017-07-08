@@ -19,4 +19,5 @@ trait CensysScannerService extends Service {
       pathCall("/api/scanner/censys/:keyword", search _)
     )
   }
+
 }

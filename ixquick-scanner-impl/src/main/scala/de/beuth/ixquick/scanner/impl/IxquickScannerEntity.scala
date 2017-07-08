@@ -22,7 +22,7 @@ class IxquickScannerEntity extends PersistentEntity {
   override def initialState: Scan = Scan(None, Profiles())
 
   override def behavior: Behavior = {
-    case scan => Actions().onCommand[StartScan, Done] {
+    Actions().onCommand[StartScan, Done] {
       case (StartScan(timestmap), ctx, state) =>
         ctx.thenPersist(
           ScanStarted(timestmap)
@@ -76,6 +76,7 @@ class IxquickScannerEntity extends PersistentEntity {
   * @param profiles
   */
 case class Scan(startedAt: Option[Instant], profiles: Profiles) {
+  //@todo check if already started
   def start(timestamp: Instant): Scan = copy(startedAt = Some(timestamp), profiles = Profiles())
 
   def updateLinkedinProfiles(profileLinks: Seq[String]): Scan = copy(profiles = this.profiles.updateLinkedin(profileLinks))
@@ -90,7 +91,6 @@ object Scan {
 
 case class Profiles(linkedin: Seq[String] = Seq[String](), xing: Seq[String] = Seq[String]()) {
   def updateLinkedin(profiles: Seq[String]) = copy(linkedin = (linkedin ++ profiles).distinct)
-
   def updateXing(profiles: Seq[String]) = copy(xing = (xing ++ profiles).distinct)
 }
 

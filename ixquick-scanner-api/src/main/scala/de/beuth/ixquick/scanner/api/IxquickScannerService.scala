@@ -21,6 +21,7 @@ object IxquickScannerService {
 trait IxquickScannerService extends Service with ScanStatusTopics {
 //  extends ScanServiceWithDefaultTopics {
 
+
   def scanLinkedin(keyword: String): ServiceCall[NotUsed, Done]
   def scanXing(keyword: String): ServiceCall[NotUsed, Done]
 

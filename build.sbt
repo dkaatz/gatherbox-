@@ -8,6 +8,8 @@ val macwire = "com.softwaremill.macwire" %% "macros" % "2.2.5" % "provided"
 val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % Test
 val playJsonDerivedCodecs = "org.julienrf" %% "play-json-derived-codecs" % "3.3"
 val scalaScraper = "net.ruippeixotog" %% "scala-scraper" % "2.0.0-RC2"
+val selenium = "org.seleniumhq.selenium" % "selenium-java" % "3.0.0"
+val guavaEnforce = "com.google.guava" % "guava" % "19.0"
 
 
 lazy val `gatherbox` = (project in file("."))
@@ -185,7 +187,7 @@ lazy val `proxybrowser-impl` = (project in file("proxybrowser-impl"))
   .settings(lagomForkedTestSettings: _*)
   .dependsOn(`proxybrowser-api`, `utils`)
 
-lazy val `linkedin-scanner-api`= (project in file("linkedin-scanner-api"))
+lazy val `profile-scanner-api`= (project in file("profile-scanner-api"))
   .settings(
     version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
@@ -196,7 +198,7 @@ lazy val `linkedin-scanner-api`= (project in file("linkedin-scanner-api"))
     )
   ).dependsOn(`scanner-commons`)
 
-lazy val `linkedin-scanner-impl` = (project in file("linkedin-scanner-impl"))
+lazy val `profile-scanner-impl` = (project in file("profile-scanner-impl"))
   .enablePlugins(LagomScala)
   .settings(
     libraryDependencies ++= Seq(
@@ -205,12 +207,20 @@ lazy val `linkedin-scanner-impl` = (project in file("linkedin-scanner-impl"))
       lagomScaladslKafkaBroker,
       scalaScraper,
       macwire,
-      scalaTest
+      scalaTest,
+      selenium
     )
   )
   .settings(lagomForkedTestSettings: _*)
-  .dependsOn(`scan-api`, `utils`,`scanner-commons`, `linkedin-scanner-api`, `proxybrowser-impl`, `proxybrowser-api`)
+  .dependsOn(`scan-api`, `utils`,`scanner-commons`, `profile-scanner-api`, `proxybrowser-impl`)
 
-
+/**
+  * Cleanup on start to not have events / data in queue
+  */
+lagomKafkaCleanOnStart in ThisBuild := true
 lagomCassandraCleanOnStart in ThisBuild := true
+
+/**
+  * External Sevices
+  */
 lagomUnmanagedServices in ThisBuild := Map("censys" -> "https://www.censys.io:443")

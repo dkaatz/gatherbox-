@@ -31,6 +31,7 @@ import java.time.Instant
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.broker.TopicProducer
 import de.beuth.scanner.commons._
+import de.beuth.proxybrowser.api.RndProxyServer
 
 /**
   * Created by David on 13.06.17.
@@ -40,24 +41,24 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
 
   private final val log: Logger = LoggerFactory.getLogger(classOf[IxquickScannerImpl])
 
-  scanService.statusTopic().subscribe.atLeastOnce(
-    Flow[ScanStatusEvent].mapAsync(1) {
-      case ev: ScanStartedEvent => {
-        log.info("ScanStarted Event received. Starting Ixquick scans")
-        val linkedInFuture = this.scanLinkedin(ev.keyword).invoke()
-        val xingFuture = this.scanXing(ev.keyword).invoke()
-        (for {
-          linkedin <- linkedInFuture
-          xing <- xingFuture
-          finish <- refFor(ev.keyword).ask(FinishScan(Instant.now()))
-        } yield finish).recoverWith {
-          case e: Exception => refFor(ev.keyword).ask(ScanFailure(Instant.now(), e.getMessage))
-        }
-      }
-      //ignore other events
-      case _ => Future.successful(Done)
-    }
-  )
+//  scanService.statusTopic().subscribe.atLeastOnce(
+//    Flow[ScanStatusEvent].mapAsync(1) {
+//      case ev: ScanStartedEvent => {
+//        log.info("ScanStarted Event received. Starting Ixquick scans")
+//        val linkedInFuture = this.scanLinkedin(ev.keyword).invoke()
+//        val xingFuture = this.scanXing(ev.keyword).invoke()
+//        (for {
+//          linkedin <- linkedInFuture
+//          xing <- xingFuture
+//          finish <- refFor(ev.keyword).ask(FinishScan(Instant.now()))
+//        } yield finish).recoverWith {
+//          case e: Exception => refFor(ev.keyword).ask(ScanFailure(Instant.now(), e.getMessage))
+//        }
+//      }
+//      //ignore other events
+//      case _ => Future.successful(Done)
+//    }
+//  )
 
   def scanLinkedin(keyword: String) = ServiceCall { _ => {
       log.info(s"Scanning Linkedin Profiles with keyword: $keyword")
@@ -260,31 +261,4 @@ case class IxquickQuery(
 
 object IxquickQuery {
   implicit val format: Format[IxquickQuery] = Json.format[IxquickQuery]
-}
-
-
-/**
-  * May move to Utils or ProxyBrowser package
-  *
-  * @param host
-  * @param port
-  * @param protocol
-  * @param principal
-  * @param password
-  * @param ntlmDomain
-  * @param encoding
-  * @param nonProxyHosts
-  */
-case class RndProxyServer(host: String,
-                          port: Int,
-                          protocol: Option[String],
-                          principal: Option[String],
-                          password: Option[String],
-                          ntlmDomain: Option[String],
-                          encoding: Option[String],
-                          nonProxyHosts: Option[Seq[String]]
-                         ) extends WSProxyServer
-
-object RndProxyServer {
-  def apply(proxyServer: ProxyServer): RndProxyServer = RndProxyServer(host = proxyServer.host, port = proxyServer.port, None, None, None, None, None, None)
 }
