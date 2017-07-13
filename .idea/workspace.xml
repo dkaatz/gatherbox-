@@ -2,173 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="69949877-869e-4f9d-a6b2-1d6bbbe96116" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__cglib_cglib_nodep_3_2_4_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_codeborne_phantomjsdriver_1_3_0_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_fasterxml_classmate_1_3_0_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_google_code_gson_gson_2_3_1_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_kafka_broker_2_11_1_3_5_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_kafka_client_2_11_1_3_5_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_scaladsl_kafka_broker_2_11_1_3_5_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_scaladsl_kafka_client_2_11_1_3_5_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__junit_junit_4_12_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__net_java_dev_jna_jna_4_1_0_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__net_java_dev_jna_jna_platform_4_1_0_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_apache_commons_commons_exec_1_3_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_asynchttpclient_async_http_client_netty_utils_2_0_24_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_hamcrest_hamcrest_core_1_3_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_seleniumhq_selenium_selenium_api_3_0_0_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_seleniumhq_selenium_selenium_chrome_driver_3_0_0_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_seleniumhq_selenium_selenium_edge_driver_3_0_0_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_seleniumhq_selenium_selenium_firefox_driver_3_0_0_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_seleniumhq_selenium_selenium_ie_driver_3_0_0_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_seleniumhq_selenium_selenium_java_3_0_0_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_seleniumhq_selenium_selenium_opera_driver_3_0_0_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_seleniumhq_selenium_selenium_remote_driver_3_0_0_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_seleniumhq_selenium_selenium_safari_driver_3_0_0_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_seleniumhq_selenium_selenium_support_3_0_0_jar.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/modules/profile-scanner-api-build.iml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/modules/profile-scanner-impl-build.iml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/profile-scanner-impl/src/main/resources/application.conf" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/profile-scanner-impl/src/main/scala/de/beuth/profile/scanner/impl/ProfileScannerImpl.scala" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_google_guava_guava_16_0_1_jar.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_netty_netty_reactive_streams_1_0_6_jar.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__commons_logging_commons_logging_1_1_1_jar.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__io_netty_netty_buffer_4_0_41_Final_jar.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__io_netty_netty_codec_http_4_0_41_Final_jar.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__io_netty_netty_common_4_0_39_Final_jar.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__io_netty_netty_common_4_0_41_Final_jar.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__io_netty_netty_handler_4_0_39_Final_jar.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__io_netty_netty_transport_4_0_39_Final_jar.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__io_netty_netty_transport_native_epoll_4_0_41_Final_linux_x86_64_jar.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__org_apache_httpcomponents_httpclient_4_0_1_jar.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__org_apache_httpcomponents_httpcore_4_0_1_jar.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__org_scala_lang_modules_scala_xml_2_11_1_0_1_jar.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__org_slf4j_log4j_over_slf4j_1_7_7_jar.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__org_xerial_snappy_snappy_java_1_1_1_7_jar.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/modules/linkedin-scanner-api-build.iml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/modules/linkedin-scanner-impl-build.iml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/LinkedinScannerImpl.scala" afterPath="" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_datastax_cassandra_cassandra_driver_core_3_1_0_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_datastax_cassandra_cassandra_driver_core_3_1_4_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_api_2_11_1_3_1_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_spi_2_11_1_3_5_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_client_2_11_1_3_1_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_client_2_11_1_3_5_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_cluster_core_2_11_1_3_1_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_cluster_core_2_11_1_3_5_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_core_testkit_2_11_1_3_1_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_core_testkit_2_11_1_3_5_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_logback_2_11_1_3_1_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_logback_2_11_1_3_5_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_persistence_cassandra_core_2_11_1_3_1_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_persistence_cassandra_core_2_11_1_3_5_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_persistence_core_2_11_1_3_1_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_persistence_core_2_11_1_3_5_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_scaladsl_api_2_11_1_3_1_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_scaladsl_api_2_11_1_3_5_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_scaladsl_broker_2_11_1_3_1_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_scaladsl_broker_2_11_1_3_5_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_scaladsl_client_2_11_1_3_1_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_scaladsl_client_2_11_1_3_5_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_scaladsl_cluster_2_11_1_3_1_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_scaladsl_cluster_2_11_1_3_5_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_scaladsl_dev_mode_2_11_1_3_1_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_scaladsl_dev_mode_2_11_1_3_5_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_scaladsl_persistence_2_11_1_3_1_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_scaladsl_persistence_2_11_1_3_5_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_scaladsl_persistence_cassandra_2_11_1_3_1_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_scaladsl_persistence_cassandra_2_11_1_3_5_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_scaladsl_play_json_2_11_1_3_1_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_scaladsl_play_json_2_11_1_3_5_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_scaladsl_server_2_11_1_3_1_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_scaladsl_server_2_11_1_3_5_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_scaladsl_testkit_2_11_1_3_1_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_scaladsl_testkit_2_11_1_3_5_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_server_2_11_1_3_1_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_server_2_11_1_3_5_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_spi_2_11_1_3_1_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lightbend_lagom_lagom_api_2_11_1_3_5_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_lmax_disruptor_3_0_1_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_lmax_disruptor_3_3_6_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_actor_2_11_2_4_17_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_slf4j_2_11_2_4_19_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_cluster_2_11_2_4_17_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_cluster_2_11_2_4_19_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_cluster_sharding_2_11_2_4_17_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_cluster_sharding_2_11_2_4_19_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_cluster_tools_2_11_2_4_17_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_cluster_tools_2_11_2_4_19_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_persistence_2_11_2_4_17_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_persistence_2_11_2_4_19_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_persistence_cassandra_2_11_0_22_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_persistence_cassandra_2_11_0_29_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_persistence_query_experimental_2_11_2_4_17_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_persistence_query_experimental_2_11_2_4_19_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_protobuf_2_11_2_4_17_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_protobuf_2_11_2_4_19_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_remote_2_11_2_4_17_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_remote_2_11_2_4_19_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_slf4j_2_11_2_4_17_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_actor_2_11_2_4_19_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_stream_2_11_2_4_17_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_stream_2_11_2_4_19_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_stream_testkit_2_11_2_4_17_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_stream_testkit_2_11_2_4_19_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_testkit_2_11_2_4_17_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_akka_akka_testkit_2_11_2_4_19_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_config_1_3_0_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_config_1_3_1_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_build_link_2_5_10_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_build_link_2_5_13_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_play_2_11_2_5_10_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_play_2_11_2_5_13_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_play_datacommons_2_11_2_5_10_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_play_datacommons_2_11_2_5_13_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_play_exceptions_2_5_10_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_play_exceptions_2_5_13_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_play_functional_2_11_2_5_10_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_play_functional_2_11_2_5_13_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_play_iteratees_2_11_2_5_10_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_play_iteratees_2_11_2_5_13_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_play_json_2_11_2_5_10_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_play_json_2_11_2_5_13_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_play_netty_server_2_11_2_5_10_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_play_netty_server_2_11_2_5_13_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_play_netty_utils_2_5_10_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_play_server_2_11_2_5_13_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_play_server_2_11_2_5_10_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_play_netty_utils_2_5_13_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_play_streams_2_11_2_5_10_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_play_streams_2_11_2_5_13_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_play_ws_2_11_2_5_10_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_typesafe_play_play_ws_2_11_2_5_13_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__io_aeron_aeron_client_1_1_0_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__io_aeron_aeron_client_1_2_5_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__io_aeron_aeron_driver_1_1_0_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__io_aeron_aeron_driver_1_2_5_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__io_netty_netty_buffer_4_0_39_Final_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__io_netty_netty_buffer_4_0_42_Final_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__io_netty_netty_codec_4_0_39_Final_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__io_netty_netty_common_4_0_42_Final_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__io_netty_netty_codec_4_0_41_Final_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__io_netty_netty_codec_4_0_42_Final_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__io_netty_netty_codec_http_4_0_39_Final_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__io_netty_netty_codec_http_4_0_42_Final_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__io_netty_netty_handler_4_0_41_Final_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__io_netty_netty_handler_4_0_42_Final_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__io_netty_netty_transport_4_0_41_Final_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__io_netty_netty_transport_4_0_42_Final_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__io_netty_netty_transport_native_epoll_4_0_39_Final_linux_x86_64_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__io_netty_netty_transport_native_epoll_4_0_42_Final_linux_x86_64_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__javax_validation_validation_api_1_0_0_GA_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__javax_validation_validation_api_1_1_0_Final_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__junit_junit_4_8_1_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__junit_junit_4_11_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__org_agrona_agrona_0_9_2_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_agrona_agrona_0_9_5_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__org_apache_httpcomponents_httpclient_4_2_5_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_apache_httpcomponents_httpclient_4_5_2_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__org_apache_httpcomponents_httpcore_4_2_4_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_apache_httpcomponents_httpcore_4_4_4_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__org_asynchttpclient_async_http_client_2_0_11_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_asynchttpclient_async_http_client_2_0_24_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__org_asynchttpclient_netty_codec_dns_2_0_11_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_asynchttpclient_netty_codec_dns_2_0_24_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__org_asynchttpclient_netty_resolver_2_0_11_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_asynchttpclient_netty_resolver_2_0_24_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__org_asynchttpclient_netty_resolver_dns_2_0_11_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_asynchttpclient_netty_resolver_dns_2_0_24_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__org_hibernate_hibernate_validator_4_3_0_Final_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_hibernate_hibernate_validator_5_2_4_Final_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__org_javassist_javassist_3_20_0_GA_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_javassist_javassist_3_21_0_GA_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__org_jboss_logging_jboss_logging_3_1_0_CR2_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_jboss_logging_jboss_logging_3_3_0_Final_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__org_yaml_snakeyaml_1_11_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__org_yaml_snakeyaml_1_16_jar.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/linkedin-scanner-api/linkedin-scanner-api.iml" afterPath="$PROJECT_DIR$/profile-scanner-api/profile-scanner-api.iml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/linkedin-scanner-api/src/main/scala/de/beuth/linkedin/scanner/api/LinkedinScannerService.scala" afterPath="$PROJECT_DIR$/profile-scanner-api/src/main/scala/de/beuth/profile/scanner/api/ProfileScannerService.scala" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/LinkedinScannerApplication.scala" afterPath="$PROJECT_DIR$/profile-scanner-impl/src/main/scala/de/beuth/profile/scanner/impl/ProfileScannerApplication.scala" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/LinkedinScannerEntity.scala" afterPath="$PROJECT_DIR$/profile-scanner-impl/src/main/scala/de/beuth/profile/scanner/impl/ProfileScannerEntity.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/compiler.xml" afterPath="$PROJECT_DIR$/.idea/compiler.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/libraries/SBT__com_google_guava_guava_19_0_jar.xml" afterPath="$PROJECT_DIR$/.idea/libraries/SBT__com_google_guava_guava_19_0_jar.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules.xml" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules/censys-api-build.iml" afterPath="$PROJECT_DIR$/.idea/modules/censys-api-build.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules/censys-api.iml" afterPath="$PROJECT_DIR$/.idea/modules/censys-api.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules/censys-scanner-api-build.iml" afterPath="$PROJECT_DIR$/.idea/modules/censys-scanner-api-build.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules/censys-scanner-impl-build.iml" afterPath="$PROJECT_DIR$/.idea/modules/censys-scanner-impl-build.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules/gatherbox-api-build.iml" afterPath="$PROJECT_DIR$/.idea/modules/gatherbox-api-build.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules/gatherbox-api.iml" afterPath="$PROJECT_DIR$/.idea/modules/gatherbox-api.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules/gatherbox-build.iml" afterPath="$PROJECT_DIR$/.idea/modules/gatherbox-build.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules/gatherbox-impl-build.iml" afterPath="$PROJECT_DIR$/.idea/modules/gatherbox-impl-build.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules/gatherbox-impl.iml" afterPath="$PROJECT_DIR$/.idea/modules/gatherbox-impl.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules/gatherbox-stream-api-build.iml" afterPath="$PROJECT_DIR$/.idea/modules/gatherbox-stream-api-build.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules/gatherbox-stream-api.iml" afterPath="$PROJECT_DIR$/.idea/modules/gatherbox-stream-api.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules/gatherbox-stream-impl-build.iml" afterPath="$PROJECT_DIR$/.idea/modules/gatherbox-stream-impl-build.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules/gatherbox-stream-impl.iml" afterPath="$PROJECT_DIR$/.idea/modules/gatherbox-stream-impl.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules/ixquick-scanner-api-build.iml" afterPath="$PROJECT_DIR$/.idea/modules/ixquick-scanner-api-build.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules/ixquick-scanner-impl-build.iml" afterPath="$PROJECT_DIR$/.idea/modules/ixquick-scanner-impl-build.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules/proxybrowser-api-build.iml" afterPath="$PROJECT_DIR$/.idea/modules/proxybrowser-api-build.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules/proxybrowser-impl-build.iml" afterPath="$PROJECT_DIR$/.idea/modules/proxybrowser-impl-build.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules/scan-api-scan-api-build.iml" afterPath="$PROJECT_DIR$/.idea/modules/scan-api-scan-api-build.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules/scan-api.iml" afterPath="$PROJECT_DIR$/.idea/modules/scan-api.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules/scan-impl-scan-impl-build.iml" afterPath="$PROJECT_DIR$/.idea/modules/scan-impl-scan-impl-build.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules/scan-impl.iml" afterPath="$PROJECT_DIR$/.idea/modules/scan-impl.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules/scanner-commons-build.iml" afterPath="$PROJECT_DIR$/.idea/modules/scanner-commons-build.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules/utils-build.iml" afterPath="$PROJECT_DIR$/.idea/modules/utils-build.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/play2_project_settings.xml" afterPath="$PROJECT_DIR$/.idea/play2_project_settings.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/sbt.xml" afterPath="$PROJECT_DIR$/.idea/sbt.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/scala_compiler.xml" afterPath="$PROJECT_DIR$/.idea/scala_compiler.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build.sbt" afterPath="$PROJECT_DIR$/build.sbt" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/censys-scanner-api/src/main/scala/de/beuth/censys/scanner/api/CensysScannerService.scala" afterPath="$PROJECT_DIR$/censys-scanner-api/src/main/scala/de/beuth/censys/scanner/api/CensysScannerService.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/censys-scanner-impl/censys-scanner-impl.iml" afterPath="$PROJECT_DIR$/censys-scanner-impl/censys-scanner-impl.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/censys-scanner-impl/src/main/resources/application.conf" afterPath="$PROJECT_DIR$/censys-scanner-impl/src/main/resources/application.conf" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ixquick-scanner-api/ixquick-scanner-api.iml" afterPath="$PROJECT_DIR$/ixquick-scanner-api/ixquick-scanner-api.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ixquick-scanner-api/src/main/scala/de/beuth/ixquick/scanner/api/IxquickScannerService.scala" afterPath="$PROJECT_DIR$/ixquick-scanner-api/src/main/scala/de/beuth/ixquick/scanner/api/IxquickScannerService.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ixquick-scanner-impl/ixquick-scanner-impl.iml" afterPath="$PROJECT_DIR$/ixquick-scanner-impl/ixquick-scanner-impl.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ixquick-scanner-impl/src/main/resources/application.conf" afterPath="$PROJECT_DIR$/ixquick-scanner-impl/src/main/resources/application.conf" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ixquick-scanner-impl/src/main/scala/de/beuth/ixquick/scanner/impl/IxquickScannerEntity.scala" afterPath="$PROJECT_DIR$/ixquick-scanner-impl/src/main/scala/de/beuth/ixquick/scanner/impl/IxquickScannerEntity.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ixquick-scanner-impl/src/main/scala/de/beuth/ixquick/scanner/impl/IxquickScannerImpl.scala" afterPath="$PROJECT_DIR$/ixquick-scanner-impl/src/main/scala/de/beuth/ixquick/scanner/impl/IxquickScannerImpl.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project/plugins.sbt" afterPath="$PROJECT_DIR$/project/plugins.sbt" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/proxybrowser-api/proxybrowser-api.iml" afterPath="$PROJECT_DIR$/proxybrowser-api/proxybrowser-api.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/proxybrowser-api/src/main/scala/de/beuth/proxybrowser/api/ProxyBrowserService.scala" afterPath="$PROJECT_DIR$/proxybrowser-api/src/main/scala/de/beuth/proxybrowser/api/ProxyBrowserService.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/proxybrowser-impl/proxybrowser-impl.iml" afterPath="$PROJECT_DIR$/proxybrowser-impl/proxybrowser-impl.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/proxybrowser-impl/src/main/resources/application.conf" afterPath="$PROJECT_DIR$/proxybrowser-impl/src/main/resources/application.conf" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/scan-impl/src/main/resources/application.conf" afterPath="$PROJECT_DIR$/scan-impl/src/main/resources/application.conf" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/scanner-commons/scanner-commons.iml" afterPath="$PROJECT_DIR$/scanner-commons/scanner-commons.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/utils/utils.iml" afterPath="$PROJECT_DIR$/utils/utils.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/profile-scanner-api/src/main/scala/de/beuth/profile/scanner/api/ProfileScannerService.scala" afterPath="$PROJECT_DIR$/profile-scanner-api/src/main/scala/de/beuth/profile/scanner/api/ProfileScannerService.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/profile-scanner-impl/src/main/scala/de/beuth/profile/scanner/impl/ProfileScannerEntity.scala" afterPath="$PROJECT_DIR$/profile-scanner-impl/src/main/scala/de/beuth/profile/scanner/impl/ProfileScannerEntity.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/profile-scanner-impl/src/main/scala/de/beuth/profile/scanner/impl/ProfileScannerImpl.scala" afterPath="$PROJECT_DIR$/profile-scanner-impl/src/main/scala/de/beuth/profile/scanner/impl/ProfileScannerImpl.scala" />
     </list>
     <ignored path="$PROJECT_DIR$/target/" />
     <ignored path="$PROJECT_DIR$/gatherbox-api/target/" />
@@ -283,11 +120,9 @@
       <file leaf-file-name="ProfileScannerService.scala" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/profile-scanner-api/src/main/scala/de/beuth/profile/scanner/api/ProfileScannerService.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="360">
-              <caret line="28" column="29" lean-forward="false" selection-start-line="28" selection-start-column="29" selection-end-line="28" selection-end-column="29" />
-              <folding>
-                <element signature="e#38#54#0" expanded="false" />
-              </folding>
+            <state relative-caret-position="211">
+              <caret line="25" column="0" lean-forward="true" selection-start-line="25" selection-start-column="0" selection-end-line="25" selection-end-column="0" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -304,21 +139,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ProfileScannerEntity.scala" pinned="false" current-in-tab="false">
+      <file leaf-file-name="ProfileScannerEntity.scala" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/profile-scanner-impl/src/main/scala/de/beuth/profile/scanner/impl/ProfileScannerEntity.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1335">
-              <caret line="97" column="5" lean-forward="false" selection-start-line="97" selection-start-column="5" selection-end-line="97" selection-end-column="5" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ProfileScannerImpl.scala" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/profile-scanner-impl/src/main/scala/de/beuth/profile/scanner/impl/ProfileScannerImpl.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-37">
-              <caret line="102" column="18" lean-forward="true" selection-start-line="102" selection-start-column="18" selection-end-line="102" selection-end-column="18" />
+            <state relative-caret-position="-1438">
+              <caret line="15" column="4" lean-forward="true" selection-start-line="15" selection-start-column="4" selection-end-line="15" selection-end-column="4" />
               <folding>
                 <element signature="e#39#63#0" expanded="true" />
               </folding>
@@ -326,76 +151,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="JsonFormats.scala" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/utils/src/main/scala/de/beuth/utils/JsonFormats.scala">
+      <file leaf-file-name="Instant.java" pinned="false" current-in-tab="false">
+        <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home/src.zip!/java/time/Instant.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="165">
-              <caret line="16" column="41" lean-forward="false" selection-start-line="16" selection-start-column="41" selection-end-line="16" selection-end-column="41" />
-              <folding>
-                <element signature="e#24#49#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="TraversableLike.scala" pinned="false" current-in-tab="false">
-        <entry file="jar://$USER_HOME$/.ivy2/cache/org.scala-lang/scala-library/srcs/scala-library-2.11.8-sources.jar!/scala/collection/TraversableLike.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3450">
-              <caret line="241" column="12" lean-forward="false" selection-start-line="241" selection-start-column="12" selection-end-line="241" selection-end-column="12" />
-              <folding>
-                <element signature="n#!!doc" expanded="false" />
-                <element signature="e#560#576#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="application.conf" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/profile-scanner-impl/src/main/resources/application.conf">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="120">
-              <caret line="8" column="0" lean-forward="false" selection-start-line="8" selection-start-column="0" selection-end-line="10" selection-end-column="66" />
+            <state relative-caret-position="336">
+              <caret line="857" column="23" lean-forward="true" selection-start-line="857" selection-start-column="23" selection-end-line="857" selection-end-column="23" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="application.conf" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/proxybrowser-impl/src/main/resources/application.conf">
+      <file leaf-file-name="ChronoUnit.java" pinned="false" current-in-tab="false">
+        <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home/src.zip!/java/time/temporal/ChronoUnit.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="105">
-              <caret line="7" column="0" lean-forward="false" selection-start-line="7" selection-start-column="0" selection-end-line="9" selection-end-column="71" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="application.conf" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/scan-impl/src/main/resources/application.conf">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="60">
-              <caret line="4" column="53" lean-forward="false" selection-start-line="4" selection-start-column="53" selection-end-line="4" selection-end-column="53" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="application.conf" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/censys-scanner-impl/src/main/resources/application.conf">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="135">
-              <caret line="9" column="55" lean-forward="false" selection-start-line="9" selection-start-column="55" selection-end-line="9" selection-end-column="55" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="application.conf" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ixquick-scanner-impl/src/main/resources/application.conf">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="105">
-              <caret line="7" column="0" lean-forward="false" selection-start-line="7" selection-start-column="0" selection-end-line="9" selection-end-column="66" />
+            <state relative-caret-position="134">
+              <caret line="76" column="22" lean-forward="false" selection-start-line="76" selection-start-column="12" selection-end-line="76" selection-end-column="22" />
               <folding />
             </state>
           </provider>
@@ -404,11 +174,19 @@
       <file leaf-file-name="IxquickScannerEntity.scala" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ixquick-scanner-impl/src/main/scala/de/beuth/ixquick/scanner/impl/IxquickScannerEntity.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1245">
-              <caret line="92" column="94" lean-forward="false" selection-start-line="92" selection-start-column="94" selection-end-line="92" selection-end-column="94" />
-              <folding>
-                <element signature="e#39#63#0" expanded="false" />
-              </folding>
+            <state relative-caret-position="316">
+              <caret line="82" column="0" lean-forward="true" selection-start-line="82" selection-start-column="0" selection-end-line="82" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ProfileScannerImpl.scala" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/profile-scanner-impl/src/main/scala/de/beuth/profile/scanner/impl/ProfileScannerImpl.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="3055">
+              <caret line="316" column="30" lean-forward="true" selection-start-line="316" selection-start-column="30" selection-end-line="316" selection-end-column="30" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -416,8 +194,8 @@
       <file leaf-file-name="ScanDefaultTopics.scala" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/scanner-commons/src/main/scala/de/beuth/scanner/commons/ScanDefaultTopics.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="465">
-              <caret line="34" column="0" lean-forward="false" selection-start-line="34" selection-start-column="0" selection-end-line="34" selection-end-column="24" />
+            <state relative-caret-position="660">
+              <caret line="47" column="35" lean-forward="false" selection-start-line="47" selection-start-column="35" selection-end-line="47" selection-end-column="35" />
               <folding>
                 <element signature="e#34#58#0" expanded="false" />
               </folding>
@@ -436,15 +214,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>lagomkaka</find>
-      <find>debug</find>
-      <find>.debug</find>
-      <find>enablePlugins</find>
-      <find>Linkedin</find>
-      <find>type</find>
-      <find>elementList</find>
-      <find>ProfileLink</find>
-      <find>is-group-synchronized</find>
       <find>/</find>
       <find>/guii</find>
       <find>/gui</find>
@@ -466,6 +235,15 @@
       <find>linkedin</find>
       <find>split</find>
       <find>extra</find>
+      <find>getOrElse</find>
+      <find>ProfileScrapingEx</find>
+      <find>Profile</find>
+      <find>Profile(</find>
+      <find>LinkedinPr</find>
+      <find>XingProfileLink</find>
+      <find>timestamp</find>
+      <find>Exception</find>
+      <find>UpdateProfile</find>
     </findStrings>
     <replaceStrings>
       <replace>(&quot;$1&quot;,$2)</replace>
@@ -535,15 +313,15 @@
         <option value="$PROJECT_DIR$/ixquick-scanner-impl/src/main/scala/de/beuth/ixquick/scanner/impl/IxquickScannerEntity.scala" />
         <option value="$PROJECT_DIR$/ixquick-scanner-api/src/main/scala/de/beuth/ixquick/scanner/api/IxquickScannerService.scala" />
         <option value="$PROJECT_DIR$/profile-scanner-impl/src/main/resources/application.conf" />
-        <option value="$PROJECT_DIR$/profile-scanner-api/src/main/scala/de/beuth/profile/scanner/api/ProfileScannerService.scala" />
         <option value="$PROJECT_DIR$/proxybrowser-impl/src/main/resources/application.conf" />
         <option value="$PROJECT_DIR$/censys-scanner-impl/src/main/resources/application.conf" />
         <option value="$PROJECT_DIR$/scan-impl/src/main/resources/application.conf" />
         <option value="$PROJECT_DIR$/profile-scanner-impl/src/main/scala/de/beuth/profile/scanner/impl/ProfileScannerApplication.scala" />
         <option value="$PROJECT_DIR$/build.sbt" />
         <option value="$PROJECT_DIR$/profile-scanner-impl/src/main/resources/scriptFile.scala" />
-        <option value="$PROJECT_DIR$/profile-scanner-impl/src/main/scala/de/beuth/profile/scanner/impl/ProfileScannerEntity.scala" />
+        <option value="$PROJECT_DIR$/profile-scanner-api/src/main/scala/de/beuth/profile/scanner/api/ProfileScannerService.scala" />
         <option value="$PROJECT_DIR$/profile-scanner-impl/src/main/scala/de/beuth/profile/scanner/impl/ProfileScannerImpl.scala" />
+        <option value="$PROJECT_DIR$/profile-scanner-impl/src/main/scala/de/beuth/profile/scanner/impl/ProfileScannerEntity.scala" />
       </list>
     </option>
   </component>
@@ -591,8 +369,8 @@
     </navigator>
     <panes>
       <pane id="Scope" />
-      <pane id="Scratches" />
       <pane id="PackagesPane" />
+      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -1714,7 +1492,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="0" width="1680" height="1050" extended-state="0" />
+    <frame x="0" y="0" width="1680" height="1050" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33979592" sideWeight="0.495116" order="6" side_tool="false" content_ui="tabs" />
@@ -1724,22 +1502,22 @@
       <window_info id="Palette&#9;" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Image Layers" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32857144" sideWeight="0.56105006" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.4408163" sideWeight="0.56105006" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Properties" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32959184" sideWeight="0.495116" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15750916" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21550672" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Bean Validation" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24969475" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.21001221" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Theme Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -1765,7 +1543,8 @@
     <MESSAGE value="Added subscription to ScanService scanStarted Event" />
     <MESSAGE value="Refactored ScanstatusEvents for generalized MessageBroking of ScanStatusEvent messages" />
     <MESSAGE value="Added LinkedinScanner service ( base ) + minor bugfixes" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added LinkedinScanner service ( base ) + minor bugfixes" />
+    <MESSAGE value="Added LinkedinScanning with selenium" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added LinkedinScanning with selenium" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1785,29 +1564,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/LinkedinScannerService.scala" />
-    <entry file="jar://$USER_HOME$/.ivy2/cache/org.scala-lang/scala-library/srcs/scala-library-2.11.8-sources.jar!/scala/collection/generic/GenericCompanion.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="405">
-          <caret line="44" column="6" lean-forward="false" selection-start-line="44" selection-start-column="6" selection-end-line="44" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/proxybrowser-impl/src/main/scala/de/beuth/proxybrowser/impl/ProxyBrowserApplication.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="480">
-          <caret line="39" column="59" lean-forward="false" selection-start-line="39" selection-start-column="59" selection-end-line="39" selection-end-column="59" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/resources/application.conf" />
-    <entry file="file://$PROJECT_DIR$/proxybrowser-api/src/main/scala/de/beuth/proxybrowser/api/ProxyBrowserService.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="461">
-          <caret line="45" column="19" lean-forward="true" selection-start-line="45" selection-start-column="19" selection-end-line="45" selection-end-column="19" />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$USER_HOME$/.ivy2/cache/com.lightbend.lagom/lagom-scaladsl-persistence_2.11/srcs/lagom-scaladsl-persistence_2.11-1.3.1-sources.jar!/com/lightbend/lagom/scaladsl/persistence/PersistentEntity.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="213">
@@ -1918,31 +1674,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ixquick-scanner-impl/src/main/scala/de/beuth/ixquick/scanner/impl/IxquickScannerEntity.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1245">
-          <caret line="92" column="94" lean-forward="false" selection-start-line="92" selection-start-column="94" selection-end-line="92" selection-end-column="94" />
-          <folding>
-            <element signature="e#39#63#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/scanner-commons/src/main/scala/de/beuth/scanner/commons/ScanDefaultTopics.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="465">
-          <caret line="34" column="0" lean-forward="false" selection-start-line="34" selection-start-column="0" selection-end-line="34" selection-end-column="24" />
-          <folding>
-            <element signature="e#34#58#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ixquick-scanner-impl/src/main/resources/application.conf">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="105">
           <caret line="7" column="0" lean-forward="false" selection-start-line="7" selection-start-column="0" selection-end-line="9" selection-end-column="66" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1950,7 +1685,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="120">
           <caret line="8" column="0" lean-forward="false" selection-start-line="8" selection-start-column="0" selection-end-line="10" selection-end-column="66" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1958,15 +1692,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="135">
           <caret line="9" column="55" lean-forward="false" selection-start-line="9" selection-start-column="55" selection-end-line="9" selection-end-column="55" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/proxybrowser-impl/src/main/resources/application.conf">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
-          <caret line="7" column="0" lean-forward="false" selection-start-line="7" selection-start-column="0" selection-end-line="9" selection-end-column="71" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1974,7 +1699,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="60">
           <caret line="4" column="53" lean-forward="false" selection-start-line="4" selection-start-column="53" selection-end-line="4" selection-end-column="53" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2065,17 +1789,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar://$USER_HOME$/.ivy2/cache/org.scala-lang/scala-library/srcs/scala-library-2.11.8-sources.jar!/scala/collection/TraversableLike.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3450">
-          <caret line="241" column="12" lean-forward="false" selection-start-line="241" selection-start-column="12" selection-end-line="241" selection-end-column="12" />
-          <folding>
-            <element signature="n#!!doc" expanded="false" />
-            <element signature="e#560#576#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$USER_HOME$/.ivy2/cache/org.seleniumhq.selenium/selenium-support/jars/selenium-support-3.0.0.jar!/org/openqa/selenium/support/ui/Sleeper.class">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="135">
@@ -2098,13 +1811,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/utils/src/main/scala/de/beuth/utils/JsonFormats.scala">
+    <entry file="jar://$USER_HOME$/.ivy2/cache/org.scala-lang/scala-library/srcs/scala-library-2.11.8-sources.jar!/scala/collection/Parallelizable.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="16" column="41" lean-forward="false" selection-start-line="16" selection-start-column="41" selection-end-line="16" selection-end-column="41" />
-          <folding>
-            <element signature="e#24#49#0" expanded="false" />
-          </folding>
+        <state relative-caret-position="246">
+          <caret line="35" column="64" lean-forward="true" selection-start-line="35" selection-start-column="7" selection-end-line="35" selection-end-column="64" />
         </state>
       </provider>
     </entry>
@@ -2118,36 +1828,104 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/profile-scanner-impl/src/main/scala/de/beuth/profile/scanner/impl/ProfileScannerEntity.scala">
+    <entry file="jar://$USER_HOME$/.ivy2/cache/org.scala-lang/scala-library/srcs/scala-library-2.11.8-sources.jar!/scala/collection/TraversableLike.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1335">
-          <caret line="97" column="5" lean-forward="false" selection-start-line="97" selection-start-column="5" selection-end-line="97" selection-end-column="5" />
+        <state relative-caret-position="15">
+          <caret line="241" column="12" lean-forward="false" selection-start-line="241" selection-start-column="12" selection-end-line="241" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/proxybrowser-impl/src/main/resources/application.conf">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="7" column="0" lean-forward="false" selection-start-line="7" selection-start-column="0" selection-end-line="9" selection-end-column="71" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/src/main/scala/de/beuth/utils/JsonFormats.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="16" column="41" lean-forward="false" selection-start-line="16" selection-start-column="41" selection-end-line="16" selection-end-column="41" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home/src.zip!/java/lang/Exception.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="330">
+          <caret line="64" column="35" lean-forward="false" selection-start-line="64" selection-start-column="28" selection-end-line="64" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.11.8.jar!/scala/package.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="2" column="32" lean-forward="true" selection-start-line="2" selection-start-column="32" selection-end-line="2" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scanner-commons/src/main/scala/de/beuth/scanner/commons/ScanDefaultTopics.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="660">
+          <caret line="47" column="35" lean-forward="false" selection-start-line="47" selection-start-column="35" selection-end-line="47" selection-end-column="35" />
+          <folding>
+            <element signature="e#34#58#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/profile-scanner-api/src/main/scala/de/beuth/profile/scanner/api/ProfileScannerService.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="360">
-          <caret line="28" column="29" lean-forward="false" selection-start-line="28" selection-start-column="29" selection-end-line="28" selection-end-column="29" />
-          <folding>
-            <element signature="e#38#54#0" expanded="false" />
-          </folding>
+        <state relative-caret-position="211">
+          <caret line="25" column="0" lean-forward="true" selection-start-line="25" selection-start-column="0" selection-end-line="25" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="jar://$USER_HOME$/.ivy2/cache/org.scala-lang/scala-library/srcs/scala-library-2.11.8-sources.jar!/scala/collection/Parallelizable.scala">
+    <entry file="file://$PROJECT_DIR$/ixquick-scanner-impl/src/main/scala/de/beuth/ixquick/scanner/impl/IxquickScannerEntity.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="246">
-          <caret line="35" column="64" lean-forward="true" selection-start-line="35" selection-start-column="7" selection-end-line="35" selection-end-column="64" />
+        <state relative-caret-position="316">
+          <caret line="82" column="0" lean-forward="true" selection-start-line="82" selection-start-column="0" selection-end-line="82" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home/src.zip!/java/time/Instant.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="336">
+          <caret line="857" column="23" lean-forward="true" selection-start-line="857" selection-start-column="23" selection-end-line="857" selection-end-column="23" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home/src.zip!/java/time/temporal/ChronoUnit.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="134">
+          <caret line="76" column="22" lean-forward="false" selection-start-line="76" selection-start-column="12" selection-end-line="76" selection-end-column="22" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/profile-scanner-impl/src/main/scala/de/beuth/profile/scanner/impl/ProfileScannerImpl.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-37">
-          <caret line="102" column="18" lean-forward="true" selection-start-line="102" selection-start-column="18" selection-end-line="102" selection-end-column="18" />
+        <state relative-caret-position="3055">
+          <caret line="316" column="30" lean-forward="true" selection-start-line="316" selection-start-column="30" selection-end-line="316" selection-end-column="30" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.ivy2/cache/org.scala-lang/scala-library/srcs/scala-library-2.11.8-sources.jar!/scala/collection/GenSeqLike.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="173">
+          <caret line="113" column="6" lean-forward="false" selection-start-line="113" selection-start-column="6" selection-end-line="113" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/profile-scanner-impl/src/main/scala/de/beuth/profile/scanner/impl/ProfileScannerEntity.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1438">
+          <caret line="15" column="4" lean-forward="true" selection-start-line="15" selection-start-column="4" selection-end-line="15" selection-end-column="4" />
           <folding>
             <element signature="e#39#63#0" expanded="true" />
           </folding>

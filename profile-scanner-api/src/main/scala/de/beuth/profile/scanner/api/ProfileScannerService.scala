@@ -17,16 +17,16 @@ trait ProfileScannerService extends Service {
     * @todo docu
     * @return
     */
-  def scanProfile(): ServiceCall[ProfileUrl, Done]
+  def scanXingProfile(keyword: String): ServiceCall[ProfileUrl, Done]
 
-  def scanLinkedinProfile(): ServiceCall[ProfileUrl, Done]
+  def scanLinkedinProfile(keyword: String): ServiceCall[ProfileUrl, Done]
 
   override def descriptor: Descriptor = {
     import Service._
 
     named("profile-scanner").withCalls(
-      restCall(Method.POST, "/api/scanner/profile", scanProfile),
-      restCall(Method.POST, "/api/scanner/profile/linkedin", scanLinkedinProfile)
+      restCall(Method.POST, "/api/scanner/profile/xing/:keyword", scanXingProfile _),
+      restCall(Method.POST, "/api/scanner/profile/linkedin/:keyword", scanLinkedinProfile _)
     ).withTopics(
       //topic(ProfileScannerService.TOPIC_STATUS, statusTopic)
     ).withAutoAcl(true)

@@ -45,18 +45,22 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
 
   private final val log: Logger = LoggerFactory.getLogger(classOf[ProfileScannerImpl])
 
-  def scanProfile = ServiceCall { url: ProfileUrl => {
+  def scanXingProfile(keyword: String) = ServiceCall { url: ProfileUrl => {
       for {
         proxy <- proxyService.getAvailableProxy().invoke()
         response <- proxiedGet(url.url, proxy)
-        data <- processXingProfile(url.url, response)
+        data <- processXingProfile(url.url, response, keyword)
         free <- proxyService.free().invoke(proxy)
-        done <- Future.successful(Done)
+        done <- {
+          log.info(Json.toJson(data).toString())
+          Future.successful(Done)
+        }
       } yield done
     }
   }
 
-  override def scanLinkedinProfile(): ServiceCall[ProfileUrl, Done] = ServiceCall { url: ProfileUrl => {
+  override def scanLinkedinProfile(keyword: String): ServiceCall[ProfileUrl, Done] = ServiceCall { url: ProfileUrl => {
+    //@todo replace with PhantomJS, add Proxy, add custom  Headers to fake browsers
     System.setProperty("webdriver.gecko.driver", "/opt/geckodriver")
     val driver = new FirefoxDriver()
     val profileUrl = url.url
@@ -67,23 +71,27 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
 
     driver.get(s"https://translate.google.de/translate?hl=de&sl=en&u=$profileUrl&prev=search")
     Future {
+      //try to get "TopCard" with timeout and polling configured above
       wait.until[WebElement](toGoogleJavaFunction[WebDriver, WebElement](
         //Switching to I-Frame context of Linkedin Page
         (driver: WebDriver) => driver.switchTo().frame(0).findElement(By.id("topcard"))
       )
       )
+
     } flatMap {
+      //when the topcard is ther we are sure that the other cards are also there if they exist so we extract them concurrently
       case topCard: WebElement => {
         val nameF = extractOrNone(topCard.findElement(By.id("name")).getText)
-        val jobTitleF = extractOrNone(topCard.findElement(By.className("headline")).getText)
-        val localityF = extractOrNone(topCard.findElement(By.className("locality")).getAttribute("textContent"))
+        //val jobTitleF = extractOrNone(topCard.findElement(By.className("headline")).getText)
+        //val localityF = extractOrNone(topCard.findElement(By.className("locality")).getAttribute("textContent"))
         val skillsF = extractOrNone(linkedinSkillsExtractor(driver))
         val expF = linkedinWorkExperienceExtractor(driver)
 
+        //wait for
         for {
           name <- nameF
-          jobTitle <- jobTitleF
-          locality <- localityF
+         // jobTitle <- jobTitleF
+         // locality <- localityF
           skills <- skillsF
           exp <- expF
           profile <- Future {
@@ -93,26 +101,19 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
             val firstAndLastName = name.get.split("\\s+", 2)
             firstAndLastName.foreach(w => log.info(w))
             Profile(
-              firstname = firstAndLastName(0),
-              lastname = firstAndLastName(1),
+              firstname = Some(firstAndLastName(0)),
+              lastname = Some(firstAndLastName(1)),
               updatedAt = Instant.now(),
-//              extra = Map(
-//                "fullName" -> name,
-//                "jobTitle" -> jobTitle,
-//                "locality" -> locality
-//              ),
-              link = LinkedinProfileLink(profileUrl),
+              link = ProfileLink(profileUrl, ProfileLink.PROVIDER_LINKED_IN),
               skills = skills.getOrElse(List()).toSeq,
               exp = exp.toSeq
             )
           }
-          log <- {
-
+          store <- {
             log.info(Json.toJson(profile).toString())
             driver.quit()
             Future.successful(Done)
           }
-          store <- Future.successful(Done)
           //store <- refFor("rocket-internet-se").ask(ScanProfile(Instant.now(), profile))
         } yield store
        }
@@ -242,6 +243,12 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
     }
   }
 
+  /**
+    * Executes a get with a random user agent via a given ProxyServer
+    * @param url
+    * @param proxy
+    * @return
+    */
   private def proxiedGet(url: String, proxy: ProxyServer): Future[WSResponse] = {
     val request = wsClient.url(url)
       .withProxyServer(RndProxyServer(proxy))
@@ -260,9 +267,15 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
     request.get()
   }
 
-  private def processXingProfile(url: String, response: WSResponse): Future[Profile] = {
+  /**
+    * Extracts data from Xing Profile
+    * @param url
+    * @param response
+    * @return
+    */
+  private def processXingProfile(url: String, response: WSResponse, keyword: String): Future[Profile] = {
     if(!response.status.equals(200)) {
-      throw ProfileScrapingException("Unable to fetch profile")
+      throw ProfileScrapingException("Unable to fetch profile. Unexpected Response code: " + response.status)
     }
     val browser = JsoupBrowser().parseString(response.body);
     val namePositionCompany = browser >> element("head > meta[property='og:title']") >> attr("content") split(" - ")
@@ -302,59 +315,14 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
     val firstnameLastname = name.get.split(" ", 2)
 
     Future.successful(Profile(
-      firstname = firstnameLastname(0),
-      lastname = firstnameLastname(1),
+      firstname = Some(firstnameLastname(0)),
+      lastname = Some(firstnameLastname(1)),
       updatedAt = Instant.now(),
-//      extra = Map(
-//        "fullName" -> name,
-//        "jobTitle" -> jobtitle,
-//        "company" -> company
-//      ),
-      link = XingProfileLink(url),
+      link = ProfileLink(url, ProfileLink.PROVIDER_XING),
       skills = haves.toSeq,
       exp = experienceList.toSeq
     ))
   }
 
-
-
-
-//@todo was intendet as profile scrape for linkedin
-//  private def processXingProfile(url: String, response: WSResponse): Future[ProfileProfile] = {
-//
-//    if(response.status.equals(200)) {
-//      val browser = JsoupBrowser().parseString(response.body);
-//      val name = browser >> text("#name")
-//      val test = browser >> elementList("#topcard table.extra-info a")
-//      val links: Map[String, String] = test.map {
-//        case e if e >> attr("data-tracking-control-name") contains("current") => "current" -> (e >> text)
-//        case e if e >> attr("data-tracking-control-name") contains("past") => "past" -> (e >> text)
-//        case e  => "education" -> (e >> text)
-//      }(collection.breakOut)
-//      log.info(links.toString())
-//    } else {
-//      log.info("Response failure: " + response.status + " - " + response.statusText + " Body: " + response.body)
-//    }
-//
-//    Future.successful(ProfileProfile(url = url,timestamp = Instant.now(), raw = response.body, data = Map()))
-//  }
-//  /**
-//    * Message Broking
-//    */
-//  override def statusTopic(): Topic[ScanStatusEvent] =
-//    TopicProducer.singleStreamWithOffset {
-//      fromOffset =>
-//        registry.eventStream(IxquickScannerEvent.Tag , fromOffset)
-////          .filter {
-////            _.event match {
-////              case x@(_: ScanStarted | _: ScanFinished | _: ScanFailed) => true
-////              case _ => false
-////            }
-//          }.map(ev => (convertStatusEvent(ev.entityId, ev), ev.offset))
-//    }
-//
-//  private def convertStatusEvent(keyword: String, scanEvent: EventStreamElement[IxquickScannerEvent]): ScanStatusEvent = {
-//    ScanStartedEvent(keyword, timestamp)
-//  }
 }
-case class ProfileScrapingException(msg: String) extends Exception
+case class ProfileScrapingException(message: String) extends Exception
