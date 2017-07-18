@@ -3,7 +3,7 @@ package de.beuth.censys.scanner.impl
 import java.time.Instant
 
 import akka.Done
-import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
+import com.lightbend.lagom.scaladsl.persistence.{AggregateEvent, AggregateEventTag, PersistentEntity}
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 import de.beuth.censys.api.{CensysIpv4Result, CensysIpv4SearchResult}
@@ -80,7 +80,13 @@ object UpdateScan {
   implicit val format: Format[UpdateScan] = Json.format
 }
 
-sealed trait CensysScannerEvent
+sealed trait CensysScannerEvent extends AggregateEvent[CensysScannerEvent] {
+  override def aggregateTag: AggregateEventTag[CensysScannerEvent] = CensysScannerEvent.Tag
+}
+
+object CensysScannerEvent {
+  val Tag = AggregateEventTag[CensysScannerEvent]
+}
 
 case class ScanStarted(timestamp: Instant) extends CensysScannerEvent
 object ScanStarted { implicit val format: Format[ScanStarted] = Json.format }

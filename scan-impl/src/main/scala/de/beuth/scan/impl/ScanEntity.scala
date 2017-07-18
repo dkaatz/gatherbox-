@@ -6,137 +6,162 @@ import akka.Done
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEvent, AggregateEventTag, PersistentEntity}
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
+import de.beuth.scan.api.ScannerStatus
 import de.beuth.utils.JsonFormats._
 import play.api.libs.json.{Format, Json}
 
 import scala.collection.immutable.Seq
 
 /**
-  * Created by David on 06.06.17.
+  * ScanEntity is the persiten write side entity for the ScanService and represents the state of a scan by keyword
+  *
+  * Primary Identifier: keyword to scan
   */
 class ScanEntity extends PersistentEntity {
   override type Command = ScanCommand
   override type Event = ScanEvent
   override type State = Scan
 
-  override def initialState: Scan = Scan(None, Seq[Scanner]())
+  override def initialState: Scan = Scan(None , Seq[ScannerStatus]())
 
-  override def behavior: Behavior = {
-    case scan => updateScan
-  }
+  /**
+    * Describes the behavior of the persistent entity:
+    *
+    * StartScan is a valid command when:
+    *   - last scan is finished
+    *   - or it is the first scan
+    *
+    * StartScanner  is a valid command when:
+    *   - a scanner with the given name exists
+    *   - and the scanner is not running
+    *
+    * FinishScanner is a valid command when:
+    *   - a scanner with the given name exists
+    *   - the scanner is not finished yet and got started
+    *
+    * When FinishScanner finishes the last Scanner emit also the ScanFinished Event
+    *
+    * @todo properly implenment scanfailure
+    *
+    *
+    */
+  override def behavior: Behavior = Actions()
+    .onCommand[StartScan, Done] {
 
-  private val getScan = Actions().onReadOnlyCommand[GetScan.type, Scan] {  case (GetScan, ctx, state) => ctx.reply(state) }
+    //scan never run or finished
+    case (StartScan(startedAt), ctx, state) if state.startedAt.isEmpty || state.scanner.filter(_.finished == false).isEmpty =>
+      ctx.thenPersist(ScanStarted(startedAt)){ _ => ctx.reply(Done)}
 
-  private val updateScan = Actions().onCommand[StartScan, Scan] {
-    case (StartScan(startedAt), ctx, state) =>
-      ctx.thenPersist(
-        ScanStarted(startedAt)
+    //scan is still running ( not all expected services finished the scan yet )
+    case (StartScan(startedAt), ctx:ScanEntity.this.CommandContext[Done], state) => {
+      ctx.invalidCommand(s"Scan for $entityId is already running.")
+      ctx.done
+    }
+
+  }.onCommand[StartScanner, Done] {
+
+    //scanner does not exist
+    case (StartScanner(name, timestamp), ctx, state) if state.scanner.filter(_.name == name).isEmpty => {
+      ctx.invalidCommand(s"Scanner <$name> does not exist.")
+      ctx.done
+    }
+
+    //scanner already started and still running
+    case (StartScanner(name, timestamp), ctx, state)
+      if state.scanner.filter(_.name == name)(0).startedAt.isEmpty && state.scanner.filter(_.name == name).filter(_.finished).isEmpty => {
+      ctx.invalidCommand(s"Scanner <$name> can not start twice.")
+      ctx.done
+    }
+
+    //valid startScanner command
+    case (StartScanner(name, timestamp), ctx, state) =>
+      ctx.thenPersist(ScannerStarted(name, timestamp)) { _ => ctx.reply(Done)}
+
+  }.onCommand[FinishScanner, Done] {
+
+    //scanner does not exist
+    case (FinishScanner(name), ctx, state) if  state.scanner.filter(_.name == name).isEmpty =>
+      ctx.invalidCommand(s"Scanner <$name> does not exist.")
+      ctx.done
+
+    //scanner already finsihed
+    case (FinishScanner(name), ctx, state) if state.scanner.filter(_.name == name).filter(_.finished).isEmpty =>
+      ctx.invalidCommand(s"Scanner <$name> can not finish twice.")
+      ctx.done
+
+    //last scanner finished
+    case (FinishScanner(name), ctx, state) if  state.scanner.filter(_.finished).size == state.scanner.filter(_.name == name).filter(_.finished) == 1  =>
+      ctx.thenPersistAll(
+        ScannerFinsihed(name),
+        ScanFinished(Instant.now())
       ) {
-        _ => ctx.reply(state.start(startedAt))
+        case _ => ctx.reply(Done)
       }
-    }.onCommand[RegisterScanner, Scan] {
-      case (RegisterScanner(timestamp, name), ctx, state) =>
-        ctx.thenPersist(
-          ScannerRegistered(timestamp, name)
-        ) {
-          _ => ctx.reply(state.registerScanner(name, timestamp))
-        }
-    }.onCommand[UnregisterScanner, Scan] {
-      case (UnregisterScanner(name), ctx, state) =>
-        ctx.thenPersist(
-          ScannerUnregistered(name)
-        ) {
-          _ => ctx.reply(state.unregisterScanner(name))
-        }
-    }.onCommand[UpdateScanner, Scan] {
-    case (UpdateScanner(name, status), ctx, state) =>
-      ctx.thenPersist(
-        ScannerUpdated(name, status)
-      ) {
-        _ => ctx.reply(state.updateScannerStatus(name, status))
-      }
-    }.onCommand[FailedScan, Done] {
+    //intermediate scanner finished
+    case (FinishScanner(name), ctx, state) =>
+      ctx.thenPersist(ScannerFinsihed(name)) { _ => ctx.reply(Done)}
+
+    //@todo think about ScanFailed -> should break all pending scans and reset the entity to the last successfull scan
+    //      maybe its better to wait for any scanner failed command and break all other scans then
+    //      in any case a failed scan should not block further scan attempts
+  }.onCommand[FailedScan, Done] {
     case (FailedScan(timestamp, errorMsg), ctx, state) =>
       ctx.thenPersist(
         ScanFailed(timestamp, errorMsg)
       ) {
-        _ => Done
+        _ => ctx.reply(Done)
       }
-    }
-    .onEvent {
-      case (ScanStarted(timestamp), scan) => scan.start(timestamp)
-      case (ScannerRegistered(timestamp, name), scan) => scan.registerScanner(name, timestamp)
-      case (ScannerUnregistered(name), scan) => scan.unregisterScanner(name)
-      case (ScannerUpdated(name, status), scan) => scan.updateScannerStatus(name, status)
-      case (ScanFailed(timestamp, errorMsg), scan) => scan
-    }.orElse(getScan)
+  }.onEvent {
+    /**
+      * Evetns that change the state of the entity
+      */
+    case (ScanStarted(timestamp), scan) => scan.startScan(timestamp)
+    case (ScannerFinsihed(name), scan) => scan.finishScanner(name)
+    case (ScannerStarted(name, timestamp), scan) => scan.startScanner(name, timestamp)
+
+    /**
+      * Events that do not change the state, used only for inter process communication
+      */
+    case (ScanFinished(timestamp), scan) => scan
+    case (ScanFailed(timestamp, errorMsg), scan) => scan
+  }.orElse(getScan)
+
+
+  private val getScan = Actions().onReadOnlyCommand[GetScan.type, Scan] {  case (GetScan, ctx, state) => ctx.reply(state) }
 }
 
 /**
+  *
   * The current state held by the persistent entity.
+  * It holds the last time the scanner started and the state of each scanner
+  *
+  * @param startedAt time the last scan got started
+  * @param scanner list of scanners states
   */
-case class Scan(startedAt: Option[Instant], scanner: Seq[Scanner]) {
+case class Scan(startedAt: Option[Instant], scanner: Seq[ScannerStatus]) {
 
-  def start(timestamp: Instant): Scan = {
-    copy(
-      startedAt = Some(timestamp),
-      scanner = scanner.map {
-        s => if(s.status == ScannerStatus.Scanned) s.copy(status = ScannerStatus.ScanPending) else s
-      }
-    )
-  }
-
-  def isScanFinished(): Boolean = scanner.find(s => s.status != ScannerStatus.Scanned || (s.status != ScannerStatus.Unscanned && s.registeredAt.isAfter(startedAt.getOrElse(Instant.now())))).isEmpty
-
-  def registerScanner(name: String, timestamp: Instant): Scan = {
-    val newScanner: Scanner = Scanner(name: String, registeredAt = timestamp, status = ScannerStatus.Unscanned)
-
-    if(scanner.par.find(_.name == name).isEmpty) {
-      copy(scanner = scanner :+ newScanner)
-    } else {
-      copy(scanner = scanner.map(s => if(s.name == name) newScanner else s))
-    }
+  def startScanner(name: String, timestamp: Instant): Scan =
+    copy(scanner = scanner.updated(indexOfScanner(name), ScannerStatus(name, Some(timestamp), false)))
 
 
-  }
+  def finishScanner(name:String): Scan =
+    copy(scanner = scanner.updated(indexOfScanner(name), scanner(indexOfScanner(name)).copy(finished = true)))
 
-  def unregisterScanner(name: String): Scan = {
-    if(scanner.find(_.name == name).isEmpty)
-      throw new ScannerNotRegisteredException()
-    copy(
-      scanner = scanner.filter(_.name != name)
-    )
-  }
 
-  def updateScannerStatus(name: String, status: ScannerStatus.Status): Scan = {
-    if(scanner.find(_.name == name).isEmpty)
-      throw new ScannerNotRegisteredException()
-    copy(
-      scanner = scanner.map(s => if(s.name == name) s.copy(status = status) else s)
-    )
-  }
+  def indexOfScanner(name:String): Int = scanner.indexWhere(_.name == name)
+
+  def startScan(timestamp: Instant): Scan =
+    Scan(startedAt = Some(timestamp), scanner = Scanners.scanners)
 }
 
 object Scan {
   implicit val format: Format[Scan] = Json.format
 }
 
-case class Scanner(name: String, registeredAt: Instant, status: ScannerStatus.Status)
-
-object Scanner {
-  implicit val format: Format[Scanner] = Json.format
-}
-
-object ScannerStatus extends Enumeration {
-  val Unscanned, ScanPending, Scanning, Scanned = Value
-  type Status = Value
-  implicit val format: Format[Status] = enumFormat(ScannerStatus)
-}
 
 /**
   * Events
   */
-
 object ScanEvent {
   val Tag = AggregateEventTag[ScanEvent]
 }
@@ -159,19 +184,14 @@ object ScanFinished {
   implicit val format: Format[ScanFinished] = Json.format
 }
 
-case class ScannerRegistered(timestamp: Instant, name: String) extends ScanEvent
-object ScannerRegistered {
-  implicit val format: Format[ScannerRegistered] = Json.format
+case class ScannerStarted(name: String, timestamp: Instant) extends ScanEvent
+object ScannerStarted {
+  implicit val format: Format[ScannerStarted] = Json.format
 }
 
-case class ScannerUnregistered(name: String) extends ScanEvent
-object ScannerUnregistered {
-  implicit val format: Format[ScannerUnregistered] = Json.format
-}
-
-case class ScannerUpdated(name: String, status: ScannerStatus.Status) extends ScanEvent
-object ScannerUpdated {
-  implicit val format: Format[ScannerUpdated] = Json.format
+case class ScannerFinsihed(name: String) extends ScanEvent
+object ScannerFinsihed {
+  implicit val format: Format[ScannerFinsihed] = Json.format
 }
 
 /**
@@ -186,34 +206,21 @@ object FailedScan {
 }
 
 
-case class StartScan(timestamp: Instant) extends ScanCommand with ReplyType[Scan]
+case class StartScan(timestamp: Instant) extends ScanCommand with ReplyType[Done]
 
 object StartScan {
   implicit val format: Format[StartScan] = Json.format[StartScan]
 }
 
-case class FinishScan(time: Instant) extends ScanCommand with ReplyType[Scan]
-object FinishScan {
-  implicit val format: Format[FinishScan] = Json.format
+case class StartScanner(name: String, timestamp: Instant) extends ScanCommand with ReplyType[Done]
+object StartScanner {
+  implicit val format: Format[StartScanner] = Json.format
 }
 
-case class RegisterScanner(timestamp: Instant, name: String) extends ScanCommand with ReplyType[Scan]
-object RegisterScanner {
-  implicit val format: Format[RegisterScanner] = Json.format
+case class FinishScanner(name: String) extends ScanCommand with ReplyType[Done]
+object FinishScanner {
+  implicit val format: Format[FinishScanner] = Json.format
 }
-
-
-case class UnregisterScanner(name: String) extends ScanCommand with ReplyType[Scan]
-object UnregisterScanner {
-  implicit val format: Format[UnregisterScanner] = Json.format
-}
-
-
-case class UpdateScanner(name: String, status: ScannerStatus.Status) extends ScanCommand with ReplyType[Scan]
-object UpdateScanner {
-  implicit val format: Format[UpdateScanner] = Json.format
-}
-
 
 case object GetScan extends ScanCommand with ReplyType[Scan] {
   implicit val format: Format[GetScan.type] = singletonFormat(GetScan)
@@ -223,18 +230,18 @@ object ScanSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: Seq[JsonSerializer[_]] = Seq(
     JsonSerializer[Scan],
     JsonSerializer[StartScan],
+    JsonSerializer[ScannerStatus],
     JsonSerializer[ScanStarted],
     JsonSerializer[GetScan.type],
     JsonSerializer[ScanFinished],
-    JsonSerializer[FinishScan],
-    JsonSerializer[ScannerRegistered],
-    JsonSerializer[RegisterScanner],
-    JsonSerializer[UnregisterScanner],
-    JsonSerializer[ScannerUnregistered],
-    JsonSerializer[UpdateScanner],
-    JsonSerializer[ScannerUpdated]
+    JsonSerializer[StartScanner],
+    JsonSerializer[FinishScanner],
+    JsonSerializer[ScannerStarted],
+    JsonSerializer[ScannerFinsihed]
   )
 }
 
-class ScannerAlreadyRegisteredException extends Exception
-class ScannerNotRegisteredException extends Exception
+class ScanAlreadyRunningException(msg: String) extends Exception(msg)
+class ScannerAlreadyFinishedException(msg: String) extends Exception(msg)
+class ScannerAlreadyStartedException(msg: String) extends Exception(msg)
+class ScannerNotFoundException(msg: String) extends Exception(msg)

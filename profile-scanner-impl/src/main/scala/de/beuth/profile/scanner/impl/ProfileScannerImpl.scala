@@ -7,6 +7,8 @@ import akka.Done
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import com.lightbend.lagom.scaladsl.api.ServiceCall
+import com.lightbend.lagom.scaladsl.api.broker.Topic
+import com.lightbend.lagom.scaladsl.broker.TopicProducer
 import com.lightbend.lagom.scaladsl.persistence.{EventStreamElement, PersistentEntityRegistry}
 import de.beuth.profile.scanner.api.{ProfileScannerService, ProfileUrl}
 import de.beuth.proxybrowser.api.{ProxyBrowserService, ProxyServer, RndProxyServer}
@@ -38,9 +40,22 @@ import com.google.common.base.{ Function => GFunction }
 
 
 /**
-  * Created by David on 27.06.17.
+  * Implementation of [[de.beuth.profile.scanner.api.ProfileScannerService]]
+  *
+  * @param registry Injected persistent entity [[ProfileScannerEntity]]
+  * @param system Injected actor system
+  * @param wsClient Injected WebService Client
+  * @param scanService Injected ScanService [[ScanService]]
+  * @param proxyService Injected ScanService [[ProxyBrowserService]]
+  * @param ec Implicitly injected execution context
+  * @param mat Implicitly injected materiealizer
   */
-class ProfileScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem, wsClient: WSClient, scanService: ScanService, proxyService: ProxyBrowserService)(implicit ec: ExecutionContext, mat: Materializer)
+class ProfileScannerImpl(registry: PersistentEntityRegistry,
+                         system: ActorSystem,
+                         wsClient: WSClient,
+                         scanService: ScanService,
+                         proxyService: ProxyBrowserService)
+                        (implicit ec: ExecutionContext, mat: Materializer)
   extends ProfileScannerService {
 
   private final val log: Logger = LoggerFactory.getLogger(classOf[ProfileScannerImpl])
@@ -49,11 +64,12 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
       for {
         proxy <- proxyService.getAvailableProxy().invoke()
         response <- proxiedGet(url.url, proxy)
-        data <- processXingProfile(url.url, response, keyword)
+        profile <- processXingProfile(url.url, response, keyword)
         free <- proxyService.free().invoke(proxy)
         done <- {
-          log.info(Json.toJson(data).toString())
-          Future.successful(Done)
+          //@todo do propper logging
+          log.info(Json.toJson(profile).toString())
+          refFor(keyword).ask(UpdateProfile(Instant.now(), profile))
         }
       } yield done
     }
@@ -99,7 +115,6 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
               throw ProfileScrapingException("Name not found.")
             }
             val firstAndLastName = name.get.split("\\s+", 2)
-            firstAndLastName.foreach(w => log.info(w))
             Profile(
               firstname = Some(firstAndLastName(0)),
               lastname = Some(firstAndLastName(1)),
@@ -110,11 +125,11 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
             )
           }
           store <- {
+            //@todo log to debug
             log.info(Json.toJson(profile).toString())
             driver.quit()
-            Future.successful(Done)
+            refFor(keyword).ask(UpdateProfile(Instant.now(), profile))
           }
-          //store <- refFor("rocket-internet-se").ask(ScanProfile(Instant.now(), profile))
         } yield store
        }
      } recoverWith {
@@ -128,7 +143,14 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
     }
   }
 
+  /**
+    * Shortcut for getting the actual persistentce entity by keyword
+    *
+    * @param keyword keyword identifier for entity
+    * @return reference of persistence entity
+    */
   private def refFor(keyword: String) = registry.refFor[ProfileScannerEntity](keyword)
+
   /**
     * Converts scala lambda function to com.google.common.base.Function for compability with selenium library
     *
@@ -224,7 +246,7 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
   def allSuccessful[A, M[X] <: TraversableOnce[X]](in: M[Future[A]])
                                                   (implicit cbf: CanBuildFrom[M[Future[A]], A, M[A]]): Future[M[A]] = {
     in.foldLeft(Future.successful(cbf(in))) {
-      (fr, fa) ⇒ (for (r ← fr; a ← fa) yield r += a) fallbackTo fr
+      (current, left) ⇒ (for (r ← current; a ← left) yield r += a) fallbackTo current
     } map (_.result())
   }
 
@@ -245,9 +267,10 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
 
   /**
     * Executes a get with a random user agent via a given ProxyServer
-    * @param url
-    * @param proxy
-    * @return
+    *
+    * @param url url to fetch
+    * @param proxy proxy to use
+    * @return http response
     */
   private def proxiedGet(url: String, proxy: ProxyServer): Future[WSResponse] = {
     val request = wsClient.url(url)
@@ -268,10 +291,11 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
   }
 
   /**
-    * Extracts data from Xing Profile
-    * @param url
-    * @param response
-    * @return
+    * Extracts data from Xing Profile using the  ScalaScraper library (wrapper for Jsoup)
+    *
+    * @param url url to profile
+    * @param response http response of request
+    * @return future of a Profile
     */
   private def processXingProfile(url: String, response: WSResponse, keyword: String): Future[Profile] = {
     if(!response.status.equals(200)) {
@@ -324,5 +348,32 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
     ))
   }
 
+  /**
+    * Message Brocking
+    */
+  override def statusTopic(): Topic[ScanStatusEvent] =
+    TopicProducer.singleStreamWithOffset {
+      fromOffset =>
+        registry.eventStream(ProfileScannerEvent.Tag , fromOffset)
+          .filter {
+            _.event match {
+                //@todo add scanFailed
+              case x@(_: ScanStarted | _: ScanFinished) => true
+              case _ => false
+            }
+          }.map(ev => (convertStatusEvent(ev.entityId, ev), ev.offset))
+    }
+
+  private def convertStatusEvent(keyword: String, scanEvent: EventStreamElement[ProfileScannerEvent]): ScanStatusEvent = {
+    scanEvent.event match {
+      /**
+        * We drop the urls here since they are not of particular interest for other services
+        */
+      case ScanStarted(timestamp, urls) => ScanStartedEvent(keyword, timestamp)
+      case ScanFinished(timestamp, urls) => ScanFinishedEvent(keyword, timestamp)
+      //@todo add ScanFailed
+      //case ScanFailed(timestamp, errorMsg) => ScanFailedEvent(keyword, timestamp, errorMsg)
+    }
+  }
 }
 case class ProfileScrapingException(message: String) extends Exception

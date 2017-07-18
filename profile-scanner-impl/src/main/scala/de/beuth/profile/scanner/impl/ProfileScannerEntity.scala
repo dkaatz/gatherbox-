@@ -4,10 +4,11 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 import akka.Done
-import com.lightbend.lagom.scaladsl.persistence.PersistentEntity
+import com.lightbend.lagom.scaladsl.persistence.{AggregateEvent, AggregateEventTag, PersistentEntity}
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 import play.api.libs.json._
+import de.beuth.utils.JsonFormats.singletonFormat
 
 import scala.collection.immutable.Seq
 
@@ -19,10 +20,19 @@ class ProfileScannerEntity extends PersistentEntity {
   override type Event = ProfileScannerEvent
   override type State = Profiles
 
+  /**
+    * Emtpy list of Profiles as Initial State of the entity
+    */
   override def initialState: Profiles = Profiles(Instant.now(), Seq())
 
   override def behavior: Behavior = {
-    case scan => Actions().onCommand[StartScan, Seq[String]] {
+    case scan => Actions()
+
+      /**
+        * On StartScan Command filter out URL's that should not get scanned due to they recently got scanned and return
+        * the list of URL's that get actualy scanned
+        */
+      .onCommand[StartScan, Seq[String]] {
       case (StartScan(timestamp, urls), ctx, state) =>
         //getting all already present profiles that are not out dated
         val notOutDated = state.profiles.filter(profile => timestamp.minus(12, ChronoUnit.HOURS).isBefore(profile.updatedAt))
@@ -34,20 +44,32 @@ class ProfileScannerEntity extends PersistentEntity {
           _ => ctx.reply(linksToScan)
         }
 
-    }.onCommand[FinishScan, Done] {
+    }
+    /**
+      * On Finish scan persist the event and return done
+       */
+    .onCommand[FinishScan, Done] {
       case (FinishScan(timestamp, urls), ctx, state) =>
         ctx.thenPersist(
           ScanFinished(timestamp, urls)
         ) {
           _ => ctx.reply(Done)
         }
-    }.onCommand[UpdateProfile, Done] {
+    }
+
+    /**
+      * On UpdateProfile persist the event and reply with done
+      */
+    .onCommand[UpdateProfile, Done] {
       case (UpdateProfile(timestamp, profile), ctx, state) =>
         ctx.thenPersist(
           ProfileUpdated(timestamp, profile)
         ) {
           _ => ctx.reply(Done)
         }
+    /**
+      * On Failure  persist the event and return done
+      */
     }.onCommand[ProfileScanFailure, Done] {
       case (ProfileScanFailure(url, timestamp, msg), ctx, state) =>
         ctx.thenPersist(
@@ -56,15 +78,23 @@ class ProfileScannerEntity extends PersistentEntity {
           _ => ctx.reply(Done)
         }
     }.onEvent{
+      /**
+        * Events that change the state
+        */
       case (ScanStarted(timestamp, urls), state) => state.startScan(timestamp, urls)
       case (ProfileUpdated(timestamp, profile), state) => state.updateProfile(timestamp, profile)
     /**
-      * this events do not change anything on persitent state but need to persitet to have a restorable communication flow
+      *  events that do not change the state but are persisted for communication integrity
       */
       case (ScanFinished(timestamp, urls), state) => state
       case (ProfileScanFailed(url, timestamp, msg), state) => state
-    }
+    }.orElse(getProfiles)
   }
+
+  /**
+    *  Handler for Read-Only Command
+    */
+  private val getProfiles = Actions().onReadOnlyCommand[GetProfiles.type, Profiles] { case (GetProfiles, ctx, state) => ctx.reply(state) }
 }
 
 /**
@@ -87,6 +117,7 @@ case class Profiles(updatedAt: Instant, profiles: Seq[Profile]) {
     val newUrls = urls.filter(url => profiles.exists(profile => profile.link.url == url))
     copy(
       updatedAt = timestamp,
+      // join the existing sequence of profiles with the new initiated profiles
       profiles = profiles ++ newUrls.map(url => Profile(
         firstname = None,
         lastname = None,
@@ -182,12 +213,12 @@ object ProfileLink {
     * @return
     */
   def deriveProvider(url: String): String = {
-    //Creating Regex Pattern for Linkedin URL's
+    // regex pattern for Linkedin URL's
     val LinkedInPattern = ".*(linkedin).*/in/.*".r
-    //Creating Regex Pattern for Xing URL's
+    // regex pattern for Xing URL's
     val XingPattern = ".*(xing).*/profil/.*)".r
 
-    //Retrun correct type with pattern matching using the Regex Patterns above
+    //return correct type using pattern matching with the regex patterns defined above
     url match {
       case LinkedInPattern(m) => PROVIDER_LINKED_IN
       case XingPattern(m) => PROVIDER_XING
@@ -218,7 +249,21 @@ object FinishScan {
   implicit val format: Format[FinishScan] = Json.format
 }
 
-trait ProfileScannerEvent
+case object GetProfiles extends ProfileScannerCommand with ReplyType[Profiles] {
+  implicit val format: Format[GetProfiles.type] = singletonFormat(GetProfiles)
+}
+
+/**
+  * Events using simple event tagging (a static tag for all events)
+  *
+  * In case of scaling issues this should be upgraded to sharded event tagging
+  */
+object ProfileScannerEvent {
+  val Tag = AggregateEventTag[ProfileScannerEvent]
+}
+sealed trait ProfileScannerEvent extends AggregateEvent[ProfileScannerEvent] {
+  override def aggregateTag: AggregateEventTag[ProfileScannerEvent] = ProfileScannerEvent.Tag
+}
 
 case class ProfileUpdated(timestamp: Instant, profile: Profile) extends ProfileScannerEvent
 object ProfileUpdated {

@@ -1,17 +1,19 @@
 package de.beuth.profile.scanner.api
 
+import java.time.Instant
+
 import akka.Done
 import com.lightbend.lagom.scaladsl.api.transport.Method
 import com.lightbend.lagom.scaladsl.api.{Descriptor, Service, ServiceCall}
-import de.beuth.scanner.commons.ScanStatusTopics
+import de.beuth.scanner.commons.{ScanFinishedEvent, ScanStartedEvent, ScanStatusTopics}
 import play.api.libs.json.{Format, Json}
 
 object ProfileScannerService {
-  val TOPIC_STATUS: String = "profile_status"
+  val NAME: String = "profile"
+  val TOPIC_STATUS: String = s"${NAME}_status"
 }
 
-trait ProfileScannerService extends Service {
-  //with ScanStatusTopics{
+trait ProfileScannerService extends Service with ScanStatusTopics{
 
   /**
     * @todo docu
@@ -28,7 +30,7 @@ trait ProfileScannerService extends Service {
       restCall(Method.POST, "/api/scanner/profile/xing/:keyword", scanXingProfile _),
       restCall(Method.POST, "/api/scanner/profile/linkedin/:keyword", scanLinkedinProfile _)
     ).withTopics(
-      //topic(ProfileScannerService.TOPIC_STATUS, statusTopic)
+      topic(ProfileScannerService.TOPIC_STATUS, statusTopic)
     ).withAutoAcl(true)
   }
 }

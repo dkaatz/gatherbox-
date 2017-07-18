@@ -14,8 +14,9 @@ import play.api.libs.json._
   */
 
 object IxquickScannerService {
-  val TOPIC_STATUS = "ixquick_status"
-  val TOPIC_UPDATE = "ixquick_update"
+  val NAME = "ixquick"
+  val TOPIC_STATUS = s"${NAME}_status"
+  val TOPIC_UPDATE = s"${NAME}_update"
 }
 
 trait IxquickScannerService extends Service with ScanStatusTopics {

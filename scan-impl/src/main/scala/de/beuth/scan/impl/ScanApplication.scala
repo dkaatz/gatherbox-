@@ -9,7 +9,9 @@ import com.lightbend.lagom.scaladsl.server._
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import play.api.libs.ws.ahc.AhcWSComponents
 import com.softwaremill.macwire._
-import de.beuth.censys.api.CensysService
+import de.beuth.censys.scanner.api.CensysScannerService
+import de.beuth.ixquick.scanner.api.IxquickScannerService
+import de.beuth.profile.scanner.api.ProfileScannerService
 
 abstract class ScanApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
@@ -18,7 +20,9 @@ abstract class ScanApplication(context: LagomApplicationContext)
     with LagomKafkaComponents
 {
 
-  lazy val censysService = serviceClient.implement[CensysService]
+  lazy val censysScannerService = serviceClient.implement[CensysScannerService]
+  lazy val profileScannerService = serviceClient.implement[ProfileScannerService]
+  lazy val ixquickScannerService = serviceClient.implement[IxquickScannerService]
   lazy val scanService = serviceClient.implement[ScanService]
 
   // Bind the services that this server provides

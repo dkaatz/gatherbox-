@@ -3,48 +3,122 @@ package de.beuth.proxybrowser.api
 import akka.{Done, NotUsed}
 import com.lightbend.lagom.scaladsl.api.transport.Method
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json._
+import play.api.libs.functional.syntax._
 import play.api.libs.ws.WSProxyServer
 
 import scala.collection.immutable.Seq
 
 /**
-  * Created by David on 20.06.17.
+  * Interface for the ProxyBrowser service
+  *
+  * This service fetches on application start automatically available proxy servers from nordvpn.com
+  * furthermore this service is used to keep track of available proxy servers to ensure that other services do not use
+  * not working services twice and that the overall system does not use the same proxy server multiple times in parallel.
+  * This is important to ensure that the application gets not locked out by datasoruces such as google, ixquick etc.
+  *
+  * The core functionality is diveded in 4 methods wich allow:
+  *   - adding new proxy servers
+  *   - report proxy servers as not working
+  *   - getting the next available proxy server and mark them as in use
+  *   - free servers that were previously marked as in use
   */
 trait ProxyBrowserService extends Service {
 
+  /**
+    * Gets the next free proxy server, removes him from the list of free servers and adds him to the
+    * list of proxy servers in use
+    *
+    * @return next available [[ProxyServer]]
+    */
   def getAvailableProxy(): ServiceCall[NotUsed, ProxyServer]
+
+  /**
+    * Expects a ProxyServer in the Body of the request and adds this proxyserver to the list of free servers if
+    * he was in use before
+    *
+    * @return Done on success
+    */
   def free(): ServiceCall[ProxyServer, Done]
+
+  /**
+    * Expects a ProxyServer in the Body of the request and adds this proxyserver to the list of not working servers,
+    * a server that may get reported needs to be inuse before otherwise an report is an invalid request since if the
+    * server was not used there is no way to tell if he is working or not
+    *
+    * @return done on success
+    */
   def report(): ServiceCall[ProxyServer, Done]
+
+  /**
+    * Expects a list of ProxyServers in the Body of the request wich will get added to the list of free servers
+    *
+    * @return done on success
+    */
+  def add(): ServiceCall[Seq[ProxyServer], Done]
 
   override final def descriptor = {
     import Service._
-
     named("proxybrowser").withCalls(
       pathCall("/api/proxybrowser", getAvailableProxy),
       restCall(Method.POST,   "/api/proxybrowser/free", free),
-      restCall(Method.POST,   "/api/proxybrowser/report", report)
+      restCall(Method.POST,   "/api/proxybrowser/report", report),
+      restCall(Method.POST,   "/api/proxybrowser/add", add)
+
+    //with autoacl we make this paths part of the public api
     ).withAutoAcl(true)
   }
 }
 
+/**
+  * ProxyServer representation used for inter service communication
+  *
+  * @param host ip or hostname of server
+  * @param port port of server
+  * @param protocol_type type of protocol: https/http/sock4/sock5
+  * @param country country the server is in
+  * @param country_code code of the country: eg. de -> germany, us -> united states, cn -> china
+  */
+case class ProxyServer(host: String, port: Int, protocol_type: String, country: String, country_code: String)
 
-case class ProxyServer(host: String, port: Int)
+/**
+  * Singleton Object holding the implict json conversion rules wich can in this case not be json.format since
+  * "type" is an keyword
+  */
 object ProxyServer {
-  implicit val format: Format[ProxyServer] = Json.format[ProxyServer]
+  implicit val write: Writes[ProxyServer] = new Writes[ProxyServer] {
+    def writes(ps: ProxyServer) =
+      Json.obj(
+        "ip" -> ps.host,
+        "port" -> ps.port.toString,
+        "type" -> ps.protocol_type,
+        "country" -> ps.country,
+        "country_code" -> ps.country_code
+      )
+  }
+
+  implicit val reads: Reads[ProxyServer] = (
+    (JsPath \ "ip").read[String] and
+    (JsPath \ "port").read[String] and
+    (JsPath \ "type").read[String] and
+    (JsPath \ "country").read[String] and
+    (JsPath \ "country_code").read[String]
+  )((host, port, protocol_type, country, country_code) => ProxyServer(host, port.toInt, protocol_type, country, country_code))
 }
 
 /**
   * May move to Utils or ProxyBrowser package
   *
-  * @param host
-  * @param port
-  * @param protocol
-  * @param principal
-  * @param password
-  * @param ntlmDomain
-  * @param encoding
-  * @param nonProxyHosts
+  * Wrapper for to pass proxy servers to WSClients
+  *
+  * @param host ip adress or hostname of server
+  * @param port port of server
+  * @param protocol protocol used
+  * @param principal username used
+  * @param password password used
+  * @param ntlmDomain ntlm domain of server
+  * @param encoding char encoding of server
+  * @param nonProxyHosts list of hosts that should not get proxied
   */
 case class RndProxyServer(host: String,
                           port: Int,
@@ -56,6 +130,9 @@ case class RndProxyServer(host: String,
                           nonProxyHosts: Option[Seq[String]]
                          ) extends WSProxyServer
 
+/**
+  * Companion object wich converts a [[ProxyServer]] to [[RndProxyServer]]
+  */
 object RndProxyServer {
   def apply(proxyServer: ProxyServer): RndProxyServer = RndProxyServer(host = proxyServer.host, port = proxyServer.port, None, None, None, None, None, None)
 }

@@ -19,38 +19,36 @@ class ProxyBrowserEntity extends PersistentEntity {
   override type State = ProxyBrowserServerRepository
 
   override def initialState: ProxyBrowserServerRepository = ProxyBrowserServerRepository(
-    Seq[ProxyServer](
-      ProxyServer("82.165.72.56", 3128),
-      ProxyServer("88.99.149.188", 31288),
-      ProxyServer("144.76.32.78", 8080),
-      ProxyServer("89.40.124.65", 3128),
-      ProxyServer("5.189.189.196", 8080),
-      ProxyServer("5.189.189.196", 8888),
-      ProxyServer("89.40.116.171", 3128),
-      ProxyServer("213.185.81.135", 80),
-      ProxyServer("81.10.172.142", 3128),
-      ProxyServer("46.29.251.41", 3128),
-      ProxyServer("46.246.61.31", 3128),
-      ProxyServer("46.29.251.11", 3128),
-      ProxyServer("104.40.182.87", 3128),
-      ProxyServer("137.74.254.198", 3128),
-      ProxyServer("212.237.27.151", 3128),
-      ProxyServer("212.237.16.96", 8080),
-      ProxyServer("188.213.170.40", 8080),
-      ProxyServer("212.237.27.151", 80),
-      ProxyServer("212.237.38.216",8080),
-      ProxyServer("159.255.9.171", 80),
-      ProxyServer("46.151.145.4", 53281),
-      ProxyServer("51.254.118.235", 3128)
-    ),
+    Seq[ProxyServer](),
     Seq[ProxyServer](),
     Seq[ProxyServer]()
   )
 
   override def behavior: Behavior = {
-    case scan => Actions()
-      .onCommand[GetNext, ProxyServer] {
-        case (GetNext(), ctx, state: ProxyBrowserServerRepository) => {
+    Actions()
+      .onCommand[Add, Done] {
+        case (Add(servers), ctx, state) => {
+
+          //filter servers that are already added
+          val filteredList = servers
+            .filterNot(newProxy => state.free.exists(freeProxy => newProxy.host == freeProxy.host && newProxy.port == freeProxy.port))
+            .filterNot(newProxy => state.reports.exists(freeProxy => newProxy.host == freeProxy.host && newProxy.port == freeProxy.port))
+            .filterNot(newProxy => state.inUse.exists(freeProxy => newProxy.host == freeProxy.host && newProxy.port == freeProxy.port))
+
+          //if there is no new server we do not persist an added event
+          if(filteredList.isEmpty)
+            ctx.done
+          else
+            ctx.thenPersist(Added(filteredList)) { _ => ctx.reply(Done) }
+        }
+      }.onCommand[GetNext, ProxyServer] {
+        //there is no more free proxy server
+        case (GetNext(), ctx, state: ProxyBrowserServerRepository) if state.free.isEmpty => {
+          ctx.invalidCommand("No free proxy available")
+          ctx.done
+
+        }
+        case (GetNext(), ctx, state) => {
           val next: ProxyServer = state.free.head
           ctx.thenPersist(
             InUseUpdated(next)
@@ -59,11 +57,22 @@ class ProxyBrowserEntity extends PersistentEntity {
           }
         }
     }.onCommand[UpdateFree, Done] {
+      //the proxy server is already in the list of free servers
+      case (UpdateFree(proxy), ctx, state) if state.free.exists(_.port == proxy.port && proxy.host == proxy.host) =>
+        ctx.invalidCommand(s"Proxy: ${Json.toJson(proxy).toString()} is already free")
+        ctx.done
+      //the server was not in use
+      case (UpdateFree(proxy), ctx, state) if !state.inUse.exists(_.port == proxy.port && proxy.host == proxy.host) =>
+        ctx.invalidCommand(s"Proxy: ${Json.toJson(proxy).toString()} is not in use, and cant be freed")
+        ctx.done
       case (UpdateFree(proxy), ctx, state) =>
         ctx.thenPersist(FreeUpdated(proxy)) {
           _ => ctx.reply(Done)
         }
     }.onCommand[UpdateReported, Done] {
+      case (UpdateReported(proxy), ctx, state) if !state.inUse.exists(_.port == proxy.port && proxy.host == proxy.host) =>
+        ctx.invalidCommand(s"Proxy: ${Json.toJson(proxy).toString()} can not be reported because he is not in use")
+        ctx.done
       case (UpdateReported(proxy), ctx, state) =>
         ctx.thenPersist(ReportedUpdated(proxy)) {
           _ => ctx.reply(Done)
@@ -71,6 +80,7 @@ class ProxyBrowserEntity extends PersistentEntity {
     }.onEvent {
       case (InUseUpdated(proxy), state) => state.updateInUse(proxy)
       case (FreeUpdated(proxy), state) => state.updateFree(proxy)
+      case (Added(servers), state) => state.add(servers)
       case (ReportedUpdated(proxy), state) => state.updateReported(proxy)
     }
   }
@@ -80,10 +90,11 @@ case class ProxyBrowserServerRepository(free: Seq[ProxyServer], inUse: Seq[Proxy
   private final val log: Logger = LoggerFactory.getLogger(classOf[ProxyBrowserServerRepository])
   def updateInUse(proxy: ProxyServer) = copy(free = free.filter(!_.host.equals(proxy.host)), inUse = inUse :+ proxy)
 
-  def updateReported(proxy: ProxyServer) = copy(free = free.filter(!_.host.equals(proxy.host)), inUse = inUse.filter(!_.host.equals(proxy.host)) , reports = reports :+ proxy)
+  def updateReported(proxy: ProxyServer) = copy(inUse = inUse.filter(!_.host.equals(proxy.host)) , reports = reports :+ proxy)
 
   def updateFree(proxy: ProxyServer) = copy(inUse = inUse.filter(!_.host.equals(proxy.host)), free = free :+ proxy)
 
+  def add(servers: Seq[ProxyServer]) = copy(free = free ++ servers)
 }
 
 object ProxyBrowserServerRepository {
@@ -91,6 +102,11 @@ object ProxyBrowserServerRepository {
 }
 
 sealed trait ProxyBrowserCommand
+
+case class Add(servers: Seq[ProxyServer]) extends ProxyBrowserCommand with ReplyType[Done]
+object Add {
+  implicit val format: Format[Add] = Json.format
+}
 
 case class GetNext() extends ProxyBrowserCommand with ReplyType[ProxyServer]
 object GetNext {
@@ -108,6 +124,10 @@ object UpdateReported {
 }
 
 sealed trait ProxyBrowserEvent
+case class Added(servers: Seq[ProxyServer]) extends ProxyBrowserEvent
+object Added {
+  implicit val format: Format[Added] = Json.format
+}
 
 case class InUseUpdated(proxy: ProxyServer) extends ProxyBrowserEvent
 object InUseUpdated {

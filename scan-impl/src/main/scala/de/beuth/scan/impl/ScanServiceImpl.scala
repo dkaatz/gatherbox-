@@ -10,67 +10,75 @@ import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.broker.TopicProducer
 import com.lightbend.lagom.scaladsl.persistence.{EventStreamElement, PersistentEntityRegistry}
 import de.beuth.censys.api.{CensysQuery, CensysService}
+import de.beuth.censys.scanner.api.CensysScannerService
+import de.beuth.ixquick.scanner.api.IxquickScannerService
+import de.beuth.profile.scanner.api.ProfileScannerService
 import de.beuth.scan.api._
 import de.beuth.scanner.commons.{ScanFailedEvent, ScanFinishedEvent, ScanStartedEvent, ScanStatusEvent}
 import org.slf4j.{Logger, LoggerFactory}
 
+import scala.collection.immutable.Seq
 import scala.util.{Failure, Success}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
+
 /**
-  * Created by David on 06.06.17.
+  * Implementation of [[ScanService]]
+  *
+  * @param registry Inejcted persistent Entity [[ScanEntity]]
+  * @param system Injected actor system
+  * @param censysScannerService Injected [[CensysScannerService]]
+  * @param ixquickScannerService Injected [[IxquickScannerService]]
+  * @param profileScannerService Injected [[ProfileScannerService]]
+  * @param ec Implicitly injected execution context used for callbacks
+  * @param mat Implicitly injected materialzer used for materialzation of akka values (@todo think about removing)
   */
-class ScanServiceImpl(registry: PersistentEntityRegistry, system: ActorSystem, censysService: CensysService)(implicit ec: ExecutionContext, mat: Materializer)
+class ScanServiceImpl(registry: PersistentEntityRegistry,
+                      system: ActorSystem,
+                      censysScannerService: CensysScannerService,
+                      ixquickScannerService: IxquickScannerService,
+                      profileScannerService: ProfileScannerService
+                     )(implicit ec: ExecutionContext, mat: Materializer)
   extends ScanService {
 
   private final val log: Logger = LoggerFactory.getLogger(classOf[ScanServiceImpl])
 
-  def scan(keyword: String) = ServiceCall { _ =>
-    log.info("Received call - scan -  " + keyword)
-    refFor(keyword).ask(StartScan(Instant.now())).map {
-      case scan: Scan => {
-        ScanStatus(keyword, scan.startedAt, scan.isScanFinished(), scan.scanner.map(_.name))
-      }
+  ixquickScannerService.statusTopic().subscribe.atLeastOnce(
+    scanStatusEventHandler(IxquickScannerService.NAME)
+  )
+
+  profileScannerService.statusTopic().subscribe.atLeastOnce(
+    scanStatusEventHandler(ProfileScannerService.NAME)
+  )
+
+  censysScannerService.statusTopic().subscribe.atLeastOnce(
+    scanStatusEventHandler(CensysScannerService.NAME)
+  )
+
+  /**
+    * Handles the Message Flow of ScanStatusEvents
+    * @param name Name of event source (scanner)
+    * @return
+    */
+  private def scanStatusEventHandler(name: String) = Flow[ScanStatusEvent].mapAsync(1) {
+    case ev: ScanStartedEvent => {
+      log.info(s"Event: ScanStartedEvent - Scanner: $name - Keyword: ${ev.keyword}")
+      refFor(ev.keyword).ask(StartScanner(name, ev.timestamp))
     }
+    case ev: ScanFinishedEvent => {
+      log.info(s"Event: ScanFinishedEvent - Scanner: $name - Keyword: ${ev.keyword}")
+      refFor(ev.keyword).ask(FinishScanner(name))
+    }
+    //@todo handle scanner failed
   }
 
-  def register(keyword: String, name: String) = ServiceCall { _ =>
-    log.info("Received call - register " + name)
-    refFor(keyword).ask(RegisterScanner(Instant.now(), name)).map {
-      case scan: Scan => {
-        log.info("Scann started")
-        ScanStatus(keyword, scan.startedAt, scan.isScanFinished(), scan.scanner.map(_.name))
-      }
-    }
+  def startScan(keyword: String) = ServiceCall { _ =>
+    log.info(s"StartScan - keyword: $keyword")
+    refFor(keyword).ask(StartScan(Instant.now()))
   }
 
-  def unregister(keyword: String, name: String) = ServiceCall { _ =>
-    log.info("Received call - unregister " + name)
-    refFor(keyword).ask(UnregisterScanner(name)).map {
-      case scan: Scan => {
-        log.info("Scann started")
-        ScanStatus(keyword, scan.startedAt, scan.isScanFinished(), scan.scanner.map(_.name))
-      }
-    }
-  }
-
-  def update(keyword: String, name: String, status: String) = ServiceCall { _ =>
-    log.info("Received call - update " + name + " - Status " + status)
-
-    refFor(keyword).ask(UpdateScanner(name, covertStatusString(status))).map {
-      case scan: Scan => {
-        if(scan.isScanFinished()) {
-          refFor(keyword).ask(FinishScan(Instant.now()))
-          log.info("Scan finished.... ")
-        }
-        ScanStatus(keyword, scan.startedAt, scan.isScanFinished(), scan.scanner.map(_.name))
-      }
-    }
-  }
-  private def covertStatusString(status: String): ScannerStatus.Status = status match {
-    case "Unscanned" => ScannerStatus.Scanned
-    case "Scanning" => ScannerStatus.Scanning
-    case "Scanned" => ScannerStatus.Scanned
-    case _ => ScannerStatus.Unscanned
+  def getScanStatus(keyword:String) = ServiceCall { _ =>
+    log.info(s"GetScanStatus - keyword: $keyword")
+    refFor(keyword).ask(GetScan) map (scan => ScanStatus(keyword = keyword, startedAt = scan.startedAt, scanner = scan.scanner))
   }
 
   override def statusTopic(): Topic[ScanStatusEvent] =
@@ -87,32 +95,17 @@ class ScanServiceImpl(registry: PersistentEntityRegistry, system: ActorSystem, c
       case ScanFailed(timestamp, errorMsg) => ScanFailedEvent(keyword, timestamp, errorMsg)
     }
   }
-//    refFor(keyword).ask(GetScan).map {
-//      case Some(scan) => {
-//        if(LocalDateTime.parse(scan.timestamp).isBefore(LocalDateTime.now().minusSeconds(2L))) {
-//          log.info(s"Starting Scan...")
-//          refFor(keyword).ask(StartScan(LocalDateTime.now().toString()))
-//          censysService.searchIpv4.invoke(CensysQuery("\"" + keyword + "\"")) onComplete  {
-//              case Success(results) => {
-//                results.results.foreach(r => log.info(r.toString))
-//                refFor(keyword).ask(FinishScan(ScanResult(LocalDateTime.now().toString(), Some(results.results))))
-//              }
-//              case Failure(ex) => {
-//                log.info(s"Something went wrong... $ex")
-//              }
-//            }
-//        }
-//        log.info(s"Got Something...")
-//        scan.result
-//
-//      }
-//      case None => {
-//        log.info(s"Got Nothing...")
-//        refFor(keyword).ask(StartScan(LocalDateTime.now().toString()))
-//        ScanResult(LocalDateTime.now().toString, None)
-//      }
-//    }
-//  }
 
   private def refFor(keyword: String) = registry.refFor[ScanEntity](keyword)
+}
+
+/**
+  * This singleton object contains a initalization list of scanners expected to run
+  */
+object Scanners {
+  def scanners = Seq[ScannerStatus](
+    ScannerStatus(CensysScannerService.NAME, None, false),
+    ScannerStatus(IxquickScannerService.NAME, None, false),
+    ScannerStatus(ProfileScannerService.NAME, None, false)
+  )
 }

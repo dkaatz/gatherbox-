@@ -22,6 +22,9 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="SBT: xml-apis:xml-apis:1.4.01:jar" level="project" />
+    <orderEntry type="module" module-name="profile-scanner-api" exported="" />
+    <orderEntry type="module" module-name="ixquick-scanner-api" exported="" />
+    <orderEntry type="module" module-name="censys-scanner-api" exported="" />
     <orderEntry type="library" scope="TEST" name="SBT: org.yaml:snakeyaml:1.16:jar" level="project" />
     <orderEntry type="library" name="SBT: org.scala-lang.modules:scala-xml_2.11:1.0.5:jar" level="project" />
     <orderEntry type="library" scope="TEST" name="SBT: org.jboss.logging:jboss-logging:3.3.0.Final:jar" level="project" />
