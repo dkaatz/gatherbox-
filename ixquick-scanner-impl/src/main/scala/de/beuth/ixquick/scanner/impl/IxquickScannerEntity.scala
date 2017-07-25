@@ -19,7 +19,7 @@ class IxquickScannerEntity extends PersistentEntity {
   override type Event = IxquickScannerEvent
   override type State = Scan
 
-  override def initialState: Scan = Scan(None, Profiles())
+  override def initialState: Scan = Scan(None, Seq())
 
   override def behavior: Behavior = {
     Actions().onCommand[StartScan, Done] {
@@ -29,17 +29,10 @@ class IxquickScannerEntity extends PersistentEntity {
         ) {
           _ => ctx.reply(Done)
         }
-    }.onCommand[UpdateLinkedIn, Done] {
-      case (UpdateLinkedIn(profiles), ctx, state) =>
+    }.onCommand[UpdateSearch, Done] {
+      case (UpdateSearch(site, page, links), ctx, state) =>
         ctx.thenPersist(
-          LinkedinUpdated(profiles)
-        ) {
-          _ => ctx.reply(Done)
-        }
-    }.onCommand[UpdateXing, Done] {
-      case (UpdateXing(profiles), ctx, state) =>
-        ctx.thenPersist(
-          XingUpdated(profiles)
+          SearchUpdated(site, page, links)
         ) {
           _ => ctx.reply(Done)
         }
@@ -59,8 +52,7 @@ class IxquickScannerEntity extends PersistentEntity {
       }
     }.onEvent {
       case (ScanStarted(timestamp), state) => state.start(timestamp)
-      case (LinkedinUpdated(profiles), state) => state.updateLinkedinProfiles(profiles)
-      case (XingUpdated(profiles), state) => state.updateXingProfiles(profiles)
+      case (SearchUpdated(site, page, links), state) => state.updateSearch(site, page, links)
       case (ScanFinished(timestamp), state) => state
       case (ScanFailed(timestamp, msg), state) => state
     }.orElse(getScan)
@@ -73,29 +65,30 @@ class IxquickScannerEntity extends PersistentEntity {
 /**
   * State
   * @param startedAt
-  * @param profiles
+  * @param searches
   */
-case class Scan(startedAt: Option[Instant], profiles: Profiles) {
+case class Scan(startedAt: Option[Instant], searches: Seq[IxquickSearch]) {
   //@todo check if already started
-  def start(timestamp: Instant): Scan = copy(startedAt = Some(timestamp), profiles = Profiles())
+  def start(timestamp: Instant): Scan = copy(startedAt = Some(timestamp), searches = Seq())
 
-  def updateLinkedinProfiles(profileLinks: Seq[String]): Scan = copy(profiles = this.profiles.updateLinkedin(profileLinks))
-
-  def updateXingProfiles(profileLinks: Seq[String]): Scan = copy(profiles = this.profiles.updateXing(profileLinks))
+  def updateSearch(site: String, page: Int, links: Seq[String]): Scan = {
+    val idx = searches.indexWhere(_.site == site)
+    //if we found the search we update it
+    if(idx != -1)
+      copy(searches = searches.updated(idx, searches(idx).copy(last_scanned_page = page, links = searches(idx).links ++ links)))
+    // else we create a new search entry
+    else
+      copy(searches = searches :+ IxquickSearch(site = site, last_scanned_page = page, links = links))
+  }
 }
 
 object Scan {
   implicit val format: Format[Scan] = Json.format
 }
 
-
-case class Profiles(linkedin: Seq[String] = Seq[String](), xing: Seq[String] = Seq[String]()) {
-  def updateLinkedin(profiles: Seq[String]) = copy(linkedin = (linkedin ++ profiles).distinct)
-  def updateXing(profiles: Seq[String]) = copy(xing = (xing ++ profiles).distinct)
-}
-
-object Profiles {
-  implicit val format: Format[Profiles] = Json.format
+case class IxquickSearch(site: String, last_scanned_page: Int, links: Seq[String])
+object IxquickSearch {
+  implicit val format: Format[IxquickSearch] = Json.format
 }
 
 /**
@@ -121,16 +114,9 @@ object ScanFailure {
   implicit val format: Format[ScanFailure] = Json.format
 }
 
-case class UpdateLinkedIn(profiles: Seq[String]) extends IxquickScannerCommand with ReplyType[Done]
-
-object UpdateLinkedIn {
-  implicit val format: Format[UpdateLinkedIn] = Json.format
-}
-
-case class UpdateXing(profiles: Seq[String]) extends IxquickScannerCommand with ReplyType[Done]
-
-object UpdateXing {
-  implicit val format: Format[UpdateXing] = Json.format
+case class UpdateSearch(site: String, page: Int, links: Seq[String]) extends IxquickScannerCommand with ReplyType[Done]
+object UpdateSearch {
+  implicit val format: Format[UpdateSearch] = Json.format
 }
 
 
@@ -161,18 +147,10 @@ object ScanFailed {
   implicit val format: Format[ScanFailed] = Json.format
 }
 
-case class LinkedinUpdated(profiles: Seq[String]) extends IxquickScannerEvent
-
-object LinkedinUpdated {
-  implicit val format: Format[LinkedinUpdated] = Json.format
+case class SearchUpdated(site: String, page: Int, links: Seq[String]) extends IxquickScannerEvent
+object SearchUpdated {
+  implicit val format: Format[SearchUpdated] = Json.format
 }
-
-case class XingUpdated(profiles: Seq[String]) extends IxquickScannerEvent
-
-object XingUpdated {
-  implicit val format: Format[XingUpdated] = Json.format
-}
-
 
 case object GetScan extends IxquickScannerCommand with ReplyType[Scan] {
   implicit val format: Format[GetScan.type] = singletonFormat(GetScan)
@@ -181,15 +159,13 @@ case object GetScan extends IxquickScannerCommand with ReplyType[Scan] {
 object IxquickScanSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: Seq[JsonSerializer[_]] = Seq(
     JsonSerializer[Scan],
-    JsonSerializer[Profiles],
+    JsonSerializer[IxquickSearch],
     JsonSerializer[StartScan],
     JsonSerializer[ScanStarted],
     JsonSerializer[ScanFinished],
     JsonSerializer[FinishScan],
-    JsonSerializer[UpdateXing],
-    JsonSerializer[XingUpdated],
-    JsonSerializer[UpdateLinkedIn],
-    JsonSerializer[LinkedinUpdated],
+    JsonSerializer[SearchUpdated],
+    JsonSerializer[SearchUpdated],
     JsonSerializer[ScanFailed],
     JsonSerializer[ScanFailure],
     JsonSerializer[GetScan.type]

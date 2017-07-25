@@ -1,12 +1,13 @@
 package de.beuth.profile.scanner.api
 
-import java.time.Instant
+
 
 import akka.Done
 import com.lightbend.lagom.scaladsl.api.transport.Method
 import com.lightbend.lagom.scaladsl.api.{Descriptor, Service, ServiceCall}
-import de.beuth.scanner.commons.{ScanFinishedEvent, ScanStartedEvent, ScanStatusTopics}
+import de.beuth.scanner.commons.ScanStatusTopics
 import play.api.libs.json.{Format, Json}
+
 
 object ProfileScannerService {
   val NAME: String = "profile"

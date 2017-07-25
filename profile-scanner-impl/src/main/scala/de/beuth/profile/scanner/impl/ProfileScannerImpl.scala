@@ -6,13 +6,15 @@ import java.util.concurrent.TimeUnit
 import akka.Done
 import akka.actor.ActorSystem
 import akka.stream.Materializer
+import akka.stream.scaladsl.Flow
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.broker.TopicProducer
 import com.lightbend.lagom.scaladsl.persistence.{EventStreamElement, PersistentEntityRegistry}
+import de.beuth.ixquick.scanner.api.{IxquickScanUpdateEvent, IxquickScannerService, LinkedInUpdateEvent, XingUpdateEvent}
 import de.beuth.profile.scanner.api.{ProfileScannerService, ProfileUrl}
 import de.beuth.proxybrowser.api.{ProxyBrowserService, ProxyServer, RndProxyServer}
-import de.beuth.utils.UserAgentList
+import de.beuth.utils.{ProfileLink, UserAgentList}
 
 import scala.concurrent.duration._
 import de.beuth.scan.api.ScanService
@@ -20,17 +22,14 @@ import de.beuth.scanner.commons.{ScanFailedEvent, ScanFinishedEvent, ScanStarted
 import net.ruippeixotog.scalascraper.browser.{Browser, JsoupBrowser}
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
-import net.ruippeixotog.scalascraper.dsl.DSL.Parse._
 import org.openqa.selenium._
 import org.openqa.selenium.firefox.{FirefoxBinary, FirefoxDriver}
+import org.openqa.selenium.remote.{CapabilityType, DesiredCapabilities}
 import org.openqa.selenium.support.ui.{FluentWait, Wait}
 import play.api.libs.json.Json
 
 import scala.collection.JavaConversions
 import scala.collection.generic.CanBuildFrom
-import scala.concurrent.Await
-import scala.reflect.io.{File, Path}
-//import org.openqa.selenium.firefox.FirefoxDriver
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.ws.{WSClient, WSResponse}
 
@@ -54,11 +53,40 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry,
                          system: ActorSystem,
                          wsClient: WSClient,
                          scanService: ScanService,
+                         ixquickScannerService: IxquickScannerService,
                          proxyService: ProxyBrowserService)
                         (implicit ec: ExecutionContext, mat: Materializer)
   extends ProfileScannerService {
 
   private final val log: Logger = LoggerFactory.getLogger(classOf[ProfileScannerImpl])
+
+  ixquickScannerService.statusTopic().subscribe.atLeastOnce(
+    Flow[ScanStatusEvent].mapAsync(1) {
+      case e: ScanStartedEvent => refFor(e.keyword).ask(StartScan(Instant.now()))
+      case e: ScanFinishedEvent => refFor(e.keyword).ask(CompleteLinkCollection())
+      case _ => Future.successful(Done)
+    }
+  )
+
+  ixquickScannerService.updateTopic().subscribe.atLeastOnce(
+    Flow[IxquickScanUpdateEvent].mapAsync(1) { event =>
+      for {
+        toScan <- refFor(event.keyword).ask(AddLinks(Instant.now(), event.data))
+        // scan all profiles using a parallelized sequence to run them in parallel and wait for all results to finish
+        scans <- allSuccessful(toScan.map {
+          url: String =>
+            //based on the event type we use a different scan service call
+            event match {
+              case e: LinkedInUpdateEvent => scanLinkedinProfile(event.keyword).invoke(ProfileUrl(url))
+              case e: XingUpdateEvent => scanXingProfile(event.keyword).invoke(ProfileUrl(url))
+             }
+        })
+        //we just return done
+        done <- Future.successful(Done)
+      } yield done
+    }
+  )
+
 
   def scanXingProfile(keyword: String) = ServiceCall { url: ProfileUrl => {
       for {
@@ -75,72 +103,100 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry,
     }
   }
 
+  /**
+    * Scans Linkedin Profile and stores it in the persitent entity
+    * @param keyword
+    * @return
+    */
   override def scanLinkedinProfile(keyword: String): ServiceCall[ProfileUrl, Done] = ServiceCall { url: ProfileUrl => {
-    //@todo replace with PhantomJS, add Proxy, add custom  Headers to fake browsers
+      log.info("Scanning Linkedin Profile...")
+      for {
+        proxyServer <- proxyService.getAvailableProxy().invoke()
+        profile <- fetchLinkedinProfile(url.url, proxyServer)
+        updated <- refFor(keyword).ask(UpdateProfile(Instant.now(), profile))
+      } yield updated
+    }
+  }
+
+  /**
+    * Creates the selenium webdriver fetches the page and invokes the profile page processing when the topcard is visiable
+    *
+    * @param url resource location of profile
+    * @param proxyServer server used to fetch the profile
+    *
+    * @return
+    */
+  private def fetchLinkedinProfile(url: String, proxyServer: ProxyServer): Future[Profile] = {
+    val proxy = new Proxy()
+    proxy.setHttpProxy(proxyServer.toString).setSslProxy(proxyServer.toString)
+    val cap = new DesiredCapabilities()
+    cap.setCapability(CapabilityType.PROXY, proxy)
     System.setProperty("webdriver.gecko.driver", "/opt/geckodriver")
-    val driver = new FirefoxDriver()
-    val profileUrl = url.url
+    val driver = new FirefoxDriver(cap)
     val wait: Wait[WebDriver] = new FluentWait[WebDriver](driver)
       .withTimeout(5, TimeUnit.SECONDS)
       .pollingEvery(2, TimeUnit.SECONDS)
       .ignoring(classOf[NoSuchElementException])
 
-    driver.get(s"https://translate.google.de/translate?hl=de&sl=en&u=$profileUrl&prev=search")
-    Future {
+    driver.get(s"https://translate.google.de/translate?hl=de&sl=en&u=$url&prev=search")
+    processLinkedinProfile(Future {
       //try to get "TopCard" with timeout and polling configured above
       wait.until[WebElement](toGoogleJavaFunction[WebDriver, WebElement](
         //Switching to I-Frame context of Linkedin Page
         (driver: WebDriver) => driver.switchTo().frame(0).findElement(By.id("topcard"))
       )
       )
+    }, driver, url)
+  }
 
-    } flatMap {
-      //when the topcard is ther we are sure that the other cards are also there if they exist so we extract them concurrently
-      case topCard: WebElement => {
-        val nameF = extractOrNone(topCard.findElement(By.id("name")).getText)
-        //val jobTitleF = extractOrNone(topCard.findElement(By.className("headline")).getText)
-        //val localityF = extractOrNone(topCard.findElement(By.className("locality")).getAttribute("textContent"))
-        val skillsF = extractOrNone(linkedinSkillsExtractor(driver))
-        val expF = linkedinWorkExperienceExtractor(driver)
+  /**
+    * Extracts content out of linkedin profile page
+    *
+    * @param we topcard web element
+    * @param driver webdriver that loaded the profile page
+    * @param profileUrl the url of the profile page
+    * @return
+    */
+  private def processLinkedinProfile(we: Future[WebElement], driver: FirefoxDriver, profileUrl: String): Future[Profile] = {
+      we flatMap {
+        //when the topcard is ther we are sure that the other cards are also there if they exist so we extract them concurrently
+        case topCard: WebElement => {
+          val nameF = extractOrNone(topCard.findElement(By.id("name")).getText)
+          val skillsF = extractOrNone(linkedinSkillsExtractor(driver))
+          val expF = linkedinWorkExperienceExtractor(driver)
 
-        //wait for
-        for {
-          name <- nameF
-         // jobTitle <- jobTitleF
-         // locality <- localityF
-          skills <- skillsF
-          exp <- expF
-          profile <- Future {
-            if (name.isEmpty) {
-              throw ProfileScrapingException("Name not found.")
+          for {
+            name <- nameF
+            skills <- skillsF
+            exp <- expF
+            profile <- Future {
+              if (name.isEmpty) {
+                throw ProfileScrapingException("Name not found.")
+              }
+              //to simplify name conversion we assume the "latin" rule to take the first firstname and last lastname
+              val firstAndLastName = name.get.split("\\s+")
+              Profile(
+                scanned = true,
+                //take first part of the name
+                firstname = Some(firstAndLastName.head),
+                // take last part of the name
+                lastname = Some(firstAndLastName.last),
+                updatedAt = Instant.now(),
+                link = ProfileLink(profileUrl, ProfileLink.PROVIDER_LINKED_IN),
+                skills = skills.getOrElse(List()).toSeq,
+                exp = exp.toSeq
+              )
             }
-            val firstAndLastName = name.get.split("\\s+", 2)
-            Profile(
-              firstname = Some(firstAndLastName(0)),
-              lastname = Some(firstAndLastName(1)),
-              updatedAt = Instant.now(),
-              link = ProfileLink(profileUrl, ProfileLink.PROVIDER_LINKED_IN),
-              skills = skills.getOrElse(List()).toSeq,
-              exp = exp.toSeq
-            )
-          }
-          store <- {
-            //@todo log to debug
-            log.info(Json.toJson(profile).toString())
-            driver.quit()
-            refFor(keyword).ask(UpdateProfile(Instant.now(), profile))
-          }
-        } yield store
-       }
-     } recoverWith {
-      case e: Exception => {
-        log.info(e.toString)
-        log.info(e.getStackTraceString)
-        driver.quit()
-        Future.successful(Done)
+          } yield profile
+        }
+      } recoverWith {
+        case e: Exception => {
+          log.info(e.toString)
+          log.info(e.getStackTraceString)
+          driver.quit()
+          throw e
         }
       }
-    }
   }
 
   /**
@@ -339,6 +395,7 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry,
     val firstnameLastname = name.get.split(" ", 2)
 
     Future.successful(Profile(
+      scanned = true,
       firstname = Some(firstnameLastname(0)),
       lastname = Some(firstnameLastname(1)),
       updatedAt = Instant.now(),
@@ -369,8 +426,8 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry,
       /**
         * We drop the urls here since they are not of particular interest for other services
         */
-      case ScanStarted(timestamp, urls) => ScanStartedEvent(keyword, timestamp)
-      case ScanFinished(timestamp, urls) => ScanFinishedEvent(keyword, timestamp)
+      case ScanStarted(timestamp) => ScanStartedEvent(keyword, timestamp)
+      case ScanFinished() => ScanFinishedEvent(keyword, Instant.now())
       //@todo add ScanFailed
       //case ScanFailed(timestamp, errorMsg) => ScanFailedEvent(keyword, timestamp, errorMsg)
     }

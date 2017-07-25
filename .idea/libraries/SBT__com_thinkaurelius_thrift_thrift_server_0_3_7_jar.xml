@@ -1,11 +1,13 @@
 <component name="libraryTable">
   <library name="SBT: com.thinkaurelius.thrift:thrift-server:0.3.7:jar">
     <CLASSES>
-      <root url="jar://$USER_HOME$/.ivy2/cache/com.thinkaurelius.thrift/thrift-server/jars/thrift-server-0.3.7.jar!/" />
+      <root url="jar://$USER_HOME$/.coursier/cache/v1/https/repo1.maven.org/maven2/com/thinkaurelius/thrift/thrift-server/0.3.7/thrift-server-0.3.7.jar!/" />
     </CLASSES>
-    <JAVADOC />
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.coursier/cache/v1/https/repo1.maven.org/maven2/com/thinkaurelius/thrift/thrift-server/0.3.7/thrift-server-0.3.7-javadoc.jar!/" />
+    </JAVADOC>
     <SOURCES>
-      <root url="jar://$USER_HOME$/.ivy2/cache/com.thinkaurelius.thrift/thrift-server/srcs/thrift-server-0.3.7-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.coursier/cache/v1/https/repo1.maven.org/maven2/com/thinkaurelius/thrift/thrift-server/0.3.7/thrift-server-0.3.7-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

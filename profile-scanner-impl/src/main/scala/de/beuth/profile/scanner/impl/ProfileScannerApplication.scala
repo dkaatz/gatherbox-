@@ -7,6 +7,7 @@ import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
 import com.lightbend.lagom.scaladsl.server.{LagomApplication, LagomApplicationContext, LagomApplicationLoader, LagomServer}
 import com.softwaremill.macwire.wire
+import de.beuth.ixquick.scanner.api.IxquickScannerService
 import de.beuth.profile.scanner.api.ProfileScannerService
 import de.beuth.proxybrowser.api.ProxyBrowserService
 //import de.beuth.proxybrowser.api.ProxyBrowserService
@@ -36,6 +37,7 @@ abstract class ProfileScannerApplication(context: LagomApplicationContext)
 {
 
   lazy val scanService = serviceClient.implement[ScanService]
+  lazy val ixquickScannerService = serviceClient.implement[IxquickScannerService]
   lazy val proxyBrowserService = serviceClient.implement[ProxyBrowserService]
 
   // Bind the services that this server provides

@@ -9,6 +9,7 @@ import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 import play.api.libs.json._
 import de.beuth.utils.JsonFormats.singletonFormat
+import de.beuth.utils.ProfileLink
 
 import scala.collection.immutable.Seq
 
@@ -23,47 +24,71 @@ class ProfileScannerEntity extends PersistentEntity {
   /**
     * Emtpy list of Profiles as Initial State of the entity
     */
-  override def initialState: Profiles = Profiles(Instant.now(), Seq())
+  override def initialState: Profiles = Profiles(Instant.now(), false, Seq())
 
   override def behavior: Behavior = {
     case scan => Actions()
 
       /**
-        * On StartScan Command filter out URL's that should not get scanned due to they recently got scanned and return
-        * the list of URL's that get actualy scanned
+        * On start scan we just set collected to false and update the last update time
         */
-      .onCommand[StartScan, Seq[String]] {
-      case (StartScan(timestamp, urls), ctx, state) =>
+      .onCommand[StartScan, Done] {
+        case (StartScan(timestamp), ctx, state) =>
+          ctx.thenPersist(
+            ScanStarted(timestamp)
+          ) {
+            _ => ctx.reply(Done)
+          }
+    }
+
+    /**
+      * Adding links to scan
+      */
+    .onCommand[AddLinks, Seq[String]] {
+      case (AddLinks(timestamp, urls), ctx, state) =>
         //getting all already present profiles that are not out dated
         val notOutDated = state.profiles.filter(profile => timestamp.minus(12, ChronoUnit.HOURS).isBefore(profile.updatedAt))
-        //filter out all profile urls that do exist in the list of profiles that are not outdated yet
-        val linksToScan = urls.filterNot(url => notOutDated.exists(profile => profile.link.url == url))
+
+        val linksToScan =
+          //filter out all profile urls that do exist in the list of profiles that are not outdated yet
+          urls.filterNot(url => notOutDated.exists(profile => profile.link.url == url)) ++
+          //getting al newly added urls
+          urls.filterNot(url => state.profiles.exists(profile => profile.link.url == url))
+
         ctx.thenPersist(
-          ScanStarted(timestamp, linksToScan)
+          LinksAdded(timestamp, linksToScan)
         ) {
           _ => ctx.reply(linksToScan)
         }
-
     }
     /**
-      * On Finish scan persist the event and return done
-       */
-    .onCommand[FinishScan, Done] {
-      case (FinishScan(timestamp, urls), ctx, state) =>
-        ctx.thenPersist(
-          ScanFinished(timestamp, urls)
-        ) {
+      * Link collection is completed
+      */
+    .onCommand[CompleteLinkCollection, Done ] {
+      case (CompleteLinkCollection(), ctx, state) =>
+        ctx.thenPersist(LinkCollectionCompleted()) {
           _ => ctx.reply(Done)
         }
     }
-
     /**
       * On UpdateProfile persist the event and reply with done
       */
     .onCommand[UpdateProfile, Done] {
+      case (UpdateProfile(timestamp, profile), ctx, state)
+        //if we have collected all links and the updated profile is the last not scanned profile we have finished the scan
+        if state.collected
+            && state.profiles.filterNot(_.scanned).length == 1
+            && state.profiles.filterNot(_.scanned).exists(profile.link.url == _.link.url) =>
+        ctx.thenPersistAll(
+          ProfileUpdated(timestamp, profile),
+          ScanFinished()
+        ) {
+          case _ => ctx.reply(Done)
+        }
+      //usal profile update
       case (UpdateProfile(timestamp, profile), ctx, state) =>
         ctx.thenPersist(
-          ProfileUpdated(timestamp, profile)
+        ProfileUpdated(timestamp, profile)
         ) {
           _ => ctx.reply(Done)
         }
@@ -81,12 +106,14 @@ class ProfileScannerEntity extends PersistentEntity {
       /**
         * Events that change the state
         */
-      case (ScanStarted(timestamp, urls), state) => state.startScan(timestamp, urls)
+      case (ScanStarted(timestamp), state) => state.startScan(timestamp)
       case (ProfileUpdated(timestamp, profile), state) => state.updateProfile(timestamp, profile)
+      case (LinksAdded(timestamp, urls), state) => state.addLinks(timestamp, urls)
+      case (LinkCollectionCompleted(), state) => state.completeCollection()
     /**
       *  events that do not change the state but are persisted for communication integrity
       */
-      case (ScanFinished(timestamp, urls), state) => state
+      case (ScanFinished(), state) => state
       case (ProfileScanFailed(url, timestamp, msg), state) => state
     }.orElse(getProfiles)
   }
@@ -102,23 +129,44 @@ class ProfileScannerEntity extends PersistentEntity {
   * a Profile does not have to contain the extracted data and may be only the link to the proile
   *
   * @param updatedAt describes when the profiles where updated last
+  * @param collected describes if all links for the keyword are collected
   * @param profiles list of profiles (a profile may contains just the link)
   */
-case class Profiles(updatedAt: Instant, profiles: Seq[Profile]) {
+case class Profiles(updatedAt: Instant, collected: Boolean, profiles: Seq[Profile]) {
 
   /**
-    * Initializes all not already initialized given Urls and adds them to the list of Profiles
+    * Initializes a new scan by setting collected to false
     *
     * @param timestamp time when event occured
-    * @param urls list of urls to initialize if not already present
     * @return updated entity
     */
-  def startScan(timestamp: Instant, urls: Seq[String]): Profiles = {
-    val newUrls = urls.filter(url => profiles.exists(profile => profile.link.url == url))
+  def startScan(timestamp: Instant): Profiles = {
+    copy(updatedAt = timestamp, collected = false)
+  }
+
+  /**
+    * Set collected to true to mark collection of profile links as finished
+    * @return updated entity
+    */
+  def completeCollection(): Profiles = {
+    copy(collected = true)
+  }
+
+  /**
+    * Adds a sequence of links to the collection of profile links and filters out already existing urls before
+    *
+    * @param timestamp time when event occured
+    * @param urls sequence of urls to add to the collection
+    * @return
+    */
+  def addLinks(timestamp: Instant, urls: Seq[String]): Profiles = {
+    //filter out all profiles that are not getting scanned
+    val oldProfiles = profiles.filterNot(profile => urls.exists(url => profile.link.url == url))
     copy(
       updatedAt = timestamp,
-      // join the existing sequence of profiles with the new initiated profiles
-      profiles = profiles ++ newUrls.map(url => Profile(
+      // join the sequence of profiles that are not rescheduled for scan and the ones that are sheduled for a scan
+      profiles = oldProfiles ++ urls.map(url => Profile(
+        scanned = false,
         firstname = None,
         lastname = None,
         skills = Seq(),
@@ -146,8 +194,6 @@ case class Profiles(updatedAt: Instant, profiles: Seq[Profile]) {
       profiles = profiles.updated(pIdx, profile)
     )
   }
-
-
 }
 
 object Profiles {
@@ -164,7 +210,8 @@ object Profiles {
   * @param skills list of skills extracted from the profile
   * @param exp list of jobs extracted from the profile
   */
-case class Profile(firstname: Option[String],
+case class Profile(scanned: Boolean,
+                   firstname: Option[String],
                    lastname: Option[String],
                    updatedAt: Instant,
                    link: ProfileLink,
@@ -191,43 +238,17 @@ object JobExperience {
   implicit val format: Format[JobExperience] = Json.format
 }
 
-/**
-  * Case class to wrap an Link/URL with a dervied provider/type
-  *
-  * @param url The actual URL/Link
-  * @param provider Descripes the source/provider type of the Link e.g. Xing/Linkedin
-  */
-case class ProfileLink(url: String, provider: String)
-object ProfileLink {
-  implicit val format: Format[ProfileLink] = Json.format
+trait ProfileScannerCommand
 
-  /**
-    * Types
-    */
-  val PROVIDER_LINKED_IN = "linkedin"
-  val PROVIDER_XING = "xing"
-
-  /**
-    * Derives type of an url
-    * @param url Url to dervie type from
-    * @return
-    */
-  def deriveProvider(url: String): String = {
-    // regex pattern for Linkedin URL's
-    val LinkedInPattern = ".*(linkedin).*/in/.*".r
-    // regex pattern for Xing URL's
-    val XingPattern = ".*(xing).*/profil/.*)".r
-
-    //return correct type using pattern matching with the regex patterns defined above
-    url match {
-      case LinkedInPattern(m) => PROVIDER_LINKED_IN
-      case XingPattern(m) => PROVIDER_XING
-      case _ => throw ProfileScrapingException(s"Unable to derive Type from URL: $url")
-    }
-  }
+case class AddLinks(timestamp: Instant, urls: Seq[String]) extends ProfileScannerCommand with ReplyType[Seq[String]]
+object AddLinks {
+  implicit val format: Format[AddLinks] = Json.format
 }
 
-trait ProfileScannerCommand
+case class CompleteLinkCollection() extends ProfileScannerCommand with ReplyType[Done]
+object CompleteLinkCollection {
+  implicit val format: Format[CompleteLinkCollection.type] = singletonFormat(CompleteLinkCollection)
+}
 
 case class UpdateProfile(timestamp: Instant, profile: Profile) extends ProfileScannerCommand with ReplyType[Done]
 object UpdateProfile {
@@ -239,14 +260,9 @@ object ProfileScanFailure {
   implicit val format: Format[ProfileScanFailure] = Json.format
 }
 
-case class StartScan(timestamp: Instant, urls: Seq[String]) extends ProfileScannerCommand with ReplyType[Seq[String]]
+case class StartScan(timestamp: Instant) extends ProfileScannerCommand with ReplyType[Done]
 object StartScan {
   implicit val format: Format[StartScan] = Json.format
-}
-
-case class FinishScan(timestamp: Instant, urls: Seq[String]) extends ProfileScannerCommand with ReplyType[Done]
-object FinishScan {
-  implicit val format: Format[FinishScan] = Json.format
 }
 
 case object GetProfiles extends ProfileScannerCommand with ReplyType[Profiles] {
@@ -265,6 +281,16 @@ sealed trait ProfileScannerEvent extends AggregateEvent[ProfileScannerEvent] {
   override def aggregateTag: AggregateEventTag[ProfileScannerEvent] = ProfileScannerEvent.Tag
 }
 
+case class LinkCollectionCompleted() extends ProfileScannerEvent
+object LinkCollectionCompleted {
+  implicit val format: Format[LinkCollectionCompleted.type] = singletonFormat(LinkCollectionCompleted)
+}
+
+case class LinksAdded(timestamp: Instant, urls: Seq[String]) extends ProfileScannerEvent
+object LinksAdded {
+  implicit val format: Format[LinksAdded] = Json.format
+}
+
 case class ProfileUpdated(timestamp: Instant, profile: Profile) extends ProfileScannerEvent
 object ProfileUpdated {
   implicit val format: Format[ProfileUpdated] = Json.format
@@ -275,24 +301,27 @@ object ProfileScanFailed {
   implicit val format: Format[ProfileScanFailed] = Json.format
 }
 
-case class ScanStarted(timestamp: Instant, urls: Seq[String]) extends ProfileScannerEvent
+case class ScanStarted(timestamp: Instant) extends ProfileScannerEvent
 object ScanStarted {
   implicit val format: Format[ScanStarted] = Json.format
 }
 
-case class ScanFinished(timestamp: Instant, urls: Seq[String]) extends ProfileScannerEvent
+case class ScanFinished() extends ProfileScannerEvent
 object ScanFinished {
-  implicit val format: Format[ScanFinished] = Json.format
+  implicit val format: Format[ScanFinished.type] = singletonFormat(ScanFinished)
 }
 
 object ProfileScanSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: Seq[JsonSerializer[_]] = Seq(
     JsonSerializer[Profile],
     JsonSerializer[JobExperience],
+    JsonSerializer[LinkCollectionCompleted.type],
+    JsonSerializer[CompleteLinkCollection.type],
+    JsonSerializer[AddLinks],
+    JsonSerializer[LinksAdded],
     JsonSerializer[StartScan],
     JsonSerializer[ScanStarted],
-    JsonSerializer[ScanFinished],
-    JsonSerializer[FinishScan],
+    JsonSerializer[ScanFinished.type],
     JsonSerializer[UpdateProfile],
     JsonSerializer[ProfileUpdated],
     JsonSerializer[ProfileScanFailed],

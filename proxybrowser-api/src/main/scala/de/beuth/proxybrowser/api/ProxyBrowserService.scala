@@ -75,11 +75,13 @@ trait ProxyBrowserService extends Service {
   *
   * @param host ip or hostname of server
   * @param port port of server
-  * @param protocol_type type of protocol: https/http/sock4/sock5
   * @param country country the server is in
-  * @param country_code code of the country: eg. de -> germany, us -> united states, cn -> china
   */
-case class ProxyServer(host: String, port: Int, protocol_type: String, country: String, country_code: String)
+case class ProxyServer(host: String, port: Int, country: String) {
+    //
+    override def toString = s"$host:$port"
+    def toFullString = s"$host:$port - $country"
+}
 
 /**
   * Singleton Object holding the implict json conversion rules wich can in this case not be json.format since
@@ -91,19 +93,17 @@ object ProxyServer {
       Json.obj(
         "ip" -> ps.host,
         "port" -> ps.port.toString,
-        "type" -> ps.protocol_type,
-        "country" -> ps.country,
-        "country_code" -> ps.country_code
+        "country" -> ps.country
       )
   }
 
   implicit val reads: Reads[ProxyServer] = (
     (JsPath \ "ip").read[String] and
     (JsPath \ "port").read[String] and
-    (JsPath \ "type").read[String] and
-    (JsPath \ "country").read[String] and
-    (JsPath \ "country_code").read[String]
-  )((host, port, protocol_type, country, country_code) => ProxyServer(host, port.toInt, protocol_type, country, country_code))
+    (JsPath \ "country").read[String]
+  )((host, port, country) => ProxyServer(host, port.toInt, country))
+
+
 }
 
 /**

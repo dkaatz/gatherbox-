@@ -1,11 +1,13 @@
 <component name="libraryTable">
   <library name="SBT: it.unimi.dsi:fastutil:6.5.7:jar">
     <CLASSES>
-      <root url="jar://$USER_HOME$/.ivy2/cache/it.unimi.dsi/fastutil/jars/fastutil-6.5.7.jar!/" />
+      <root url="jar://$USER_HOME$/.coursier/cache/v1/https/repo1.maven.org/maven2/it/unimi/dsi/fastutil/6.5.7/fastutil-6.5.7.jar!/" />
     </CLASSES>
-    <JAVADOC />
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.coursier/cache/v1/https/repo1.maven.org/maven2/it/unimi/dsi/fastutil/6.5.7/fastutil-6.5.7-javadoc.jar!/" />
+    </JAVADOC>
     <SOURCES>
-      <root url="jar://$USER_HOME$/.ivy2/cache/it.unimi.dsi/fastutil/srcs/fastutil-6.5.7-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.coursier/cache/v1/https/repo1.maven.org/maven2/it/unimi/dsi/fastutil/6.5.7/fastutil-6.5.7-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

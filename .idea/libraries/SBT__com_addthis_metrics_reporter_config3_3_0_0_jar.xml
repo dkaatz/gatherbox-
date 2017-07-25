@@ -1,11 +1,13 @@
 <component name="libraryTable">
   <library name="SBT: com.addthis.metrics:reporter-config3:3.0.0:jar">
     <CLASSES>
-      <root url="jar://$USER_HOME$/.ivy2/cache/com.addthis.metrics/reporter-config3/jars/reporter-config3-3.0.0.jar!/" />
+      <root url="jar://$USER_HOME$/.coursier/cache/v1/https/repo1.maven.org/maven2/com/addthis/metrics/reporter-config3/3.0.0/reporter-config3-3.0.0.jar!/" />
     </CLASSES>
-    <JAVADOC />
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.coursier/cache/v1/https/repo1.maven.org/maven2/com/addthis/metrics/reporter-config3/3.0.0/reporter-config3-3.0.0-javadoc.jar!/" />
+    </JAVADOC>
     <SOURCES>
-      <root url="jar://$USER_HOME$/.ivy2/cache/com.addthis.metrics/reporter-config3/srcs/reporter-config3-3.0.0-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.coursier/cache/v1/https/repo1.maven.org/maven2/com/addthis/metrics/reporter-config3/3.0.0/reporter-config3-3.0.0-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

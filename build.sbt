@@ -212,15 +212,31 @@ lazy val `profile-scanner-impl` = (project in file("profile-scanner-impl"))
     )
   )
   .settings(lagomForkedTestSettings: _*)
-  .dependsOn(`scan-api`, `utils`,`scanner-commons`, `profile-scanner-api`, `proxybrowser-impl`)
+  .dependsOn(`scan-api`, `ixquick-scanner-api`, `utils`,`scanner-commons`, `profile-scanner-api`, `proxybrowser-impl`)
 
 /**
   * Cleanup on start to not have events / data in queue
   */
-lagomKafkaCleanOnStart in ThisBuild := true
+//lagomKafkaCleanOnStart in ThisBuild := true
 lagomCassandraCleanOnStart in ThisBuild := true
+
+/**
+  * Use external kafka server
+  *
+  * Server configuration can be found at:
+  *
+  * OSX installed with homebrew: /usr/local/Cellar/kafka/0.11.0.0/libexec/config/server.properties
+  *
+  */
+lagomKafkaEnabled in ThisBuild := false
+lagomKafkaPort in ThisBuild := 9092
 
 /**
   * External Sevices
   */
 lagomUnmanagedServices in ThisBuild := Map("censys" -> "https://www.censys.io:443")
+
+/**
+  * Cached update resolution
+  */
+updateOptions := updateOptions.value.withCachedResolution(true)

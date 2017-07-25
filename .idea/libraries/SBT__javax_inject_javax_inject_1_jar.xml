@@ -1,11 +1,13 @@
 <component name="libraryTable">
   <library name="SBT: javax.inject:javax.inject:1:jar">
     <CLASSES>
-      <root url="jar://$USER_HOME$/Applications/activator-1.2.12/repository/javax.inject/javax.inject/1/jars/javax.inject.jar!/" />
+      <root url="jar://$USER_HOME$/.coursier/cache/v1/https/repo1.maven.org/maven2/javax/inject/javax.inject/1/javax.inject-1.jar!/" />
     </CLASSES>
-    <JAVADOC />
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.coursier/cache/v1/https/repo1.maven.org/maven2/javax/inject/javax.inject/1/javax.inject-1-javadoc.jar!/" />
+    </JAVADOC>
     <SOURCES>
-      <root url="jar://$USER_HOME$/.ivy2/cache/javax.inject/javax.inject/srcs/javax.inject-1-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.coursier/cache/v1/https/repo1.maven.org/maven2/javax/inject/javax.inject/1/javax.inject-1-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

@@ -28,7 +28,8 @@ class CensysScannerImpl(registry: PersistentEntityRegistry, censysService: Censy
     scanService.statusTopic().subscribe.atLeastOnce(
       Flow[ScanStatusEvent].mapAsync(1) {
         case ev: ScanStartedEvent => {
-          this.search(ev.keyword).invoke()
+          log.info(s"ScanStartedEvent received - Keywor: ${ev.keyword}")
+          search(ev.keyword).invoke()
         }
         case _ => Future.successful(Done)
       }
@@ -57,6 +58,7 @@ class CensysScannerImpl(registry: PersistentEntityRegistry, censysService: Censy
     * @return
     */
   private def scanIpv4(keyword: String, page: Int = 1): Future[Seq[CensysIpv4Result]] = {
+    log.info(s"Scanning Ipv4 - Keyword: $keyword - Page: $page")
     for {
       ipv4Result: CensysIpv4SearchResult <- censysService.searchIpv4().invoke(CensysQuery(query = "\"" + keyword + "\"", page = page))
       nextPage: Seq[CensysIpv4Result] <- if(ipv4Result.metadata.pages >= ipv4Result.metadata.page) scanIpv4(keyword, page + 1) else Future.successful(Seq())

@@ -29,7 +29,7 @@ class ProxyBrowserEntity extends PersistentEntity {
       .onCommand[Add, Done] {
         case (Add(servers), ctx, state) => {
 
-          //filter servers that are already added
+          //filter servers that are already added somewhere (prevents double adding of servers)
           val filteredList = servers
             .filterNot(newProxy => state.free.exists(freeProxy => newProxy.host == freeProxy.host && newProxy.port == freeProxy.port))
             .filterNot(newProxy => state.reports.exists(freeProxy => newProxy.host == freeProxy.host && newProxy.port == freeProxy.port))
@@ -152,6 +152,8 @@ object ProxyBorwserSerializerRegistry extends JsonSerializerRegistry {
     JsonSerializer[GetNext.type],
     JsonSerializer[UpdateFree],
     JsonSerializer[UpdateReported],
+    JsonSerializer[Add],
+    JsonSerializer[Added],
     JsonSerializer[InUseUpdated],
     JsonSerializer[FreeUpdated],
     JsonSerializer[ReportedUpdated]

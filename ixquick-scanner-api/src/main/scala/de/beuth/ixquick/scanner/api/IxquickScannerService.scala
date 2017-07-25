@@ -1,14 +1,12 @@
 package de.beuth.ixquick.scanner.api
 
-
-import java.time.Instant
-
 import akka.{Done, NotUsed}
 import de.beuth.scanner.commons._
-import com.lightbend.lagom.scaladsl.api.Service.pathCall
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 import play.api.libs.json._
+import scala.collection.immutable.Seq
+
 /**
   * Created by David on 13.06.17.
   */
