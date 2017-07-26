@@ -80,6 +80,7 @@ object UpdateScan {
   implicit val format: Format[UpdateScan] = Json.format
 }
 
+
 sealed trait CensysScannerEvent extends AggregateEvent[CensysScannerEvent] {
   override def aggregateTag: AggregateEventTag[CensysScannerEvent] = CensysScannerEvent.Tag
 }

@@ -3,6 +3,7 @@ package de.beuth.censys.scanner.impl
 import java.time.Instant
 import java.util.concurrent.TimeUnit
 
+import akka.persistence.query.Offset
 import akka.stream.scaladsl.Flow
 import akka.{Done, NotUsed}
 import com.lightbend.lagom.scaladsl.api.ServiceCall
@@ -44,8 +45,14 @@ class CensysScannerImpl(registry: PersistentEntityRegistry, censysService: Censy
       for {
         scanStarted <- refFor(keyword).ask(StartScan(Instant.now()))
         scanResults <- scanIpv4(keyword)
-        updated <- refFor(keyword).ask(UpdateScan(scanResults))
-        finished <- refFor(keyword).ask(FinishScan(Instant.now()))
+        updated <- {
+          log.info("----- Updating Censys Results ---- ")
+          refFor(keyword).ask(UpdateScan(scanResults))
+        }
+        finished <-  {
+          log.info("----- Censys Finished ----")
+          refFor(keyword).ask(FinishScan(Instant.now()))
+        }
       } yield finished
     }
   }
@@ -76,13 +83,22 @@ class CensysScannerImpl(registry: PersistentEntityRegistry, censysService: Censy
     TopicProducer.singleStreamWithOffset {
       fromOffset =>
         registry.eventStream(CensysScannerEvent.Tag , fromOffset)
-          .map(ev => (convertEvent(ev.entityId, ev), ev.offset))
+          .filter(
+            _.event match {
+              case x@(_: ScanStarted | _: ScanFinished) => true
+              case _ => false
+            }
+          )
+          .mapAsync(1)(ev => {
+            log.info(s"converting event ${ev.event.toString}")
+            convertEvent(ev)
+          })
     }
 
-  private def convertEvent(keyword: String, scanEvent: EventStreamElement[CensysScannerEvent]): ScanStatusEvent = {
-    scanEvent.event match {
-      case ScanStarted(timestamp) => ScanStartedEvent(keyword, timestamp)
-      case ScanFinished(timestamp) => ScanFinishedEvent(keyword, timestamp)
+  private def convertEvent(scanEvent: EventStreamElement[CensysScannerEvent]): Future[(ScanStatusEvent, Offset)] = {
+    scanEvent match {
+      case EventStreamElement(keyword, ScanStarted(timestamp), offset) => Future.successful((ScanStartedEvent(keyword, timestamp), offset))
+      case EventStreamElement(keyword, ScanFinished(timestamp), offset) => Future.successful((ScanFinishedEvent(keyword, timestamp), offset))
       //case ScanFailed(timestamp, errorMsg) => ScanFailedEvent(keyword, timestamp, errorMsg)
     }
   }

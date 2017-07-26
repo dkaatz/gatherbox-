@@ -59,16 +59,19 @@ class ScanServiceImpl(registry: PersistentEntityRegistry,
     * @param name Name of event source (scanner)
     * @return
     */
-  private def scanStatusEventHandler(name: String) = Flow[ScanStatusEvent].mapAsync(1) {
-    case ev: ScanStartedEvent => {
-      log.info(s"Event: ScanStartedEvent - Scanner: $name - Keyword: ${ev.keyword}")
-      refFor(ev.keyword).ask(StartScanner(name, ev.timestamp))
+  private def scanStatusEventHandler(name: String) = {
+    Flow[ScanStatusEvent].mapAsync(1) {
+      case ev: ScanStartedEvent => {
+        log.info(s"Event: ScanStartedEvent - Scanner: $name - Keyword: ${ev.keyword}")
+        refFor(ev.keyword).ask(StartScanner(name, ev.timestamp))
+      }
+      case ev: ScanFinishedEvent => {
+        log.info(s"Event: ScanFinishedEvent - Scanner: $name - Keyword: ${ev.keyword}")
+        refFor(ev.keyword).ask(FinishScanner(name))
+      }
+      case other => Future.successful(Done)
+      //@todo handle scanner failed
     }
-    case ev: ScanFinishedEvent => {
-      log.info(s"Event: ScanFinishedEvent - Scanner: $name - Keyword: ${ev.keyword}")
-      refFor(ev.keyword).ask(FinishScanner(name))
-    }
-    //@todo handle scanner failed
   }
 
   def startScan(keyword: String) = ServiceCall { _ =>

@@ -62,30 +62,39 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry,
 
   ixquickScannerService.statusTopic().subscribe.atLeastOnce(
     Flow[ScanStatusEvent].mapAsync(1) {
-      case e: ScanStartedEvent => refFor(e.keyword).ask(StartScan(Instant.now()))
-      case e: ScanFinishedEvent => refFor(e.keyword).ask(CompleteLinkCollection())
-      case _ => Future.successful(Done)
+      case e: ScanStartedEvent => {
+        log.info("Received scanStartedEvent form Ixquick")
+        refFor(e.keyword).ask(StartScan(Instant.now()))
+      }
+      case e: ScanFinishedEvent => {
+        log.info("Received ScanFInishedEvent form Ixquick")
+        refFor(e.keyword).ask(CompleteLinkCollection())
+      }
+      case other => Future.successful(Done)
     }
   )
 
   ixquickScannerService.updateTopic().subscribe.atLeastOnce(
-    Flow[IxquickScanUpdateEvent].mapAsync(1) { event =>
-      for {
-        toScan <- refFor(event.keyword).ask(AddLinks(Instant.now(), event.data))
-        // scan all profiles using a parallelized sequence to run them in parallel and wait for all results to finish
-        scans <- allSuccessful(toScan.map {
-          url: String =>
-            //based on the event type we use a different scan service call
-            event match {
-              case e: LinkedInUpdateEvent => scanLinkedinProfile(event.keyword).invoke(ProfileUrl(url))
-              case e: XingUpdateEvent => scanXingProfile(event.keyword).invoke(ProfileUrl(url))
-             }
-        })
-        //we just return done
-        done <- Future.successful(Done)
-      } yield done
+    Flow[IxquickScanUpdateEvent].mapAsync(1) {
+      case event: LinkedInUpdateEvent => handleUpdateEvent(event, scanLinkedinProfile)
+      case event: XingUpdateEvent => handleUpdateEvent(event, scanXingProfile)
+      case other => Future.successful(Done)
     }
   )
+
+  private def handleUpdateEvent(event: IxquickScanUpdateEvent, serviceCall: (String) => ServiceCall[ProfileUrl, Done]) =
+    for {
+      toScan <- {
+        log.info("Received UpdateEvent form Ixquick")
+        refFor(event.keyword).ask(AddLinks(Instant.now(), event.data))
+      }
+      // scan all profiles using a parallelized sequence to run them in parallel and wait for all results to finish
+      scans <- allSuccessful(toScan.map {
+        url: String => serviceCall(event.keyword).invoke(ProfileUrl(url))
+      })
+      //we just return done
+      done <- Future.successful(Done)
+    } yield done
 
 
   def scanXingProfile(keyword: String) = ServiceCall { url: ProfileUrl => {

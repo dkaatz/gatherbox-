@@ -68,7 +68,7 @@ class ScanEntity extends PersistentEntity {
 
     //scanner already started and still running
     case (StartScanner(name, timestamp), ctx, state)
-      if !state.scanner.filter(_.name == name)(0).startedAt.isEmpty && !state.scanner.filter(_.name == name).filter(_.finished).isEmpty => {
+      if !state.scanner.filter(_.name == name).head.startedAt.isEmpty && state.scanner.filter(_.name == name).filterNot(_.finished).isEmpty => {
       ctx.invalidCommand(s"Scanner <$name> can not start twice.")
       ctx.done
     }
@@ -85,7 +85,7 @@ class ScanEntity extends PersistentEntity {
       ctx.done
 
     //scanner already finsihed
-    case (FinishScanner(name), ctx, state) if state.scanner.filter(_.name == name).filter(_.finished).isEmpty =>
+    case (FinishScanner(name), ctx, state) if state.scanner.filter(_.name == name).filterNot(_.finished).isEmpty =>
       ctx.invalidCommand(s"Scanner <$name> can not finish twice.")
       ctx.done
 

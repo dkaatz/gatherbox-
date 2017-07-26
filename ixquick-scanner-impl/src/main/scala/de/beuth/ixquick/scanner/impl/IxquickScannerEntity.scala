@@ -119,6 +119,10 @@ object UpdateSearch {
   implicit val format: Format[UpdateSearch] = Json.format
 }
 
+case object GetScan extends IxquickScannerCommand with ReplyType[Scan] {
+  implicit val format: Format[GetScan.type] = singletonFormat(GetScan)
+}
+
 
 /**
   * Events
@@ -126,34 +130,37 @@ object UpdateSearch {
 object IxquickScannerEvent {
   val Tag = AggregateEventTag[IxquickScannerEvent]
 }
+
 sealed trait IxquickScannerEvent extends AggregateEvent[IxquickScannerEvent] {
   override def aggregateTag: AggregateEventTag[IxquickScannerEvent] = IxquickScannerEvent.Tag
 }
 
-case class ScanStarted(timestamp: Instant) extends IxquickScannerEvent
+sealed trait IxquickScannerStatusEvent extends IxquickScannerEvent  {
+}
+
+sealed trait IxquickScannerUpdateEvent extends IxquickScannerEvent {
+}
+
+case class ScanStarted(timestamp: Instant) extends IxquickScannerStatusEvent
 
 object ScanStarted {
   implicit val format: Format[ScanStarted] = Json.format
 }
 
-case class ScanFinished(timestamp: Instant) extends IxquickScannerEvent
+case class ScanFinished(timestamp: Instant) extends IxquickScannerStatusEvent
 
 object ScanFinished {
   implicit val format: Format[ScanFinished] = Json.format
 }
 
-case class ScanFailed(timestamp: Instant, errorMsg: String) extends IxquickScannerEvent
+case class ScanFailed(timestamp: Instant, errorMsg: String) extends IxquickScannerStatusEvent
 object ScanFailed {
   implicit val format: Format[ScanFailed] = Json.format
 }
 
-case class SearchUpdated(site: String, page: Int, links: Seq[String]) extends IxquickScannerEvent
+case class SearchUpdated(site: String, page: Int, links: Seq[String]) extends IxquickScannerUpdateEvent
 object SearchUpdated {
   implicit val format: Format[SearchUpdated] = Json.format
-}
-
-case object GetScan extends IxquickScannerCommand with ReplyType[Scan] {
-  implicit val format: Format[GetScan.type] = singletonFormat(GetScan)
 }
 
 object IxquickScanSerializerRegistry extends JsonSerializerRegistry {
