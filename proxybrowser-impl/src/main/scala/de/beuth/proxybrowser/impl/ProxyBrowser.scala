@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.{Done, NotUsed}
 import com.lightbend.lagom.scaladsl.api.ServiceCall
+import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.InvalidCommandException
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRegistry
 import de.beuth.proxybrowser.api._
 import org.slf4j.{Logger, LoggerFactory}
@@ -19,7 +20,10 @@ import scala.concurrent.duration._
   */
 class ProxyBrowser(registry: PersistentEntityRegistry, system: ActorSystem, wsClient: WSClient)(implicit ec: ExecutionContext, mat: Materializer) extends ProxyBrowserService {
 
-  fetchServersFromNordVPN("germany")
+//  fetchServersFromNordVPN("france")
+//  fetchServersFromNordVPN("germany")
+//  fetchServersFromNordVPN("austria")
+  fetchServersFromNordVPN("own")
 
   private final val log: Logger = LoggerFactory.getLogger(classOf[ProxyBrowser])
 
@@ -30,22 +34,32 @@ class ProxyBrowser(registry: PersistentEntityRegistry, system: ActorSystem, wsCl
   }
 
   def free() = ServiceCall { proxyServer => {
-      log.info("Freeing Proxy ${proxyServer.toFullString}");
-      refFor().ask(UpdateFree(proxyServer))
+      log.info(s"Freeing Proxy ${proxyServer.toFullString}");
+      refFor().ask(UpdateFree(proxyServer)).recover {
+        case e: InvalidCommandException => Done
+      }
     }
   }
 
   def report() = ServiceCall { proxyServer => {
       log.info(s"Reporting proxy: ${proxyServer.toFullString}");
       //we just fetch another server on each report to not run out of servers (limit 240 per 24 hours per IP)
-      fetchProxyFromGimmeProxyAndPersistServer()
-      refFor().ask(UpdateReported(proxyServer))
+      try {
+        fetchProxyFromGimmeProxyAndPersistServer()
+      } catch {
+        case _: Throwable => Future.successful(Done)
+      }
+      refFor().ask(UpdateReported(proxyServer)).recover {
+        case e: InvalidCommandException => Done
+      }
     }
   }
 
   def add() = ServiceCall { proxyServers => {
       log.info(s"Adding multiple proxies ${proxyServers.toString}");
-      refFor().ask(Add(proxyServers))
+      refFor().ask(Add(proxyServers)).recover {
+        case e: InvalidCommandException => Done
+      }
     }
   }
 
@@ -85,21 +99,55 @@ class ProxyBrowser(registry: PersistentEntityRegistry, system: ActorSystem, wsCl
           }
         })
       }
+      proxyServersAdded <- {
+        if(country == "own") {
+          Future.successful(Seq[ProxyServer](
+            ProxyServer("50.3.134.31", 80,  "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("151.237.190.53", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("91.108.177.146", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("91.108.176.109", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("5.34.242.201", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("185.119.255.102", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("50.3.134.114", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("151.237.190.147", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("91.108.176.189", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("5.34.242.35", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("46.29.250.252", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("46.29.250.241", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("5.34.243.55", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("5.157.40.204", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("5.34.242.237", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("176.61.138.146", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("91.108.178.119", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("5.34.243.32", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("5.34.242.114", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("185.119.255.104", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("185.119.255.232", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("89.37.66.106", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("50.3.134.48", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("50.3.134.94", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("188.215.22.57", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("185.119.255.237", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("91.108.176.2", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("188.215.22.64", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("185.119.255.124", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
+            ProxyServer("50.3.134.55", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ"))
+          ))
+        } else {
+          Future.successful(proxyServers)
+        }
+      }
       logging <- {
-        log.info(s"Adding ${proxyServers.length} ProxyServers...")
+        log.info(s"Adding ${proxyServersAdded.length} ProxyServers...")
         Future.successful(Done)
       }
-      //adding <- this.add().invoke(proxyServers)
-      adding <- add().invoke(Seq[ProxyServer](
-        ProxyServer("134.213.208.187", 5007, "UK"),
-        ProxyServer("164.132.231.172", 80, "France"),
-        ProxyServer("83.247.7.22", 80, "Netherlands"),
-        ProxyServer("213.152.165.13", 3128, "Netherlands"),
-        ProxyServer("89.38.151.64", 1189, "France"),
-        ProxyServer("164.132.231.172", 8080, "France"),
-        ProxyServer("134.213.148.8", 3130, "UK"),
-        ProxyServer("52.30.137.0", 80, "Ireland")
-      ))
+      adding <- this.add().invoke(proxyServersAdded)
+//      adding <- {
+//        for (a <- 0 until 10) {
+//          fetchProxyFromGimmeProxyAndPersistServer()
+//        }
+//        Future.successful(Done)
+//      }
     } yield adding
   }
 

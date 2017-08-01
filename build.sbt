@@ -2,14 +2,13 @@ organization in ThisBuild := "de.beuth"
 version in ThisBuild := "1.0-SNAPSHOT"
 
 // the Scala version that will be used for cross-compiled libraries
-scalaVersion in ThisBuild := "2.11.8"
+scalaVersion in ThisBuild := "2.11.11"
 
 val macwire = "com.softwaremill.macwire" %% "macros" % "2.2.5" % "provided"
 val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % Test
-val playJsonDerivedCodecs = "org.julienrf" %% "play-json-derived-codecs" % "3.3"
+val playJsonDerivedCodecs = "org.julienrf" %% "play-json-derived-codecs" % "4.0.0"
 val scalaScraper = "net.ruippeixotog" %% "scala-scraper" % "2.0.0-RC2"
-val selenium = "org.seleniumhq.selenium" % "selenium-java" % "3.0.0"
-val guavaEnforce = "com.google.guava" % "guava" % "19.0"
+val selenium = "org.seleniumhq.selenium" % "selenium-java" % "3.4.0"
 
 
 lazy val `gatherbox` = (project in file("."))
@@ -217,7 +216,7 @@ lazy val `profile-scanner-impl` = (project in file("profile-scanner-impl"))
 /**
   * Cleanup on start to not have events / data in queue
   */
-//lagomKafkaCleanOnStart in ThisBuild := true
+lagomKafkaCleanOnStart in ThisBuild := true
 lagomCassandraCleanOnStart in ThisBuild := true
 
 /**
@@ -228,8 +227,8 @@ lagomCassandraCleanOnStart in ThisBuild := true
   * OSX installed with homebrew: /usr/local/Cellar/kafka/0.11.0.0/libexec/config/server.properties
   *
   */
-lagomKafkaEnabled in ThisBuild := false
-lagomKafkaPort in ThisBuild := 9092
+lagomKafkaEnabled in ThisBuild := true
+//lagomKafkaPort in ThisBuild := 9092
 
 /**
   * External Sevices
@@ -239,4 +238,4 @@ lagomUnmanagedServices in ThisBuild := Map("censys" -> "https://www.censys.io:44
 /**
   * Cached update resolution
   */
-updateOptions := updateOptions.value.withCachedResolution(true)
+//updateOptions := updateOptions.value.withCachedResolution(true)

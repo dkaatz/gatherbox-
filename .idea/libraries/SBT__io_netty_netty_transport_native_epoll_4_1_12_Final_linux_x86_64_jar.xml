@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="SBT: io.netty:netty-transport-native-epoll:4.1.12.Final:linux-x86_64:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.coursier/cache/v1/https/repo1.maven.org/maven2/io/netty/netty-transport-native-epoll/4.1.12.Final/netty-transport-native-epoll-4.1.12.Final-linux-x86_64.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

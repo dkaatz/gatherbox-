@@ -18,7 +18,6 @@ object IxquickScannerService {
 }
 
 trait IxquickScannerService extends Service with ScanStatusTopics {
-//  extends ScanServiceWithDefaultTopics {
 
 
   def scanLinkedin(keyword: String): ServiceCall[NotUsed, Done]
@@ -39,34 +38,8 @@ trait IxquickScannerService extends Service with ScanStatusTopics {
   def updateTopic(): Topic[IxquickScanUpdateEvent]
 }
 
-case class LinkedInUpdateEvent(keyword: String, data: Seq[String]) extends IxquickScanUpdateEvent
-object LinkedInUpdateEvent {
-  implicit val format: Format[LinkedInUpdateEvent] = Json.format
-}
-
-case class XingUpdateEvent(keyword: String, data: Seq[String]) extends IxquickScanUpdateEvent
-object XingUpdateEvent {
-  implicit val format: Format[XingUpdateEvent] = Json.format
-}
-
-sealed trait IxquickScanUpdateEvent {
-  def keyword: String
-  def data: Seq[String]
-}
-
+case class IxquickScanUpdateEvent(keyword: String, data: Seq[String])
 object IxquickScanUpdateEvent {
-  implicit val reads: Reads[IxquickScanUpdateEvent] = {
-    (__ \ "event_type").read[String].flatMap {
-      case "linkedinUpdated" => implicitly[Reads[LinkedInUpdateEvent]].map(identity)
-      case "xingUpdated" => implicitly[Reads[XingUpdateEvent]].map(identity)
-      case other => Reads(_ => JsError(s"Unknown event type $other"))
-    }
-  }
-  implicit val writes: Writes[IxquickScanUpdateEvent] = Writes { event =>
-    val (jsValue, eventType) = event match {
-      case m: LinkedInUpdateEvent => (Json.toJson(m)(LinkedInUpdateEvent.format), "linkedinUpdated")
-      case m: XingUpdateEvent => (Json.toJson(m)(XingUpdateEvent.format), "xingUpdated")
-    }
-    jsValue.transform(__.json.update((__ \ 'event_type).json.put(JsString(eventType)))).get
-  }
+  implicit val format: Format[IxquickScanUpdateEvent] = Json.format
 }
+

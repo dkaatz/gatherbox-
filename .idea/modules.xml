@@ -9,6 +9,8 @@
       <module fileurl="file://$PROJECT_DIR$/censys-scanner-impl/censys-scanner-impl.iml" filepath="$PROJECT_DIR$/censys-scanner-impl/censys-scanner-impl.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/censys-scanner-impl-build.iml" filepath="$PROJECT_DIR$/.idea/modules/censys-scanner-impl-build.iml" />
       <module fileurl="file://$PROJECT_DIR$/scan-api/censysscan-api.iml" filepath="$PROJECT_DIR$/scan-api/censysscan-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/databreach-api/databreach-api.iml" filepath="$PROJECT_DIR$/databreach-api/databreach-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/databreach-processor/databreach-processor.iml" filepath="$PROJECT_DIR$/databreach-processor/databreach-processor.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/gatherbox.iml" filepath="$PROJECT_DIR$/.idea/modules/gatherbox.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/gatherbox-api.iml" filepath="$PROJECT_DIR$/.idea/modules/gatherbox-api.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/gatherbox-api-build.iml" filepath="$PROJECT_DIR$/.idea/modules/gatherbox-api-build.iml" />

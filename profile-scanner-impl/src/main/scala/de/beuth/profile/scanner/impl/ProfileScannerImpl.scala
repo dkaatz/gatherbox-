@@ -11,7 +11,7 @@ import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.broker.TopicProducer
 import com.lightbend.lagom.scaladsl.persistence.{EventStreamElement, PersistentEntityRegistry}
-import de.beuth.ixquick.scanner.api.{IxquickScanUpdateEvent, IxquickScannerService, LinkedInUpdateEvent, XingUpdateEvent}
+import de.beuth.ixquick.scanner.api.{IxquickScanUpdateEvent, IxquickScannerService}
 import de.beuth.profile.scanner.api.{ProfileScannerService, ProfileUrl}
 import de.beuth.proxybrowser.api.{ProxyBrowserService, ProxyServer, RndProxyServer}
 import de.beuth.utils.{ProfileLink, UserAgentList}
@@ -25,18 +25,24 @@ import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import org.openqa.selenium._
 import org.openqa.selenium.firefox.{FirefoxBinary, FirefoxDriver}
 import org.openqa.selenium.remote.{CapabilityType, DesiredCapabilities}
-import org.openqa.selenium.support.ui.{FluentWait, Wait}
+import org.openqa.selenium.support.ui.{FluentWait, Wait, WebDriverWait}
 import play.api.libs.json.Json
 
-import scala.collection.JavaConversions
+import scala.collection.{JavaConversions, mutable}
 import scala.collection.generic.CanBuildFrom
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.ws.{WSClient, WSResponse}
 
-import scala.collection.immutable.Seq
-import scala.concurrent.{ExecutionContext, Future}
-import com.google.common.base.{ Function => GFunction }
+import scala.collection.immutable.{Queue, Seq}
+import scala.concurrent.{Await, ExecutionContext, Future}
+import com.google.common.base.{Function => GFunction}
+import org.openqa.selenium.chrome.{ChromeDriver, ChromeDriverService, ChromeOptions}
+import org.openqa.selenium.phantomjs.{PhantomJSDriver, PhantomJSDriverService}
 
+import scala.concurrent.duration._
+
+//just a second
+import java.io._
 
 /**
   * Implementation of [[de.beuth.profile.scanner.api.ProfileScannerService]]
@@ -58,6 +64,15 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry,
                         (implicit ec: ExecutionContext, mat: Materializer)
   extends ProfileScannerService {
 
+  /**
+    * Queue for processing links in FIFO principle
+    */
+  private val queue: mutable.Queue[ScanQueueEntry] = mutable.Queue()
+
+  private var inProcess: Int = 0
+
+  private var parrallelProcessing: Int = 1;
+
   private final val log: Logger = LoggerFactory.getLogger(classOf[ProfileScannerImpl])
 
   ixquickScannerService.statusTopic().subscribe.atLeastOnce(
@@ -76,39 +91,65 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry,
 
   ixquickScannerService.updateTopic().subscribe.atLeastOnce(
     Flow[IxquickScanUpdateEvent].mapAsync(1) {
-      case event: LinkedInUpdateEvent => handleUpdateEvent(event, scanLinkedinProfile)
-      case event: XingUpdateEvent => handleUpdateEvent(event, scanXingProfile)
+      case event: IxquickScanUpdateEvent => for {
+        toScan <- {
+          log.info("Received UpdateEvent form Ixquick")
+          refFor(event.keyword).ask(AddLinks(Instant.now(), event.data))
+        }
+        // scan all profiles using a parallelized sequence to run them in parallel and wait for all results to finish
+        scans <- {
+          enqueue(event.keyword, toScan)
+          processQueue
+          Future.successful(Done)
+        }
+        //we just return done
+        done <- Future.successful(Done)
+      } yield done
       case other => Future.successful(Done)
     }
   )
+  private def enqueue(keyword: String, urls: Seq[String]) = urls.foreach{ url: String => queue.enqueue(ScanQueueEntry(keyword, url)) }
 
-  private def handleUpdateEvent(event: IxquickScanUpdateEvent, serviceCall: (String) => ServiceCall[ProfileUrl, Done]) =
-    for {
-      toScan <- {
-        log.info("Received UpdateEvent form Ixquick")
-        refFor(event.keyword).ask(AddLinks(Instant.now(), event.data))
+
+  private def processQueue =
+    if(inProcess < parrallelProcessing) {
+      parrallelProcessing = parrallelProcessing + 1
+      log.info("Started Processing of Queue...");
+      recursiveDequeue()
+    }
+
+  private def recursiveDequeue(): Unit = {
+    if(!queue.isEmpty) {
+      log.info(s"Processing next queue entry. Queue Lenght: ${queue.length}...");
+      val entry = queue.dequeue()
+      val provider = ProfileLink.deriveProvider(entry.url)
+      if(provider == ProfileLink.PROVIDER_XING) {
+        scanXingProfile(entry.keyword).invoke(ProfileUrl(entry.url))
+      } else {
+        Await.result(scanLinkedinProfile(entry.keyword).invoke(ProfileUrl(entry.url)), 2 minutes)
       }
-      // scan all profiles using a parallelized sequence to run them in parallel and wait for all results to finish
-      scans <- allSuccessful(toScan.map {
-        url: String => serviceCall(event.keyword).invoke(ProfileUrl(url))
-      })
-      //we just return done
-      done <- Future.successful(Done)
-    } yield done
-
+      recursiveDequeue()
+    } else {
+      inProcess = parrallelProcessing - 1
+      log.info(s"Queue finished and is now empty.")
+    }
+  }
 
   def scanXingProfile(keyword: String) = ServiceCall { url: ProfileUrl => {
-      for {
+    (for {
         proxy <- proxyService.getAvailableProxy().invoke()
-        response <- proxiedGet(url.url, proxy)
-        profile <- processXingProfile(url.url, response, keyword)
+        profile <- processXingProfile(url.url, proxy, keyword)
         free <- proxyService.free().invoke(proxy)
         done <- {
-          //@todo do propper logging
-          log.info(Json.toJson(profile).toString())
+          log.info(s"Updating Xing Profile ${Json.toJson(profile).toString()}")
           refFor(keyword).ask(UpdateProfile(Instant.now(), profile))
         }
-      } yield done
+      } yield done).recover{
+      case e: Exception => {
+        log.info(s"Failure while processing Xing Profile: ${e.toString}")
+        throw e
+        }
+      }
     }
   }
 
@@ -119,13 +160,105 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry,
     */
   override def scanLinkedinProfile(keyword: String): ServiceCall[ProfileUrl, Done] = ServiceCall { url: ProfileUrl => {
       log.info("Scanning Linkedin Profile...")
-      for {
+      (for {
         proxyServer <- proxyService.getAvailableProxy().invoke()
         profile <- fetchLinkedinProfile(url.url, proxyServer)
-        updated <- refFor(keyword).ask(UpdateProfile(Instant.now(), profile))
-      } yield updated
+        updated <- {
+          log.info(s"Updating Profile: ${profile.toString}")
+          refFor(keyword).ask(UpdateProfile(Instant.now(), profile))
+        }
+      } yield updated).recover {
+        case e: Exception => {
+          log.info(s"Failure while scanning linkedin: ${e.toString}")
+          throw e
+        }
+      }
     }
   }
+
+  private def getFirefoxDriver(proxy: Option[ProxyServer]): Future[FirefoxDriver] =
+    Future {
+      System.setProperty("webdriver.gecko.driver", "/opt/geckodriver")
+      val cap = DesiredCapabilities.firefox()
+      if(proxy.isDefined) cap.setCapability(CapabilityType.PROXY, prepareWebdirverProxy(proxy.get))
+      cap.setCapability("webSecurityEnabled", false)
+      cap.setCapability("browserTimeout", 20)
+      cap.setCapability("timeout", 20)
+      new FirefoxDriver(cap)
+    }
+
+  private def getChromeDriver(proxy: Option[ProxyServer]): Future[ChromeDriver] =
+    Future {
+      System.setProperty("webdriver.chrome.driver", "/opt/chromedriver")
+      val cap = DesiredCapabilities.chrome()
+      val chromeOptions = new ChromeOptions()
+      //chromeOptions.addArguments("--headless")
+      chromeOptions.addArguments("--verboose")
+      chromeOptions.addArguments("–disable-web-security");
+      chromeOptions.addArguments("–allow-running-insecure-content");
+
+      if(proxy.isDefined)
+        cap.setCapability(CapabilityType.PROXY, prepareWebdirverProxy(proxy.get))
+
+      cap.setCapability("webSecurityEnabled", false)
+      cap.setCapability("browserTimeout", 20)
+      cap.setCapability("timeout", 20)
+      cap.setCapability(ChromeOptions.CAPABILITY, chromeOptions);
+      //cap.setCapability(CapabilityType.PROXY, proxy)
+      new ChromeDriver(cap)
+    }
+
+  private def getPhantomJsDriver(proxy: Option[ProxyServer]): Future[PhantomJSDriver] =
+    Future {
+          val cap = DesiredCapabilities.phantomjs()
+          if(proxy.isDefined) cap.setCapability(CapabilityType.PROXY, prepareWebdirverProxy(proxy.get))
+          cap.setCapability(PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY, "/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs")
+          cap.setCapability(PhantomJSDriverService.PHANTOMJS_PAGE_SETTINGS_PREFIX + "webSecurityEnabled", false)
+          cap.setCapability(PhantomJSDriverService.PHANTOMJS_PAGE_SETTINGS_PREFIX + "javascriptEnabled", true)
+          cap.setCapability(PhantomJSDriverService.PHANTOMJS_PAGE_SETTINGS_PREFIX + "userAgent", UserAgentList.getRnd())
+          cap.setCapability(PhantomJSDriverService.PHANTOMJS_PAGE_SETTINGS_PREFIX + "XSSAuditingEnabled", true)
+          //headers
+          cap.setCapability(PhantomJSDriverService.PHANTOMJS_PAGE_CUSTOMHEADERS_PREFIX + "Accept-Language", "de-DE,de;q=0.8,en-US;q=0.6,en;q=0.4")
+          cap.setCapability(PhantomJSDriverService.PHANTOMJS_PAGE_CUSTOMHEADERS_PREFIX + "Cache-Control", "no-cache")
+          cap.setCapability(PhantomJSDriverService.PHANTOMJS_PAGE_CUSTOMHEADERS_PREFIX + "Pragma", "no-cache")
+          //cap.setCapability(PhantomJSDriverService.PHANTOMJS_PAGE_CUSTOMHEADERS_PREFIX + "Host", "")
+          cap.setCapability(PhantomJSDriverService.PHANTOMJS_PAGE_CUSTOMHEADERS_PREFIX + "upgrade-insecure-requests", "1")
+          cap.setCapability(PhantomJSDriverService.PHANTOMJS_PAGE_CUSTOMHEADERS_PREFIX + "Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+          cap.setCapability(PhantomJSDriverService.PHANTOMJS_PAGE_CUSTOMHEADERS_PREFIX + "Accept-Encoding", "gzip, deflate, br")
+          cap.setCapability(PhantomJSDriverService.PHANTOMJS_PAGE_SETTINGS_PREFIX  + "takesScreenshot", false)
+          cap.setJavascriptEnabled(true)
+          new PhantomJSDriver(cap)
+    }
+
+  private def prepareWebdirverProxy(proxyServer: ProxyServer): Proxy =
+      (new Proxy()).setHttpProxy(proxyServer.toString).setSslProxy(proxyServer.toString)
+
+  private def getIFrameSource(url: String, proxyServer: ProxyServer): Future[String] =
+    for {
+      driver <- getChromeDriver(Some(proxyServer))
+      iFrameSource <- Future {
+        try {
+          driver.navigate().to(s"http://translate.google.de/translate?hl=de&sl=en&u=$url&prev=search")
+          new FluentWait[WebDriver](driver)
+            .withTimeout(2, TimeUnit.MINUTES)
+            .pollingEvery(10, TimeUnit.SECONDS)
+            .ignoring(classOf[NoSuchFrameException])
+            .until[String](toGoogleJavaFunction[WebDriver, String](
+            //finding the IFrame and extract the attribute "src"
+            (driver: WebDriver) => driver.findElement(By.name("c")).getAttribute("src")
+          ))
+        } catch {
+          //closing the driver in case of en error
+          case e: Throwable =>
+            {
+              driver.quit()
+              throw e
+            }
+        }
+      }
+      closeDriver <- Future.successful(driver.quit())
+    } yield iFrameSource
+
 
   /**
     * Creates the selenium webdriver fetches the page and invokes the profile page processing when the topcard is visiable
@@ -136,26 +269,47 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry,
     * @return
     */
   private def fetchLinkedinProfile(url: String, proxyServer: ProxyServer): Future[Profile] = {
-    val proxy = new Proxy()
-    proxy.setHttpProxy(proxyServer.toString).setSslProxy(proxyServer.toString)
-    val cap = new DesiredCapabilities()
-    cap.setCapability(CapabilityType.PROXY, proxy)
-    System.setProperty("webdriver.gecko.driver", "/opt/geckodriver")
-    val driver = new FirefoxDriver(cap)
-    val wait: Wait[WebDriver] = new FluentWait[WebDriver](driver)
-      .withTimeout(5, TimeUnit.SECONDS)
-      .pollingEvery(2, TimeUnit.SECONDS)
-      .ignoring(classOf[NoSuchElementException])
+    for {
+      iFrameSource <- getIFrameSource(url, proxyServer)
+      driver <- getChromeDriver(Some(proxyServer))
+      profile <- {
+        try {
+          log.info(s"Scanning $iFrameSource with ${proxyServer.toString}")
+          driver.navigate().to(iFrameSource)
+          val wait = new FluentWait[WebDriver](driver).withTimeout(20, TimeUnit.SECONDS).pollingEvery(5, TimeUnit.SECONDS).ignoring(classOf[NoSuchElementException])
+          val profileFuture = processLinkedinProfile(Future{wait.until[WebElement](toGoogleJavaFunction[WebDriver, WebElement](
+            (d: WebDriver) => {
+              log.info("Linkedin -  getting topcard")
+              d.findElement(By.id("topcard"))
+            }
+          ))}, driver, url)
+          profileFuture
+        } catch {
+          case x@(_: java.net.SocketException
+                  | _: org.openqa.selenium.TimeoutException
+                  | _: org.apache.http.conn.HttpHostConnectException) =>
+          {
+            driver.quit()
+            retryWithNextProxyLinkedin(url, proxyServer)
+          }
+          case e: Exception => {
+            log.info("---------------------------------------------------------")
+            log.info(s"Failure while Scraping Linkedin Profile: ${e.toString()}")
+            log.info("---------------------------------------------------------")
+            throw e
+          }
+        }
+      }
+      close <- Future.successful(driver.quit())
+    } yield profile
+  }
 
-    driver.get(s"https://translate.google.de/translate?hl=de&sl=en&u=$url&prev=search")
-    processLinkedinProfile(Future {
-      //try to get "TopCard" with timeout and polling configured above
-      wait.until[WebElement](toGoogleJavaFunction[WebDriver, WebElement](
-        //Switching to I-Frame context of Linkedin Page
-        (driver: WebDriver) => driver.switchTo().frame(0).findElement(By.id("topcard"))
-      )
-      )
-    }, driver, url)
+  private def retryWithNextProxyLinkedin(url: String, currentProxy: ProxyServer):  Future[Profile] = {
+    for {
+      report <- proxyService.report().invoke(currentProxy)
+      ps <- proxyService.getAvailableProxy().invoke()
+      results <- fetchLinkedinProfile(url, ps)
+    } yield results
   }
 
   /**
@@ -166,19 +320,34 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry,
     * @param profileUrl the url of the profile page
     * @return
     */
-  private def processLinkedinProfile(we: Future[WebElement], driver: FirefoxDriver, profileUrl: String): Future[Profile] = {
+  private def processLinkedinProfile(we: Future[WebElement], driver: WebDriver, profileUrl: String): Future[Profile] = {
       we flatMap {
         //when the topcard is ther we are sure that the other cards are also there if they exist so we extract them concurrently
         case topCard: WebElement => {
+          log.info("Linkedin -  getting name")
           val nameF = extractOrNone(topCard.findElement(By.id("name")).getText)
+          log.info("Linkedin -  getting skills")
           val skillsF = extractOrNone(linkedinSkillsExtractor(driver))
+          log.info("Linkedin -  getting workexperience")
           val expF = linkedinWorkExperienceExtractor(driver)
+
+          nameF.onComplete {
+            case _ => log.info("Linkedn - Name collected")
+          }
+          skillsF.onComplete {
+            case _ => log.info("Linkedn - Skills collected")
+          }
+
+          expF.onComplete {
+            case _ => log.info("Linkedn - JobExp collected")
+          }
 
           for {
             name <- nameF
             skills <- skillsF
             exp <- expF
             profile <- Future {
+              log.info("Linkedin -  combining results")
               if (name.isEmpty) {
                 throw ProfileScrapingException("Name not found.")
               }
@@ -197,13 +366,6 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry,
               )
             }
           } yield profile
-        }
-      } recoverWith {
-        case e: Exception => {
-          log.info(e.toString)
-          log.info(e.getStackTraceString)
-          driver.quit()
-          throw e
         }
       }
   }
@@ -231,12 +393,15 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry,
     * @param driver driver that loaded the page
     * @return
     */
-  private def linkedinSkillsExtractor(driver: WebDriver) =
+  private def linkedinSkillsExtractor(driver: WebDriver) = {
     JavaConversions.asScalaBuffer(driver.findElement(By.id("skills")).findElements(By.className("skill"))).toList map {
       case skill: WebElement => {
+        log.info("Linkedin - scanning skill")
         skill.findElement(By.className("wrap")).getAttribute("textContent")
       }
     } filterNot (_.startsWith("See"))
+  }
+
 
 
   /**
@@ -247,53 +412,56 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry,
     * @return
     */
   private def linkedinWorkExperienceExtractor(driver: WebDriver): Future[List[JobExperience]] =
-    allSuccessful(JavaConversions.asScalaBuffer(driver.findElement(By.id("experience")).findElements(By.className("position"))).toList map {
-      case position: WebElement => {
-        val titleF = extractOrNone(position.findElement(By.className("item-title")).findElement(By.className("google-src-text")).getAttribute("textContent"))
-        //extract subinformations concurrently
-        val isCurrentF = extractOrNone(position.getAttribute("data-section").startsWith("current"))
-        val fromToF = extractOrNone(position.findElements(By.className("date-range")))
-        val companyF = extractOrNone(position.findElement(By.className("item-subtitle")).findElement(By.className("google-src-text")).getAttribute("textContent"))
-        val descriptionF = extractOrNone((JavaConversions.asScalaBuffer(
-              position.findElement(By.className("description")).findElements(By.className("google-src-text"))
-            ).toList map {
-              case description: WebElement => description.getAttribute("textContent")
-            }
-          ).mkString(" "))
-
-
-        //wait until all futures are finished and build JobExperience object
-        for {
-          title <- titleF
-          isCurrent <- isCurrentF
-          fromTo <- fromToF
-          from <- Future.successful(
-            if(fromTo.isEmpty)
-              None
-            else
-              Some(fromTo.get.get(0).getAttribute("textContent"))
-          )
-          to <-  Future.successful(
-            if(fromTo.isEmpty)
-              None
-            else
-              Some(fromTo.get.get(1).getAttribute("textContent"))
-          )
-          company <- companyF
-          description <- descriptionF
-          jobExperience <- Future.successful(JobExperience(
-            title = title.get,
-            isCurrent = isCurrent,
-            from = from,
-            to = to,
-            company = company,
-            description = description
-          ))
-        } yield jobExperience
+    try {
+      allSuccessful(JavaConversions.asScalaBuffer(driver.findElement(By.id("experience")).findElements(By.className("position"))).toList map {
+        case position: WebElement => {
+          log.info("Linedin - scanning position")
+          val titleF = extractOrNone(position.findElement(By.className("item-title")).findElement(By.className("google-src-text")).getAttribute("textContent"))
+          val isCurrentF = extractOrNone(position.getAttribute("data-section").startsWith("current"))
+          val fromToF = extractOrNone(position.findElements(By.className("date-range")))
+          val companyF = extractOrNone(position.findElement(By.className("item-subtitle")).findElement(By.className("google-src-text")).getAttribute("textContent"))
+          val descriptionF = extractOrNone((JavaConversions.asScalaBuffer(position.findElement(By.className("description")).findElements(By.className("google-src-text"))
+          ).toList map {
+            case description: WebElement => description.getAttribute("textContent")
+          }).mkString(" "))
+          for {
+            title <- titleF
+            isCurrent <- isCurrentF
+            fromTo <- fromToF
+            from <- Future.successful(
+              if(fromTo.isEmpty)
+                None
+              else
+                Some(fromTo.get.get(0).getAttribute("textContent"))
+            )
+            to <-  Future.successful(
+              if(fromTo.isEmpty)
+                None
+              else
+                Some(fromTo.get.get(1).getAttribute("textContent"))
+            )
+            company <- companyF
+            description <- descriptionF
+            jobExperience <- Future.successful(JobExperience(
+              title = title.get,
+              isCurrent = isCurrent,
+              from = from,
+              to = to,
+              company = company,
+              description = description
+            ))
+          } yield jobExperience
+        }
+      }).recover {
+        case e: Exception => {
+          log.info("Linedin - a jobexp creation failed ")
+          List()
+        }
       }
-    }).recoverWith {
-      case e: Exception => Future.successful(List())
+    } catch {
+      case e: NoSuchElementException => Future.successful(List())
     }
+
 
   /**
     * Fold left the collection of future's and wait for the previous future to finish and return it or fallback to the
@@ -326,7 +494,10 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry,
     Future {
       Some(extractor)
     }.recover {
-      case _ :Exception => None
+      case e : Throwable => {
+        log.info(s"Failure while extracting element: $e")
+        None
+      }
     }
   }
 
@@ -359,60 +530,75 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry,
     * Extracts data from Xing Profile using the  ScalaScraper library (wrapper for Jsoup)
     *
     * @param url url to profile
-    * @param response http response of request
+    * @param proxy proxy server to use
     * @return future of a Profile
     */
-  private def processXingProfile(url: String, response: WSResponse, keyword: String): Future[Profile] = {
-    if(!response.status.equals(200)) {
-      throw ProfileScrapingException("Unable to fetch profile. Unexpected Response code: " + response.status)
-    }
-    val browser = JsoupBrowser().parseString(response.body);
-    val namePositionCompany = browser >> element("head > meta[property='og:title']") >> attr("content") split(" - ")
-    val name: Option[String] = try {
-      Some(namePositionCompany(0))
-    } catch {
-      case e: Exception => throw ProfileScrapingException("name not found")
+  private def processXingProfile(url: String, proxy: ProxyServer, keyword: String): Future[Profile] =
+    (for {
+        response <- proxiedGet(url, proxy)
+        profile <-  {
+          if(!response.status.equals(200)) {
+            throw ProfileScrapingException("Unable to fetch profile. Unexpected Response code: " + response.status)
+          }
+          val browser = JsoupBrowser().parseString(response.body);
+          val namePositionCompany = browser >> element("head > meta[property='og:title']") >> attr("content") split(" - ")
+          val name: Option[String] = try {
+            Some(namePositionCompany(0))
+          } catch {
+            case e: Exception => throw ProfileScrapingException("name not found")
+          }
+
+          val jobtitle: Option[String] = try {
+            Some(namePositionCompany(1))
+          } catch {
+            case e: ArrayIndexOutOfBoundsException => None
+          }
+
+          val company: Option[String] = try {
+            Some(namePositionCompany(2))
+          } catch {
+            case e: ArrayIndexOutOfBoundsException => None
+          }
+
+          val haves = browser >> elementList("div.Haves ul span") map {
+            have => have >> allText
+          }
+          val workExperience = browser >> elementList(".WorkExperience-jobInfo")
+          val experienceList: List[JobExperience] = workExperience.map {
+            exp => JobExperience(
+              title = exp >> text(".WorkExperience-jobTitle"),
+              company= exp >?> text("div:nth-child(3)"),
+              from = exp >?> text(".WorkExperience-dateRange"),
+              to = exp >?> text(".WorkExperience-dateRange"),
+              description = None,
+              isCurrent = None
+            )
+          }
+
+          val firstnameLastname = name.get.split(" ", 2)
+
+          Future.successful(Profile(
+            scanned = true,
+            firstname = Some(firstnameLastname(0)),
+            lastname = Some(firstnameLastname(1)),
+            updatedAt = Instant.now(),
+            link = ProfileLink(url, ProfileLink.PROVIDER_XING),
+            skills = haves.toSeq,
+            exp = experienceList.toSeq))
+      }
+    } yield profile).recoverWith {
+      case x@(_: java.io.IOException | _: ProfileScrapingException) =>
+        for {
+          report <- proxyService.report().invoke(proxy)
+          nextProxy <- proxyService.getAvailableProxy().invoke()
+          nextProfile <- processXingProfile(url, nextProxy, keyword)
+        } yield nextProfile
+      case e: Exception => {
+        log.info(s"Failure while scraping xing profile: ${e.toString}")
+        throw e
+      }
     }
 
-    val jobtitle: Option[String] = try {
-      Some(namePositionCompany(1))
-    } catch {
-      case e: ArrayIndexOutOfBoundsException => None
-    }
-
-    val company: Option[String] = try {
-       Some(namePositionCompany(2))
-    } catch {
-      case e: ArrayIndexOutOfBoundsException => None
-    }
-
-    val haves = browser >> elementList("div.Haves ul span") map {
-      have => have >> allText
-    }
-    val workExperience = browser >> elementList(".WorkExperience-jobInfo")
-    val experienceList: List[JobExperience] = workExperience.map {
-      exp => JobExperience(
-        title = exp >> text(".WorkExperience-jobTitle"),
-        company= exp >?> text("div:nth-child(3)"),
-        from = exp >?> text(".WorkExperience-dateRange"),
-        to = exp >?> text(".WorkExperience-dateRange"),
-        description = None,
-        isCurrent = None
-      )
-    }
-
-    val firstnameLastname = name.get.split(" ", 2)
-
-    Future.successful(Profile(
-      scanned = true,
-      firstname = Some(firstnameLastname(0)),
-      lastname = Some(firstnameLastname(1)),
-      updatedAt = Instant.now(),
-      link = ProfileLink(url, ProfileLink.PROVIDER_XING),
-      skills = haves.toSeq,
-      exp = experienceList.toSeq
-    ))
-  }
 
   /**
     * Message Brocking
@@ -442,4 +628,9 @@ class ProfileScannerImpl(registry: PersistentEntityRegistry,
     }
   }
 }
-case class ProfileScrapingException(message: String) extends Exception
+
+case class ScanQueueEntry(keyword: String, url: String) {
+
+}
+
+case class ProfileScrapingException(message: String) extends Exception(message)

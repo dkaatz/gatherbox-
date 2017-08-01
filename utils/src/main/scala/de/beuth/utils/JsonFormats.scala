@@ -2,7 +2,6 @@ package de.beuth.utils
 
 import java.time.Duration
 
-import play.api.data.validation.ValidationError
 import play.api.libs.json._
 
 import scala.util.Try
@@ -28,7 +27,7 @@ object JsonFormats {
 
   def singletonReads[O](singleton: O): Reads[O] = {
     (__ \ "value").read[String].collect(
-      ValidationError(s"Expected a JSON object with a single field with key 'value' and value '${singleton.getClass.getSimpleName}'")
+      JsonValidationError(s"Expected a JSON object with a single field with key 'value' and value '${singleton.getClass.getSimpleName}'")
     ) {
       case s if s == singleton.getClass.getSimpleName => singleton
     }
@@ -41,7 +40,7 @@ object JsonFormats {
   }
 
   implicit val durationReads: Reads[Duration] = implicitly[Reads[String]]
-    .collect(ValidationError("Invalid duration"))(Function.unlift { str =>
+    .collect(JsonValidationError("Invalid duration"))(Function.unlift { str =>
       Try(Duration.parse(str)).toOption
     })
   implicit val durationWrites: Writes[Duration] = Writes { duration =>

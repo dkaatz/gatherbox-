@@ -77,9 +77,11 @@ trait ProxyBrowserService extends Service {
   * @param port port of server
   * @param country country the server is in
   */
-case class ProxyServer(host: String, port: Int, country: String) {
+case class ProxyServer(host: String, port: Int, country: String, username: Option[String], password: Option[String]) {
     //
     override def toString = s"$host:$port"
+
+
     def toFullString = s"$host:$port - $country"
 }
 
@@ -90,18 +92,29 @@ case class ProxyServer(host: String, port: Int, country: String) {
 object ProxyServer {
   implicit val write: Writes[ProxyServer] = new Writes[ProxyServer] {
     def writes(ps: ProxyServer) =
-      Json.obj(
-        "ip" -> ps.host,
-        "port" -> ps.port.toString,
-        "country" -> ps.country
-      )
+      if(ps.username.isDefined && ps.password.isDefined)
+        Json.obj(
+          "ip" -> ps.host,
+          "port" -> ps.port.toString,
+          "country" -> ps.country,
+          "username" -> ps.username.get,
+          "password" -> ps.username.get
+        )
+      else
+        Json.obj(
+          "ip" -> ps.host,
+          "port" -> ps.port.toString,
+          "country" -> ps.country
+        )
   }
 
   implicit val reads: Reads[ProxyServer] = (
     (JsPath \ "ip").read[String] and
     (JsPath \ "port").read[String] and
-    (JsPath \ "country").read[String]
-  )((host, port, country) => ProxyServer(host, port.toInt, country))
+    (JsPath \ "country").read[String] and
+    (JsPath \ "username").readNullable[String] and
+    (JsPath \ "password").readNullable[String]
+  )((host, port, country, username, password) => ProxyServer(host, port.toInt, country, username, password))
 
 
 }
@@ -134,5 +147,11 @@ case class RndProxyServer(host: String,
   * Companion object wich converts a [[ProxyServer]] to [[RndProxyServer]]
   */
 object RndProxyServer {
-  def apply(proxyServer: ProxyServer): RndProxyServer = RndProxyServer(host = proxyServer.host, port = proxyServer.port, None, None, None, None, None, None)
+  def apply(proxyServer: ProxyServer): RndProxyServer = RndProxyServer(
+    host = proxyServer.host,
+    port = proxyServer.port,
+    None,
+    principal = proxyServer.username,
+    password = proxyServer.password,
+    None, None, None)
 }

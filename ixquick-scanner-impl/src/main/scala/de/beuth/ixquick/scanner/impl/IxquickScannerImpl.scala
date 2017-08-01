@@ -9,7 +9,7 @@ import akka.{Done, NotUsed}
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.persistence.{EventStreamElement, PersistentEntityRegistry}
 import de.beuth.utils.{ProfileLink, UnkownProfileProviderException, UserAgentList}
-import de.beuth.ixquick.scanner.api.{IxquickScanUpdateEvent, IxquickScannerService, LinkedInUpdateEvent, XingUpdateEvent}
+import de.beuth.ixquick.scanner.api.{IxquickScanUpdateEvent, IxquickScannerService}
 import org.slf4j.{Logger, LoggerFactory}
 import net.ruippeixotog.scalascraper.browser.{Browser, JsoupBrowser}
 import net.ruippeixotog.scalascraper.dsl.DSL._
@@ -34,6 +34,9 @@ import com.lightbend.lagom.scaladsl.broker.TopicProducer
 import de.beuth.scanner.commons._
 import de.beuth.proxybrowser.api.RndProxyServer
 
+import scala.collection.mutable
+
+
 class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem, wsClient: WSClient, scanService: ScanService, proxyBrowserService: ProxyBrowserService)(implicit ec: ExecutionContext, mat: Materializer)
   extends IxquickScannerService {
 
@@ -45,15 +48,15 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
         log.info(s"ScanStartedEvent received - Keywor: ${ev.keyword}")
         val startScan = refFor(ev.keyword).ask(StartScan(Instant.now()))
         val linkedInFuture = this.scanLinkedin(ev.keyword).invoke()
-        val xingFuture = this.scanXing(ev.keyword).invoke()
+        //val xingFuture = this.scanXing(ev.keyword).invoke()
         (for {
           scanStarted <- startScan
           linkedin <- linkedInFuture
-          xing <- xingFuture
+          //xing <- xingFuture
           finish <- refFor(ev.keyword).ask(FinishScan(Instant.now()))
         } yield finish).recoverWith {
           case e: Exception => {
-            log.info(s"Exception while scanning ixquick: ${e.getMessage} Trace: ${e.getStackTraceString}")
+            log.info(s"Exception while scanning ixquick: ${e.toString}")
             //refFor(ev.keyword).ask(ScanFailure(Instant.now(), e.getMessage))
             Future.successful(Done)
           }
@@ -65,26 +68,24 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
   )
 
   def scanLinkedin(keyword: String) = ServiceCall { _ => {
-    log.info(s"Scanning Linkedin Profiles with keyword: $keyword")
-    val linkedIn1 = processKeyword(keyword, "de.linkedin.com/in")
-    val linkedIn2 = processKeyword(keyword, "www.linkedin.com/in")
-    for {
-      f1 <- linkedIn1
-      f2 <- linkedIn2
-      result <- Future.successful(Done)
-    } yield result
-  }
+      log.info(s"Scanning Linkedin Profiles with keyword: $keyword")
+      val linkedIn1 = processKeyword(keyword, "de.linkedin.com/in")
+      val linkedIn2 = processKeyword(keyword, "www.linkedin.com/in")
+      for {
+        f1 <- linkedIn1
+        f2 <- linkedIn2
+        result <- Future.successful(Done)
+      } yield result
+    }
   }
 
   def scanXing(keyword: String) = ServiceCall { _ => {
-    log.info(s"Scanning Xing Profiles with keyword: $keyword")
-    processKeyword(keyword, "www.xing.com/profile")
+      log.info(s"Scanning Xing Profiles with keyword: $keyword")
+      processKeyword(keyword, "www.xing.com/profile")
+    }
   }
-  }
-
 
   private def refFor(keyword: String) = registry.refFor[IxquickScannerEntity](keyword)
-
 
   private def processKeyword(keyword: String, site: String): Future[Done] = {
     val proxyFuture = proxyBrowserService.getAvailableProxy().invoke()
@@ -108,7 +109,9 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
       processed <- proxiedRecursiveRequestChain(keyword = keyword, site = site, query = query, proxy = proxy, ixquickserver = ixquickServer)
       proxyFreed <- proxyBrowserService.free().invoke(proxy)
     } yield proxyFreed).recoverWith {
+      case e: java.util.concurrent.TimeoutException => processKeywordWithNextProxy(keyword, site, proxyFuture)
       case e: java.net.ConnectException => processKeywordWithNextProxy(keyword, site, proxyFuture)
+      case e: java.io.IOException => processKeywordWithNextProxy(keyword, site, proxyFuture)
       case e: HttpStatusException => processKeywordWithNextProxy(keyword, site, proxyFuture)
     }
   }
@@ -135,20 +138,22 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
         refFor(keyword).ask(UpdateSearch(site, iq.startAt.toInt / 10, results.filter(_.startsWith(s"https://$site")).distinct))
       }
       next <- {
-        val idx = current.searches.indexWhere(_.site == site)
-        //if
-        if (results.isEmpty || (idx != -1 && results.diff(current.searches(idx).links).isEmpty))
-          Future.successful(Done)
-        else {
-          //sleeping 10 seconds to do not run into captcha scenario
-          Thread.sleep(10000L)
-          proxiedRecursiveRequestChain(
-            keyword,
-            site,
-            query = iq.copy(startAt = (query.startAt.toInt + 10).toString),
-            ixquickserver = server, proxy = proxy
-          )
-        }
+        Future.successful(Done)
+        //fetching next algorithm
+//        val idx = current.searches.indexWhere(_.site == site)
+//        //if
+//        if (results.isEmpty || (idx != -1 && results.diff(current.searches(idx).links).isEmpty))
+//          Future.successful(Done)
+//        else {
+//          //sleeping 10 seconds to do not run into captcha scenario
+//          Thread.sleep(10000L)
+//          proxiedRecursiveRequestChain(
+//            keyword,
+//            site,
+//            query = iq.copy(startAt = (query.startAt.toInt + 10).toString),
+//            ixquickserver = server, proxy = proxy
+//          )
+//        }
       }
 
     } yield next
@@ -189,10 +194,11 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
       }
     }.recoverWith {
       //proxy not reachable
+      case e: java.io.IOException => throw e
       case e: java.net.ConnectException => throw e
       //allow retry
       case e: Throwable if retry < 2 => {
-        log.info(s"Exception while recurisve ixquick scan with retry $retry: ${e.getMessage} Trace: ${e.getStackTraceString}")
+        log.info(s"Exception while recurisve ixquick scan with retry $retry: ${e.toString}")
         proxiedPostWithRetry(url, query, retry + 1, proxy)
       }
     }
@@ -228,14 +234,14 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
               case x@(_: ScanStarted | _: ScanFinished | _: ScanFailed) => true
               case _ => false
             }
-          }.map(ev => (convertStatusEvent(ev.entityId, ev), ev.offset))
+          }.map(ev => convertStatusEvent(ev))
     }
 
-  private def convertStatusEvent(keyword: String, scanEvent: EventStreamElement[IxquickScannerEvent]): ScanStatusEvent = {
-    scanEvent.event match {
-      case ScanStarted(timestamp) => ScanStartedEvent(keyword, timestamp)
-      case ScanFinished(timestamp) => ScanFinishedEvent(keyword, timestamp)
-      case ScanFailed(timestamp, errorMsg) => ScanFailedEvent(keyword, timestamp, errorMsg)
+  private def convertStatusEvent(scanEvent: EventStreamElement[IxquickScannerEvent]): (ScanStatusEvent, Offset) = {
+    scanEvent match {
+      case EventStreamElement(keyword, ScanStarted(timestamp),offset) => (ScanStartedEvent(keyword, timestamp), offset)
+      case EventStreamElement(keyword, ScanFinished(timestamp), offset) => (ScanFinishedEvent(keyword, timestamp), offset)
+      case EventStreamElement(keyword, ScanFailed(timestamp, errorMsg), offset) => (ScanFailedEvent(keyword, timestamp, errorMsg), offset)
     }
   }
 
@@ -252,19 +258,7 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
 
   private def convertUpdateEvent(scanEvent: EventStreamElement[IxquickScannerEvent]): (IxquickScanUpdateEvent, Offset) =
     scanEvent match {
-      case EventStreamElement(keyword, SearchUpdated(site, page, links), offset) => {
-        log.info("-------  Search Updated Triggered --------")
-        if (ProfileLink.deriveProvider(links.head) == ProfileLink.PROVIDER_LINKED_IN) {
-          log.info("---------------- Linkedin Updated Sent ----------------")
-          (LinkedInUpdateEvent(keyword, links), offset)
-        } else if ( ProfileLink.deriveProvider(links.head) == ProfileLink.PROVIDER_XING ) {
-          log.info("---------------- Xing Updated Sent ----------------")
-          (XingUpdateEvent(keyword, links), offset)
-        } else {
-          log.info("----- UNABLE TO DERIVE ------")
-          throw UnkownProfileProviderException(s"Unable to derive provider from ${links.head}")
-        }
-      }
+      case EventStreamElement(keyword, SearchUpdated(site, page, links), offset) => (IxquickScanUpdateEvent(keyword, links), offset)
     }
 }
 

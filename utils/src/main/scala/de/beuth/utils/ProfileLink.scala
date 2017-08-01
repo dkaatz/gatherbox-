@@ -27,7 +27,7 @@ object ProfileLink {
     // regex pattern for Linkedin URL's
     val LinkedInPattern = ".*(linkedin).*/in/.*".r
     // regex pattern for Xing URL's
-    val XingPattern = ".*(xing).*/profil/.*)".r
+    val XingPattern = ".*(xing).*/profile/.*".r
 
     //return correct type using pattern matching with the regex patterns defined above
     url match {

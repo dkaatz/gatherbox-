@@ -28,4 +28,14 @@ ${KAFKA_ROOT}/bin/zookeeper-server-start.sh -daemon ${KAFKA_ROOT}/config/zookeep
 
 echo 'Starting Kafka Daemon'
 ${KAFKA_ROOT}/bin/kafka-server-start.sh -daemon ${KAFKA_ROOT}/config/server.properties &
+
+
+#Creating topics to avoidwarning ons sbt runAll
+${KAFKA_ROOT}/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic censys_status
+${KAFKA_ROOT}/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic ixquick_status
+${KAFKA_ROOT}/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic ixquick_update
+${KAFKA_ROOT}/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic profile_status
+${KAFKA_ROOT}/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic scan_status
+
 fi
+
