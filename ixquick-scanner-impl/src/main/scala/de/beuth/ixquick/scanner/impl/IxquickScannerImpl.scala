@@ -47,12 +47,12 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
       case ev: ScanStartedEvent => {
         log.info(s"ScanStartedEvent received - Keywor: ${ev.keyword}")
         val startScan = refFor(ev.keyword).ask(StartScan(Instant.now()))
-        val linkedInFuture = this.scanLinkedin(ev.keyword).invoke()
-        //val xingFuture = this.scanXing(ev.keyword).invoke()
+//        val linkedInFuture = this.scanLinkedin(ev.keyword).invoke()
+        val xingFuture = this.scanXing(ev.keyword).invoke()
         (for {
           scanStarted <- startScan
-          linkedin <- linkedInFuture
-          //xing <- xingFuture
+//          linkedin <- linkedInFuture
+          xing <- xingFuture
           finish <- refFor(ev.keyword).ask(FinishScan(Instant.now()))
         } yield finish).recoverWith {
           case e: Exception => {
@@ -110,9 +110,7 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
       proxyFreed <- proxyBrowserService.free().invoke(proxy)
     } yield proxyFreed).recoverWith {
       case e: java.util.concurrent.TimeoutException => processKeywordWithNextProxy(keyword, site, proxyFuture)
-      case e: java.net.ConnectException => processKeywordWithNextProxy(keyword, site, proxyFuture)
       case e: java.io.IOException => processKeywordWithNextProxy(keyword, site, proxyFuture)
-      case e: HttpStatusException => processKeywordWithNextProxy(keyword, site, proxyFuture)
     }
   }
 
@@ -138,22 +136,21 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
         refFor(keyword).ask(UpdateSearch(site, iq.startAt.toInt / 10, results.filter(_.startsWith(s"https://$site")).distinct))
       }
       next <- {
-        Future.successful(Done)
         //fetching next algorithm
-//        val idx = current.searches.indexWhere(_.site == site)
-//        //if
-//        if (results.isEmpty || (idx != -1 && results.diff(current.searches(idx).links).isEmpty))
-//          Future.successful(Done)
-//        else {
-//          //sleeping 10 seconds to do not run into captcha scenario
-//          Thread.sleep(10000L)
-//          proxiedRecursiveRequestChain(
-//            keyword,
-//            site,
-//            query = iq.copy(startAt = (query.startAt.toInt + 10).toString),
-//            ixquickserver = server, proxy = proxy
-//          )
-//        }
+        val idx = current.searches.indexWhere(_.site == site)
+
+        if (results.isEmpty || (idx != -1 && results.diff(current.searches(idx).links).isEmpty))
+          Future.successful(Done)
+        else {
+          //sleeping 10 seconds to do not run into captcha scenario
+          Thread.sleep(10000L)
+          proxiedRecursiveRequestChain(
+            keyword,
+            site,
+            query = iq.copy(startAt = (query.startAt.toInt + 10).toString),
+            ixquickserver = server, proxy = proxy
+          )
+        }
       }
 
     } yield next

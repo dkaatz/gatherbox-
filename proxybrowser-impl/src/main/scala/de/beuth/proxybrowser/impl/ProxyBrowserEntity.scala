@@ -58,11 +58,11 @@ class ProxyBrowserEntity extends PersistentEntity {
         }
     }.onCommand[UpdateFree, Done] {
       //the proxy server is already in the list of free servers
-      case (UpdateFree(proxy), ctx, state) if state.free.exists(_.port == proxy.port && proxy.host == proxy.host) =>
+      case (UpdateFree(proxy), ctx, state) if state.free.exists(freeProxy => freeProxy.port == proxy.port && freeProxy.host == proxy.host) =>
         ctx.invalidCommand(s"Proxy: ${Json.toJson(proxy).toString()} is already free")
         ctx.done
       //the server was not in use
-      case (UpdateFree(proxy), ctx, state) if !state.inUse.exists(_.port == proxy.port && proxy.host == proxy.host) =>
+      case (UpdateFree(proxy), ctx, state) if !state.inUse.exists(inUseProxy => inUseProxy.port == proxy.port && inUseProxy.host == proxy.host) =>
         ctx.invalidCommand(s"Proxy: ${Json.toJson(proxy).toString()} is not in use, and cant be freed")
         ctx.done
       case (UpdateFree(proxy), ctx, state) =>
@@ -70,7 +70,7 @@ class ProxyBrowserEntity extends PersistentEntity {
           _ => ctx.reply(Done)
         }
     }.onCommand[UpdateReported, Done] {
-      case (UpdateReported(proxy), ctx, state) if !state.inUse.exists(_.port == proxy.port && proxy.host == proxy.host) =>
+      case (UpdateReported(proxy), ctx, state) if !state.inUse.exists(inUseProxy => inUseProxy.port == proxy.port && inUseProxy.host == proxy.host) =>
         ctx.invalidCommand(s"Proxy: ${Json.toJson(proxy).toString()} can not be reported because he is not in use")
         ctx.done
       case (UpdateReported(proxy), ctx, state) =>
@@ -82,6 +82,14 @@ class ProxyBrowserEntity extends PersistentEntity {
       case (FreeUpdated(proxy), state) => state.updateFree(proxy)
       case (Added(servers), state) => state.add(servers)
       case (ReportedUpdated(proxy), state) => state.updateReported(proxy)
+    }
+    //readonly commands
+    .onReadOnlyCommand[ListFree.type, Seq[ProxyServer]] {
+      case (ListFree, ctx, state) => ctx.reply(state.free)
+    }.onReadOnlyCommand[ListReported.type, Seq[ProxyServer]] {
+      case (ListReported, ctx, state) => ctx.reply(state.reports)
+    }.onReadOnlyCommand[ListInUse.type, Seq[ProxyServer]] {
+      case (ListInUse, ctx, state) => ctx.reply(state.inUse)
     }
   }
 }
@@ -111,6 +119,18 @@ object Add {
 case class GetNext() extends ProxyBrowserCommand with ReplyType[ProxyServer]
 object GetNext {
   implicit val format: Format[GetNext.type] = singletonFormat(GetNext)
+}
+
+case object ListFree extends ProxyBrowserCommand with ReplyType[Seq[ProxyServer]] {
+  implicit val format: Format[ListFree.type] = singletonFormat(ListFree)
+}
+
+case object ListReported extends ProxyBrowserCommand with ReplyType[Seq[ProxyServer]] {
+  implicit val format: Format[ListReported.type] = singletonFormat(ListReported)
+}
+
+case object ListInUse extends ProxyBrowserCommand with ReplyType[Seq[ProxyServer]] {
+  implicit val format: Format[ListInUse.type] = singletonFormat(ListInUse)
 }
 
 case class UpdateFree(server: ProxyServer) extends ProxyBrowserCommand with ReplyType[Done]
@@ -150,6 +170,9 @@ object ProxyBorwserSerializerRegistry extends JsonSerializerRegistry {
     JsonSerializer[ProxyBrowserServerRepository],
     JsonSerializer[ProxyServer],
     JsonSerializer[GetNext.type],
+    JsonSerializer[ListFree.type],
+    JsonSerializer[ListInUse.type],
+    JsonSerializer[ListReported.type],
     JsonSerializer[UpdateFree],
     JsonSerializer[UpdateReported],
     JsonSerializer[Add],

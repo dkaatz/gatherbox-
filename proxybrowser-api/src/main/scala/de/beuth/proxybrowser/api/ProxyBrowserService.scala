@@ -57,13 +57,34 @@ trait ProxyBrowserService extends Service {
     */
   def add(): ServiceCall[Seq[ProxyServer], Done]
 
+  /**
+    * Returns a list of ProxyServers that are free
+    * @return
+    */
+  def listFree(): ServiceCall[NotUsed, Seq[ProxyServer]]
+
+  /**
+    * Returns a list of ProxyServers that are reported
+    * @return
+    */
+  def listReported(): ServiceCall[NotUsed, Seq[ProxyServer]]
+
+  /**
+    * Returns a list of ProxyServers that are in use
+    * @return
+    */
+  def listInUse(): ServiceCall[NotUsed, Seq[ProxyServer]]
+
   override final def descriptor = {
     import Service._
     named("proxybrowser").withCalls(
       pathCall("/api/proxybrowser", getAvailableProxy),
       restCall(Method.POST,   "/api/proxybrowser/free", free),
       restCall(Method.POST,   "/api/proxybrowser/report", report),
-      restCall(Method.POST,   "/api/proxybrowser/add", add)
+      restCall(Method.POST,   "/api/proxybrowser/add", add),
+      restCall(Method.GET,   "/api/proxybrowser/list/free", listFree),
+      restCall(Method.GET,   "/api/proxybrowser/list/reported", listReported),
+      restCall(Method.GET,   "/api/proxybrowser/list/inuse", listInUse)
 
     //with autoacl we make this paths part of the public api
     ).withAutoAcl(true)

@@ -25,7 +25,6 @@ trait IxquickScannerService extends Service with ScanStatusTopics {
 
   override final def descriptor = {
     import Service._
-
     named("ixquick-scanner").withCalls(
       pathCall("/api/scanner/ixquick/linkedin/:keyword", scanLinkedin _),
       pathCall("/api/scanner/ixquick/xing/:keyword", scanXing _)

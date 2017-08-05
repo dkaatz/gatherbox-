@@ -18,7 +18,8 @@ import scala.concurrent.duration._
 /**
   * Created by David on 20.06.17.
   */
-class ProxyBrowser(registry: PersistentEntityRegistry, system: ActorSystem, wsClient: WSClient)(implicit ec: ExecutionContext, mat: Materializer) extends ProxyBrowserService {
+class ProxyBrowser(registry: PersistentEntityRegistry, system: ActorSystem, wsClient: WSClient)(implicit ec: ExecutionContext, mat: Materializer)
+  extends ProxyBrowserService {
 
 //  fetchServersFromNordVPN("france")
 //  fetchServersFromNordVPN("germany")
@@ -26,6 +27,27 @@ class ProxyBrowser(registry: PersistentEntityRegistry, system: ActorSystem, wsCl
   fetchServersFromNordVPN("own")
 
   private final val log: Logger = LoggerFactory.getLogger(classOf[ProxyBrowser])
+
+  def listFree() = ServiceCall {
+    _ => {
+      log.info("Listing Free Proxies");
+      refFor().ask(ListFree)
+    }
+  }
+
+  def listReported() = ServiceCall {
+    _ => {
+      log.info("Listing Reported Proxies");
+      refFor().ask(ListReported)
+    }
+  }
+
+  def listInUse() = ServiceCall {
+    _ => {
+      log.info("Listing InUse Proxies");
+      refFor().ask(ListInUse)
+    }
+  }
 
   def getAvailableProxy() = ServiceCall { _ => {
       log.info("Getting Proxy");

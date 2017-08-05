@@ -9,53 +9,54 @@ val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % Test
 val playJsonDerivedCodecs = "org.julienrf" %% "play-json-derived-codecs" % "4.0.0"
 val scalaScraper = "net.ruippeixotog" %% "scala-scraper" % "2.0.0-RC2"
 val selenium = "org.seleniumhq.selenium" % "selenium-java" % "3.4.0"
+//val dockerClient = "com.spotify" % "docker-client" % "LATEST-VERSION"
 
 
-lazy val `gatherbox` = (project in file("."))
-  .aggregate(`gatherbox-api`, `gatherbox-impl`, `gatherbox-stream-api`, `gatherbox-stream-impl`, `censys-api`)
+//lazy val `gatherbox` = (project in file("."))
+//  .aggregate(`gatherbox-api`, `gatherbox-impl`, `gatherbox-stream-api`, `gatherbox-stream-impl`, `censys-api`)
+//
+//
+///**
+//  * PREDEFINED START
+//  */
+//lazy val `gatherbox-api` = (project in file("gatherbox-api"))
+//  .settings(
+//    libraryDependencies ++= Seq(
+//      lagomScaladslApi
+//    )
+//  )
+//
+//lazy val `gatherbox-impl` = (project in file("gatherbox-impl"))
+//  .enablePlugins(LagomScala)
+//  .settings(
+//    libraryDependencies ++= Seq(
+//      lagomScaladslPersistenceCassandra,
+//      lagomScaladslTestKit,
+//      lagomScaladslKafkaClient,
+//      macwire,
+//      scalaTest
+//    )
+//  )
+//  .settings(lagomForkedTestSettings: _*)
+//  .dependsOn(`gatherbox-api`, `scan-impl`,`scan-api`)
 
-
-/**
-  * PREDEFINED START
-  */
-lazy val `gatherbox-api` = (project in file("gatherbox-api"))
-  .settings(
-    libraryDependencies ++= Seq(
-      lagomScaladslApi
-    )
-  )
-
-lazy val `gatherbox-impl` = (project in file("gatherbox-impl"))
-  .enablePlugins(LagomScala)
-  .settings(
-    libraryDependencies ++= Seq(
-      lagomScaladslPersistenceCassandra,
-      lagomScaladslTestKit,
-      lagomScaladslKafkaClient,
-      macwire,
-      scalaTest
-    )
-  )
-  .settings(lagomForkedTestSettings: _*)
-  .dependsOn(`gatherbox-api`, `scan-impl`,`scan-api`)
-
-lazy val `gatherbox-stream-api` = (project in file("gatherbox-stream-api"))
-  .settings(
-    libraryDependencies ++= Seq(
-      lagomScaladslApi
-    )
-  )
-
-lazy val `gatherbox-stream-impl` = (project in file("gatherbox-stream-impl"))
-  .enablePlugins(LagomScala)
-  .settings(
-    libraryDependencies ++= Seq(
-      lagomScaladslTestKit,
-      macwire,
-      scalaTest
-    )
-  )
-  .dependsOn(`gatherbox-stream-api`, `gatherbox-api`)
+//lazy val `gatherbox-stream-api` = (project in file("gatherbox-stream-api"))
+//  .settings(
+//    libraryDependencies ++= Seq(
+//      lagomScaladslApi
+//    )
+//  )
+//
+//lazy val `gatherbox-stream-impl` = (project in file("gatherbox-stream-impl"))
+//  .enablePlugins(LagomScala)
+//  .settings(
+//    libraryDependencies ++= Seq(
+//      lagomScaladslTestKit,
+//      macwire,
+//      scalaTest
+//    )
+//  )
+//  .dependsOn(`gatherbox-stream-api`, `gatherbox-api`)
 
 /**
   * PREDEFINED END
@@ -108,7 +109,9 @@ lazy val `scan-impl` = (project in file("scan-impl"))
     )
   )
   .settings(lagomForkedTestSettings: _*)
-  .dependsOn(`scan-api`,`censys-scanner-api`, `ixquick-scanner-api`, `profile-scanner-api`, `utils`, `scanner-commons`)
+  .dependsOn(`scan-api`,`censys-scanner-api`, `ixquick-scanner-api`, `utils`,
+    `profile-scanner-api`,
+    `scanner-commons`)
 
 
 lazy val `censys-scanner-api`= (project in file("censys-scanner-api"))
@@ -227,7 +230,7 @@ lagomCassandraCleanOnStart in ThisBuild := true
   * OSX installed with homebrew: /usr/local/Cellar/kafka/0.11.0.0/libexec/config/server.properties
   *
   */
-lagomKafkaEnabled in ThisBuild := true
+//lagomKafkaEnabled in ThisBuild := true
 //lagomKafkaPort in ThisBuild := 9092
 
 /**
