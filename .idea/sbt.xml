@@ -18,10 +18,10 @@
             <option value="$PROJECT_DIR$/ixquick-scanner-api/project" />
             <option value="$PROJECT_DIR$/ixquick-scanner-impl" />
             <option value="$PROJECT_DIR$/ixquick-scanner-impl/project" />
-            <option value="$PROJECT_DIR$/profile-scanner-api" />
-            <option value="$PROJECT_DIR$/profile-scanner-api/project" />
-            <option value="$PROJECT_DIR$/profile-scanner-impl" />
-            <option value="$PROJECT_DIR$/profile-scanner-impl/project" />
+            <option value="$PROJECT_DIR$/linkedin-scanner-api" />
+            <option value="$PROJECT_DIR$/linkedin-scanner-api/project" />
+            <option value="$PROJECT_DIR$/linkedin-scanner-impl" />
+            <option value="$PROJECT_DIR$/linkedin-scanner-impl/project" />
             <option value="$PROJECT_DIR$/project" />
             <option value="$PROJECT_DIR$/proxybrowser-api" />
             <option value="$PROJECT_DIR$/proxybrowser-api/project" />
@@ -35,6 +35,10 @@
             <option value="$PROJECT_DIR$/scanner-commons/project" />
             <option value="$PROJECT_DIR$/utils" />
             <option value="$PROJECT_DIR$/utils/project" />
+            <option value="$PROJECT_DIR$/xing-scanner-api" />
+            <option value="$PROJECT_DIR$/xing-scanner-api/project" />
+            <option value="$PROJECT_DIR$/xing-scanner-impl" />
+            <option value="$PROJECT_DIR$/xing-scanner-impl/project" />
           </set>
         </option>
         <option name="resolveSbtClassifiers" value="true" />

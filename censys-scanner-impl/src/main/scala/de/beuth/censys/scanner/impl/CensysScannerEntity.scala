@@ -20,13 +20,16 @@ class CensysScannerEntity extends PersistentEntity {
   override type Event = CensysScannerEvent
   override type State = Scan
 
-  override def initialState: Scan = Scan(None, Seq[CensysIpv4Result]())
+  override def initialState: Scan = Scan(None, Seq[CensysIpv4Result](), false)
 
   override def behavior: Behavior = {
     case scan => Actions().onCommand[StartScan, Done] {
-      case (StartScan(timestmap), ctx, state) =>
+      case (StartScan(timestamp), ctx, state) if isRunning(state) =>
+        ctx.invalidCommand(s"Scan for $entityId already running...")
+        ctx.done
+      case (StartScan(timestamp), ctx, state) =>
         ctx.thenPersist(
-          ScanStarted(timestmap)
+          ScanStarted(timestamp)
         ) {
           _ => ctx.reply(Done)
         }
@@ -38,27 +41,36 @@ class CensysScannerEntity extends PersistentEntity {
           _ => ctx.reply(Done)
         }
     }.onCommand[FinishScan, Done] {
-      case (FinishScan(timestamp), ctx, state) =>
+      case (FinishScan(timestamp), ctx, state)  if isRunning(state) =>
         ctx.thenPersist(
           ScanFinished(timestamp)
         ) {
           _ => ctx.reply(Done)
         }
+      case (FinishScan(timestamp), ctx, state) =>
+        ctx.invalidCommand(s"Scan did not started yet or already finished...")
+        ctx.done
+
     }.onEvent {
       case (ScanStarted(timestamp), state) => state.start(timestamp)
       case (ScanUpdated(ipv4), state) => state.update(ipv4)
-      case (ScanFinished(timestamp), state) => state
+      case (ScanFinished(timestamp), state) => state.finish
     }.orElse(getScan)
   }
 
+  private def isRunning(state: Scan): Boolean = !state.finished && state.startedAt.isDefined
+
   private val getScan = Actions().onReadOnlyCommand[GetScan.type, Scan] {  case (GetScan, ctx, state) => ctx.reply(state) }
 
+
 }
 
-case class Scan(startedAt: Option[Instant], ipv4: Seq[CensysIpv4Result]) {
-  def start(timestamp: Instant): Scan = copy(startedAt=Some(timestamp), ipv4 = Seq[CensysIpv4Result]())
+case class Scan(startedAt: Option[Instant], ipv4: Seq[CensysIpv4Result], finished: Boolean) {
+  def start(timestamp: Instant): Scan = copy(startedAt=Some(timestamp), ipv4 = Seq[CensysIpv4Result](), finished = false)
   def update(ipv4: Seq[CensysIpv4Result]): Scan = copy(ipv4 = this.ipv4 ++ ipv4)
+  def finish = copy(finished = true)
 }
+
 object Scan {
   implicit val format: Format[Scan] = Json.format
 }
@@ -80,6 +92,10 @@ object UpdateScan {
   implicit val format: Format[UpdateScan] = Json.format
 }
 
+case object GetScan extends CensysScannerCommand with ReplyType[Scan] {
+  implicit val format: Format[GetScan.type] = singletonFormat(GetScan)
+}
+
 
 sealed trait CensysScannerEvent extends AggregateEvent[CensysScannerEvent] {
   override def aggregateTag: AggregateEventTag[CensysScannerEvent] = CensysScannerEvent.Tag
@@ -88,20 +104,21 @@ sealed trait CensysScannerEvent extends AggregateEvent[CensysScannerEvent] {
 object CensysScannerEvent {
   val Tag = AggregateEventTag[CensysScannerEvent]
 }
+sealed trait CensysScannerStatusEvent extends CensysScannerEvent  {}
 
-case class ScanStarted(timestamp: Instant) extends CensysScannerEvent
+sealed trait CensysScannerUpdateEvent extends CensysScannerEvent {}
+
+
+case class ScanStarted(timestamp: Instant) extends CensysScannerStatusEvent
 object ScanStarted { implicit val format: Format[ScanStarted] = Json.format }
 
-case class ScanFinished(timestamp: Instant) extends CensysScannerEvent
+case class ScanFinished(timestamp: Instant) extends CensysScannerStatusEvent
 object ScanFinished { implicit val format: Format[ScanFinished] = Json.format }
 
-case class ScanUpdated(ipv4: Seq[CensysIpv4Result]) extends CensysScannerEvent
+case class ScanUpdated(ipv4: Seq[CensysIpv4Result]) extends CensysScannerUpdateEvent
 object ScanUpdated { implicit val format: Format[ScanUpdated] = Json.format }
 
 
-case object GetScan extends CensysScannerCommand with ReplyType[Scan] {
-  implicit val format: Format[GetScan.type] = singletonFormat(GetScan)
-}
 
 object ScanSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: Seq[JsonSerializer[_]] = Seq(

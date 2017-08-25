@@ -39,9 +39,8 @@ abstract class CensysScannerApplication(context: LagomApplicationContext)
   lazy val censysService = serviceClient.implement[CensysService]
 
   // Bind the services that this server provides
-  override lazy val lagomServer = LagomServer.forServices(
-    bindService[CensysScannerService].to(wire[CensysScannerImpl])
-  )
+
+  override lazy val lagomServer = serverFor[CensysScannerService](wire[CensysScannerImpl])
 
   // Register the JSON serializer registry
   override lazy val jsonSerializerRegistry = ScanSerializerRegistry

@@ -68,9 +68,8 @@ lazy val `utils`= (project in file("utils"))
     version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
       lagomScaladslApi,
-      lagomScaladslServer % Optional,
       playJsonDerivedCodecs,
-      scalaTest
+      selenium
     )
   )
 
@@ -78,10 +77,12 @@ lazy val `scanner-commons`= (project in file("scanner-commons"))
   .settings(
     version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
-      lagomScaladslApi
+      lagomScaladslApi,
+      lagomScaladslKafkaBroker,
+      lagomScaladslPersistenceCassandra
     )
-  )
-//
+  ).dependsOn(`utils`)
+
 lazy val `censys-api` = (project in file("censys-api"))
   .settings(
     libraryDependencies ++= Seq(
@@ -92,8 +93,7 @@ lazy val `censys-api` = (project in file("censys-api"))
 lazy val `scan-api` = (project in file("scan-api"))
   .settings(
     libraryDependencies ++= Seq(
-      lagomScaladslApi,
-      playJsonDerivedCodecs
+      lagomScaladslApi
     )
   ).dependsOn(`scanner-commons`)
 
@@ -102,16 +102,12 @@ lazy val `scan-impl` = (project in file("scan-impl"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslPersistenceCassandra,
-      lagomScaladslTestKit,
       lagomScaladslKafkaBroker,
-      macwire,
-      scalaTest
+      macwire
     )
   )
   .settings(lagomForkedTestSettings: _*)
-  .dependsOn(`scan-api`,`censys-scanner-api`, `ixquick-scanner-api`, `utils`,
-    `profile-scanner-api`,
-    `scanner-commons`)
+  .dependsOn(`scan-api`, `linkedin-scanner-api`,`censys-scanner-api`, `ixquick-scanner-api`, `utils`, `scanner-commons`)
 
 
 lazy val `censys-scanner-api`= (project in file("censys-scanner-api"))
@@ -119,9 +115,7 @@ lazy val `censys-scanner-api`= (project in file("censys-scanner-api"))
     version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
       lagomScaladslApi,
-      lagomScaladslServer % Optional,
-      playJsonDerivedCodecs,
-      scalaTest
+      playJsonDerivedCodecs
     )
   ).dependsOn(`censys-api`, `scanner-commons`)
 
@@ -130,10 +124,8 @@ lazy val `censys-scanner-impl` = (project in file("censys-scanner-impl"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslPersistenceCassandra,
-      lagomScaladslTestKit,
       lagomScaladslKafkaBroker,
-      macwire,
-      scalaTest
+      macwire
     )
   )
   .settings(lagomForkedTestSettings: _*)
@@ -144,9 +136,7 @@ lazy val `ixquick-scanner-api`= (project in file("ixquick-scanner-api"))
     version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
       lagomScaladslApi,
-      lagomScaladslServer % Optional,
-      playJsonDerivedCodecs,
-      scalaTest
+      playJsonDerivedCodecs
     )
   ).dependsOn(`scanner-commons`)
 
@@ -155,11 +145,9 @@ lazy val `ixquick-scanner-impl` = (project in file("ixquick-scanner-impl"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslPersistenceCassandra,
-      lagomScaladslTestKit,
       lagomScaladslKafkaBroker,
       scalaScraper,
-      macwire,
-      scalaTest
+      macwire
     )
   )
   .settings(lagomForkedTestSettings: _*)
@@ -181,40 +169,56 @@ lazy val `proxybrowser-impl` = (project in file("proxybrowser-impl"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslPersistenceCassandra,
-      lagomScaladslTestKit,
-      macwire,
-      scalaTest
+      macwire
     )
   )
   .settings(lagomForkedTestSettings: _*)
   .dependsOn(`proxybrowser-api`, `utils`)
 
-lazy val `profile-scanner-api`= (project in file("profile-scanner-api"))
+lazy val `xing-scanner-api`= (project in file("xing-scanner-api"))
   .settings(
     version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
       lagomScaladslApi,
-      lagomScaladslServer % Optional,
-      playJsonDerivedCodecs,
-      scalaTest
+      playJsonDerivedCodecs
     )
   ).dependsOn(`scanner-commons`)
 
-lazy val `profile-scanner-impl` = (project in file("profile-scanner-impl"))
+lazy val `xing-scanner-impl` = (project in file("xing-scanner-impl"))
   .enablePlugins(LagomScala)
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslPersistenceCassandra,
-      lagomScaladslTestKit,
       lagomScaladslKafkaBroker,
       scalaScraper,
-      macwire,
-      scalaTest,
-      selenium
+      macwire
     )
   )
   .settings(lagomForkedTestSettings: _*)
-  .dependsOn(`scan-api`, `ixquick-scanner-api`, `utils`,`scanner-commons`, `profile-scanner-api`, `proxybrowser-impl`)
+  .dependsOn(`scan-api`, `ixquick-scanner-api`, `utils`,`scanner-commons`, `xing-scanner-api`, `proxybrowser-impl`)
+
+
+lazy val `linkedin-scanner-api`= (project in file("linkedin-scanner-api"))
+  .settings(
+    version := "1.0-SNAPSHOT",
+    libraryDependencies ++= Seq(
+      lagomScaladslApi,
+      playJsonDerivedCodecs
+    )
+  ).dependsOn(`scanner-commons`)
+
+
+lazy val `linkedin-scanner-impl` = (project in file("linkedin-scanner-impl"))
+  .enablePlugins(LagomScala)
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslPersistenceCassandra,
+      lagomScaladslKafkaBroker,
+      macwire,
+      selenium
+    )
+  )
+  .dependsOn(`scan-api`, `ixquick-scanner-api`, `utils`,`scanner-commons`, `linkedin-scanner-api`, `proxybrowser-impl`)
 
 /**
   * Cleanup on start to not have events / data in queue

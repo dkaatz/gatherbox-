@@ -12,6 +12,7 @@
       <module name="profile-scanner-impl" target="1.8" />
       <module name="proxybrowser-impl" target="1.8" />
       <module name="scan-impl" target="1.8" />
+      <module name="xing-scanner-impl" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

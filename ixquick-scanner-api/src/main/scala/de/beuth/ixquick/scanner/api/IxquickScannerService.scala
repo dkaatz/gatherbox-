@@ -13,11 +13,11 @@ import scala.collection.immutable.Seq
 
 object IxquickScannerService {
   val NAME = "ixquick"
-  val TOPIC_STATUS = s"${NAME}_status"
-  val TOPIC_UPDATE = s"${NAME}_update"
+  val TOPIC_STATUS = s"${NAME}Status"
+  val TOPIC_UPDATE = s"${NAME}Update"
 }
 
-trait IxquickScannerService extends Service with ScanStatusTopics {
+trait IxquickScannerService extends Service with ScanStatusTopic {
 
 
   def scanLinkedin(keyword: String): ServiceCall[NotUsed, Done]

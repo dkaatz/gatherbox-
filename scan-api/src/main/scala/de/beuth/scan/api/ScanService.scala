@@ -3,18 +3,16 @@ package de.beuth.scan.api
 import java.time.Instant
 
 import akka.{Done, NotUsed}
-import com.lightbend.lagom.scaladsl.api.Service.pathCall
-import com.lightbend.lagom.scaladsl.api.broker.Topic
 import de.beuth.scanner.commons._
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 import play.api.libs.json.{Format, Json}
 
 
 object ScanService  {
-  val TOPIC_STATUS = "scan_status"
+  val TOPIC_STATUS = "scanStatus"
 }
 
-trait ScanService extends Service with ScanStatusTopics {
+trait ScanService extends Service with ScanStatusTopic {
 
   def startScan(keyword: String): ServiceCall[NotUsed, Done]
   def getScanStatus(keyword: String): ServiceCall[NotUsed, ScanStatus]

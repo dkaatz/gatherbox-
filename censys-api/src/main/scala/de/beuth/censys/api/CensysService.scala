@@ -8,12 +8,15 @@ import play.api.libs.json.{Format, Json, Reads, Writes, _}
 import play.api.libs.functional.syntax._
 import java.util.Base64
 import java.nio.charset.StandardCharsets
+import com.typesafe.config.Config
 import scala.collection.immutable.Seq
+import javax.inject._
 
 
 trait CensysService extends Service {
 
   def searchIpv4(): ServiceCall[CensysQuery, CensysIpv4SearchResult]
+  def searchDomain(): ServiceCall[CensysQuery, CensysIpv4SearchResult]
 
   override final def descriptor = {
     import Service._
@@ -25,8 +28,6 @@ trait CensysService extends Service {
 }
 
 object CensysHeaderFilter extends HeaderFilter {
-
-  //@todo get api key from config
   override def transformClientRequest(request: RequestHeader) = {
     request.principal match {
       case Some(principal: ServicePrincipal) =>

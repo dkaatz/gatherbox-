@@ -6,60 +6,34 @@ import akka.Done
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEvent, AggregateEventTag, PersistentEntity}
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
+import de.beuth.scan.api.ScannerStatus
 import de.beuth.utils.JsonFormats.singletonFormat
 import play.api.libs.json.{Format, Json}
+import de.beuth.scanner.commons._
 
 import scala.collection.immutable.Seq
 
 /**
   * Created by David on 08.06.17.
   */
-class IxquickScannerEntity extends PersistentEntity {
-  override type Command = IxquickScannerCommand
-  override type Event = IxquickScannerEvent
-  override type State = Scan
-
-  override def initialState: Scan = Scan(None, Seq())
+class IxquickScannerEntity extends ScannerEntity {
+  override def initialState: Scan = Scan(None, Seq(), false)
 
   override def behavior: Behavior = {
-    Actions().onCommand[StartScan, Done] {
-      case (StartScan(timestmap), ctx, state) =>
-        ctx.thenPersist(
-          ScanStarted(timestmap)
-        ) {
-          _ => ctx.reply(Done)
-        }
-    }.onCommand[UpdateSearch, Done] {
+    scanStatusBehavior.orElse(
+    Actions().onCommand[UpdateSearch, Done] {
       case (UpdateSearch(site, page, links), ctx, state) =>
         ctx.thenPersist(
           SearchUpdated(site, page, links)
         ) {
           _ => ctx.reply(Done)
         }
-    }.onCommand[FinishScan, Done] {
-      case (FinishScan(timestamp), ctx, state) =>
-        ctx.thenPersist(
-          ScanFinished(timestamp)
-        ) {
-          _ => ctx.reply(Done)
-        }
-    }.onCommand[ScanFailure, Done] {
-    case (ScanFailure(timestamp, msg), ctx, state) =>
-      ctx.thenPersist(
-        ScanFailed(timestamp, msg)
-      ) {
-        _ => ctx.reply(Done)
-      }
     }.onEvent {
-      case (ScanStarted(timestamp), state) => state.start(timestamp)
-      case (SearchUpdated(site, page, links), state) => state.updateSearch(site, page, links)
-      case (ScanFinished(timestamp), state) => state
-      case (ScanFailed(timestamp, msg), state) => state
-    }.orElse(getScan)
+      case (SearchUpdated(site, page, links), state: Scan) => state.updateSearch(site, page, links)
+    }).orElse(getScan)
   }
 
-  private val getScan = Actions().onReadOnlyCommand[GetScan.type, Scan] { case (GetScan, ctx, state) => ctx.reply(state) }
-
+  private val getScan = Actions().onReadOnlyCommand[GetScan.type, Scan] { case (GetScan, ctx, state: Scan) => ctx.reply(state) }
 }
 
 /**
@@ -67,9 +41,8 @@ class IxquickScannerEntity extends PersistentEntity {
   * @param startedAt
   * @param searches
   */
-case class Scan(startedAt: Option[Instant], searches: Seq[IxquickSearch]) {
-  //@todo check if already started
-  def start(timestamp: Instant): Scan = copy(startedAt = Some(timestamp), searches = Seq())
+case class Scan(startedAt: Option[Instant], searches: Seq[IxquickSearch], finished: Boolean) extends ScannerState {
+  def start(timestamp: Instant): Scan = copy(startedAt = Some(timestamp), searches = Seq(), finished = false)
 
   def updateSearch(site: String, page: Int, links: Seq[String]): Scan = {
     val idx = searches.indexWhere(_.site == site)
@@ -80,6 +53,8 @@ case class Scan(startedAt: Option[Instant], searches: Seq[IxquickSearch]) {
     else
       copy(searches = searches :+ IxquickSearch(site = site, last_scanned_page = page, links = links))
   }
+
+  def finish = copy(finished = true)
 }
 
 object Scan {
@@ -94,25 +69,7 @@ object IxquickSearch {
 /**
   * Commands
   */
-sealed trait IxquickScannerCommand
-
-case class StartScan(timestamp: Instant) extends IxquickScannerCommand with ReplyType[Done]
-
-object StartScan {
-  implicit val format: Format[StartScan] = Json.format[StartScan]
-}
-
-case class FinishScan(time: Instant) extends IxquickScannerCommand with ReplyType[Done]
-
-object FinishScan {
-  implicit val format: Format[FinishScan] = Json.format
-}
-
-case class ScanFailure(times: Instant, errorMsg: String) extends IxquickScannerCommand with ReplyType[Done]
-
-object ScanFailure {
-  implicit val format: Format[ScanFailure] = Json.format
-}
+sealed trait IxquickScannerCommand extends ScannerCommand
 
 case class UpdateSearch(site: String, page: Int, links: Seq[String]) extends IxquickScannerCommand with ReplyType[Done]
 object UpdateSearch {
@@ -123,42 +80,7 @@ case object GetScan extends IxquickScannerCommand with ReplyType[Scan] {
   implicit val format: Format[GetScan.type] = singletonFormat(GetScan)
 }
 
-
-/**
-  * Events
-  */
-object IxquickScannerEvent {
-  val Tag = AggregateEventTag[IxquickScannerEvent]
-}
-
-sealed trait IxquickScannerEvent extends AggregateEvent[IxquickScannerEvent] {
-  override def aggregateTag: AggregateEventTag[IxquickScannerEvent] = IxquickScannerEvent.Tag
-}
-
-sealed trait IxquickScannerStatusEvent extends IxquickScannerEvent  {
-}
-
-sealed trait IxquickScannerUpdateEvent extends IxquickScannerEvent {
-}
-
-case class ScanStarted(timestamp: Instant) extends IxquickScannerStatusEvent
-
-object ScanStarted {
-  implicit val format: Format[ScanStarted] = Json.format
-}
-
-case class ScanFinished(timestamp: Instant) extends IxquickScannerStatusEvent
-
-object ScanFinished {
-  implicit val format: Format[ScanFinished] = Json.format
-}
-
-case class ScanFailed(timestamp: Instant, errorMsg: String) extends IxquickScannerStatusEvent
-object ScanFailed {
-  implicit val format: Format[ScanFailed] = Json.format
-}
-
-case class SearchUpdated(site: String, page: Int, links: Seq[String]) extends IxquickScannerUpdateEvent
+case class SearchUpdated(site: String, page: Int, links: Seq[String]) extends ScannerUpdateEvent
 object SearchUpdated {
   implicit val format: Format[SearchUpdated] = Json.format
 }
@@ -167,14 +89,8 @@ object IxquickScanSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: Seq[JsonSerializer[_]] = Seq(
     JsonSerializer[Scan],
     JsonSerializer[IxquickSearch],
-    JsonSerializer[StartScan],
-    JsonSerializer[ScanStarted],
-    JsonSerializer[ScanFinished],
-    JsonSerializer[FinishScan],
+    JsonSerializer[UpdateSearch],
     JsonSerializer[SearchUpdated],
-    JsonSerializer[SearchUpdated],
-    JsonSerializer[ScanFailed],
-    JsonSerializer[ScanFailure],
     JsonSerializer[GetScan.type]
-  )
+  ) ++ ScannerSerialzierRegistry.serializers
 }

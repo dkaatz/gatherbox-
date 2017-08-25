@@ -8,25 +8,24 @@ import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.InvalidCommandE
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRegistry
 import de.beuth.proxybrowser.api._
 import org.slf4j.{Logger, LoggerFactory}
+import play.api.{ConfigLoader, Configuration}
 import play.api.libs.json.{JsError, JsPath, JsSuccess, Json}
 import play.api.libs.ws.WSClient
 
 import scala.collection.immutable.Seq
+import scala.collection.{Seq => DefaultSeq}
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 
 /**
   * Created by David on 20.06.17.
   */
-class ProxyBrowser(registry: PersistentEntityRegistry, system: ActorSystem, wsClient: WSClient)(implicit ec: ExecutionContext, mat: Materializer)
+class ProxyBrowser(registry: PersistentEntityRegistry, wsClient: WSClient, config: Configuration)(implicit ec: ExecutionContext, mat: Materializer)
   extends ProxyBrowserService {
 
-//  fetchServersFromNordVPN("france")
-//  fetchServersFromNordVPN("germany")
-//  fetchServersFromNordVPN("austria")
-  fetchServersFromNordVPN("own")
-
   private final val log: Logger = LoggerFactory.getLogger(classOf[ProxyBrowser])
+
+  addPrivateServers
 
   def listFree() = ServiceCall {
     _ => {
@@ -85,6 +84,11 @@ class ProxyBrowser(registry: PersistentEntityRegistry, system: ActorSystem, wsCl
     }
   }
 
+  /**
+    * Fetching Server from gimmeproxy.com and persits them to the Perstintent Entity
+    *
+    * @return Done
+    */
   private def fetchProxyFromGimmeProxyAndPersistServer() = {
     log.info("Fetching a server from gimmeproxy")
     for {
@@ -105,6 +109,37 @@ class ProxyBrowser(registry: PersistentEntityRegistry, system: ActorSystem, wsCl
     } yield proxyServer
   }
 
+  private def addGimmeProxyServers(amount: Int): Unit = {
+    for (i <- 0 to amount)
+      fetchProxyFromGimmeProxyAndPersistServer()
+  }
+
+  /**
+    * Adding private servers from configuration to the {ProxyBrowserEntity}
+    *
+    * @return Done
+    */
+  private def addPrivateServers  =
+    for {
+      wait <- Future {
+        Thread.sleep(500)
+        Done
+      }
+      add <- {
+        val servers = config.get[DefaultSeq[String]]("proxy-server").map( string => {
+          val Array(host: String, port: String, username: String, password: String) = string.split(":")
+          ProxyServer(host, port.toInt, "Unknown", Some(username), Some(password))
+        }).to[Seq]
+        add.invoke(servers)
+      }
+    } yield add
+
+
+  /**
+    * Fetching server for a specific country from NordVPN.com
+    * @param country Country where the server should be from
+    * @return Done
+    */
   private def fetchServersFromNordVPN(country: String) = {
     for {
       wsResponse <- wsClient
@@ -122,55 +157,9 @@ class ProxyBrowser(registry: PersistentEntityRegistry, system: ActorSystem, wsCl
         })
       }
       proxyServersAdded <- {
-        if(country == "own") {
-          Future.successful(Seq[ProxyServer](
-            ProxyServer("50.3.134.31", 80,  "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("151.237.190.53", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("91.108.177.146", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("91.108.176.109", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("5.34.242.201", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("185.119.255.102", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("50.3.134.114", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("151.237.190.147", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("91.108.176.189", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("5.34.242.35", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("46.29.250.252", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("46.29.250.241", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("5.34.243.55", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("5.157.40.204", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("5.34.242.237", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("176.61.138.146", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("91.108.178.119", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("5.34.243.32", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("5.34.242.114", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("185.119.255.104", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("185.119.255.232", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("89.37.66.106", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("50.3.134.48", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("50.3.134.94", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("188.215.22.57", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("185.119.255.237", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("91.108.176.2", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("188.215.22.64", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("185.119.255.124", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ")),
-            ProxyServer("50.3.134.55", 80, "Germany", Some("gatherbox"), Some("WZwfmTHWs5YFDsgMdDeQ"))
-          ))
-        } else {
-          Future.successful(proxyServers)
-        }
+          add().invoke(proxyServers)
       }
-      logging <- {
-        log.info(s"Adding ${proxyServersAdded.length} ProxyServers...")
-        Future.successful(Done)
-      }
-      adding <- this.add().invoke(proxyServersAdded)
-//      adding <- {
-//        for (a <- 0 until 10) {
-//          fetchProxyFromGimmeProxyAndPersistServer()
-//        }
-//        Future.successful(Done)
-//      }
-    } yield adding
+    } yield proxyServersAdded
   }
 
   private def refFor() = registry.refFor[ProxyBrowserEntity]("0")

@@ -1,14 +1,12 @@
 package de.beuth.ixquick.scanner.impl
 
-import java.io.{File, InputStream}
-
-import akka.actor.{ActorSystem, Scheduler}
+import akka.actor.{ActorSystem}
 import akka.stream.Materializer
 import akka.stream.scaladsl.Flow
-import akka.{Done, NotUsed}
+import akka.{Done}
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.persistence.{EventStreamElement, PersistentEntityRegistry}
-import de.beuth.utils.{ProfileLink, UnkownProfileProviderException, UserAgentList}
+import de.beuth.utils.{ UserAgentList}
 import de.beuth.ixquick.scanner.api.{IxquickScanUpdateEvent, IxquickScannerService}
 import org.slf4j.{Logger, LoggerFactory}
 import net.ruippeixotog.scalascraper.browser.{Browser, JsoupBrowser}
@@ -23,7 +21,6 @@ import play.api.libs.ws._
 import scala.concurrent.duration._
 import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
 import de.beuth.proxybrowser.api.{ProxyBrowserService, ProxyServer}
 import de.beuth.scan.api.ScanService
 import java.time.Instant
@@ -34,12 +31,9 @@ import com.lightbend.lagom.scaladsl.broker.TopicProducer
 import de.beuth.scanner.commons._
 import de.beuth.proxybrowser.api.RndProxyServer
 
-import scala.collection.mutable
-
 
 class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem, wsClient: WSClient, scanService: ScanService, proxyBrowserService: ProxyBrowserService)(implicit ec: ExecutionContext, mat: Materializer)
   extends IxquickScannerService {
-
   private final val log: Logger = LoggerFactory.getLogger(classOf[IxquickScannerImpl])
 
   scanService.statusTopic().subscribe.atLeastOnce(
@@ -47,22 +41,20 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
       case ev: ScanStartedEvent => {
         log.info(s"ScanStartedEvent received - Keywor: ${ev.keyword}")
         val startScan = refFor(ev.keyword).ask(StartScan(Instant.now()))
-//        val linkedInFuture = this.scanLinkedin(ev.keyword).invoke()
+        val linkedInFuture = this.scanLinkedin(ev.keyword).invoke()
         val xingFuture = this.scanXing(ev.keyword).invoke()
         (for {
           scanStarted <- startScan
-//          linkedin <- linkedInFuture
+          linkedin <- linkedInFuture
           xing <- xingFuture
           finish <- refFor(ev.keyword).ask(FinishScan(Instant.now()))
         } yield finish).recoverWith {
           case e: Exception => {
             log.info(s"Exception while scanning ixquick: ${e.toString}")
-            //refFor(ev.keyword).ask(ScanFailure(Instant.now(), e.getMessage))
-            Future.successful(Done)
+            refFor(ev.keyword).ask(ScanFailure(Instant.now(), e.getMessage))
           }
         }
       }
-      //ignore other events
       case other => Future.successful(Done)
     }
   )
@@ -95,13 +87,14 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
       (query: IxquickQuery, ixquickServer: String) <- {
         val defaultIxquickServer = "https://www.ixquick.com/do/search";
         val filtered = current.searches.filter(_.site == site)
+        val iqq = s"site:$site $keyword"
         if (filtered.isEmpty)
-          Future.successful((IxquickQuery(query = s"site:$site $keyword"), defaultIxquickServer))
+          Future.successful((IxquickQuery(query = iqq), defaultIxquickServer))
         else
           for {
           //we do one fake request for the first site to procceed with last scanned site
             (iq: IxquickQuery, server: String, results: Seq[String]) <-
-            proxiedPostWithRetry(url = defaultIxquickServer, query = IxquickQuery(query = s"site:$site $keyword"), proxy = proxy)
+            proxiedPostWithRetry(url = defaultIxquickServer, query = IxquickQuery(query = iqq), proxy = proxy)
 
             q <- Future.successful(iq.copy(startAt = ((filtered(0).last_scanned_page + 1) * 10).toString))
           } yield (q, server)
@@ -141,18 +134,20 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
 
         if (results.isEmpty || (idx != -1 && results.diff(current.searches(idx).links).isEmpty))
           Future.successful(Done)
-        else {
-          //sleeping 10 seconds to do not run into captcha scenario
-          Thread.sleep(10000L)
-          proxiedRecursiveRequestChain(
-            keyword,
-            site,
-            query = iq.copy(startAt = (query.startAt.toInt + 10).toString),
-            ixquickserver = server, proxy = proxy
-          )
-        }
+        else
+          for {
+            sleep <- Future {
+              Thread.sleep(10000L)
+              Done
+            }
+            prrc <- proxiedRecursiveRequestChain(
+              keyword,
+              site,
+              query = iq.copy(startAt = (query.startAt.toInt + 10).toString),
+              ixquickserver = server, proxy = proxy
+            )
+          } yield prrc
       }
-
     } yield next
 
   protected def proxiedPostWithRetry(url: String, query: IxquickQuery, retry: Int = 0, proxy: ProxyServer): Future[(IxquickQuery, String, List[String])] = {
@@ -192,8 +187,6 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
     }.recoverWith {
       //proxy not reachable
       case e: java.io.IOException => throw e
-      case e: java.net.ConnectException => throw e
-      //allow retry
       case e: Throwable if retry < 2 => {
         log.info(s"Exception while recurisve ixquick scan with retry $retry: ${e.toString}")
         proxiedPostWithRetry(url, query, retry + 1, proxy)
@@ -222,38 +215,20 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
   /**
     * Message Broking
     */
-  override def statusTopic(): Topic[ScanStatusEvent] =
-    TopicProducer.singleStreamWithOffset {
-      fromOffset =>
-        registry.eventStream(IxquickScannerEvent.Tag, fromOffset)
-          .filter {
-            _.event match {
-              case x@(_: ScanStarted | _: ScanFinished | _: ScanFailed) => true
-              case _ => false
-            }
-          }.map(ev => convertStatusEvent(ev))
-    }
-
-  private def convertStatusEvent(scanEvent: EventStreamElement[IxquickScannerEvent]): (ScanStatusEvent, Offset) = {
-    scanEvent match {
-      case EventStreamElement(keyword, ScanStarted(timestamp),offset) => (ScanStartedEvent(keyword, timestamp), offset)
-      case EventStreamElement(keyword, ScanFinished(timestamp), offset) => (ScanFinishedEvent(keyword, timestamp), offset)
-      case EventStreamElement(keyword, ScanFailed(timestamp, errorMsg), offset) => (ScanFailedEvent(keyword, timestamp, errorMsg), offset)
-    }
-  }
+  override def statusTopic() = statusTopicImpl(registry)
 
   override def updateTopic(): Topic[IxquickScanUpdateEvent] =
     TopicProducer.singleStreamWithOffset {
       fromOffset =>
-        registry.eventStream(IxquickScannerEvent.Tag, fromOffset).filter{
+        registry.eventStream(ScannerEvent.Tag, fromOffset).filter{
           _.event match {
-            case x@(_: SearchUpdated) => true
+            case _: ScannerUpdateEvent => true
             case _ => false
           }
         }.map(ev => convertUpdateEvent(ev))
     }
 
-  private def convertUpdateEvent(scanEvent: EventStreamElement[IxquickScannerEvent]): (IxquickScanUpdateEvent, Offset) =
+  private def convertUpdateEvent(scanEvent: EventStreamElement[ScannerEvent]): (IxquickScanUpdateEvent, Offset) =
     scanEvent match {
       case EventStreamElement(keyword, SearchUpdated(site, page, links), offset) => (IxquickScanUpdateEvent(keyword, links), offset)
     }

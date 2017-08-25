@@ -11,7 +11,7 @@ import play.api.libs.ws.ahc.AhcWSComponents
 import com.softwaremill.macwire._
 import de.beuth.censys.scanner.api.CensysScannerService
 import de.beuth.ixquick.scanner.api.IxquickScannerService
-import de.beuth.profile.scanner.api.ProfileScannerService
+import de.beuth.linkedin.scanner.api.LinkedinScannerService
 
 abstract class ScanApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
@@ -21,14 +21,12 @@ abstract class ScanApplication(context: LagomApplicationContext)
 {
 
   lazy val censysScannerService = serviceClient.implement[CensysScannerService]
-  lazy val profileScannerService = serviceClient.implement[ProfileScannerService]
+  lazy val linekedinScannerService = serviceClient.implement[LinkedinScannerService]
   lazy val ixquickScannerService = serviceClient.implement[IxquickScannerService]
   lazy val scanService = serviceClient.implement[ScanService]
 
   // Bind the services that this server provides
-  override lazy val lagomServer = LagomServer.forServices(
-    bindService[ScanService].to(wire[ScanServiceImpl])
-  )
+  override lazy val lagomServer = serverFor[ScanService](wire[ScanServiceImpl])
 
   // Register the JSON serializer registry
   override lazy val jsonSerializerRegistry = ScanSerializerRegistry

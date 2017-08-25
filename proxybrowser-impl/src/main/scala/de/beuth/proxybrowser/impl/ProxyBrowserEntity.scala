@@ -143,6 +143,9 @@ object UpdateReported {
   implicit val format: Format[UpdateReported] = Json.format
 }
 
+/**
+  * Events
+  */
 sealed trait ProxyBrowserEvent
 case class Added(servers: Seq[ProxyServer]) extends ProxyBrowserEvent
 object Added {
