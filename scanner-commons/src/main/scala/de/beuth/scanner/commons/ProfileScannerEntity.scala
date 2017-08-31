@@ -166,8 +166,9 @@ case class ProfileScannerState(
     )
 
 }
-
-/**
+object ProfileScannerState {
+  implicit val format: Format[ProfileScannerState] = Json.format
+}/**
   * Represents the extracted Profile Data
   *
   * @param firstname  givenname of the person
@@ -273,6 +274,7 @@ case class ProfileScrapingException(message: String) extends Exception(message)
 object ProfileScanSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: Seq[JsonSerializer[_]] = Seq(
     JsonSerializer[Profile],
+    JsonSerializer[ProfileScannerState],
     JsonSerializer[JobExperience],
     JsonSerializer[LinkCollectionCompleted.type],
     JsonSerializer[CompleteLinkCollection.type],

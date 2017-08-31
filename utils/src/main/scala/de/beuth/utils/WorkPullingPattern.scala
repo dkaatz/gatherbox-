@@ -39,6 +39,7 @@ class Master[T] extends Actor {
   private final val log: Logger = LoggerFactory.getLogger(classOf[Master[T]])
   val workers = mutable.Set.empty[ActorRef] // the registered workers
   var currentEpic: Option[Epic[T]] = None // the current list of work to do
+  val listOfEpics = mutable.Set.empty[Epic[T]]
 
   /**
     * Specifies what to do when receiving messages
@@ -47,7 +48,7 @@ class Master[T] extends Actor {
 
     case epic: Epic[T] ⇒
       if (currentEpic.isDefined)   // we alread got work
-        sender ! CurrentlyBusy
+        listOfEpics += epic // but we append it to a list of epics to not loose any work
       else if (workers.isEmpty)    // we have no workers registered
         log.error("Got work but there are no workers registered.")
       else {
@@ -72,8 +73,18 @@ class Master[T] extends Actor {
         if (iter.hasNext)
           sender ! Work(iter.next)
         else {
-          log.info(s"done with current epic $epic")
-          currentEpic = None
+          //added by david kaatz
+          if(listOfEpics.isEmpty) {
+            log.info(s"done with all epics $epic")
+            currentEpic = None
+          } else {
+            log.info(s"done with current epic $epic")
+            currentEpic = listOfEpics.headOption
+            listOfEpics.remove(currentEpic.get)
+            log.info(s"Proceeeding  with next epic $epic")
+            sender ! Work(currentEpic.iterator.next)
+          }
+          //stop adding
         }
     }
   }

@@ -38,7 +38,7 @@ trait LinkedinScannerService extends Service with ScanStatusTopic with ProfileUp
     import Service._
     named(s"${LinkedinScannerService.NAME}-scanner").withCalls(
       restCall(Method.POST, "/api/scanner/linkedin/:keyword", scrape _),
-      restCall(Method.GET, "/api/scanner/linkedin/:keyword", scrape _)
+      restCall(Method.GET, "/api/scanner/linkedin/:keyword", getState _)
     ).withTopics(
       topic(LinkedinScannerService.TOPIC_STATUS, statusTopic),
       topic(LinkedinScannerService.TOPIC_UPDATE, updateTopic)

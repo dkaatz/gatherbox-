@@ -41,7 +41,7 @@ trait XingScannerService extends Service with ScanStatusTopic with ProfileUpdate
     named(s"${XingScannerService.NAME}-scanner").withCalls(
       //api's this service provides
       restCall(Method.POST, "/api/scanner/xing/:keyword", scrape _),
-      restCall(Method.GET, "/api/scanner/xing/:keyword", scrape _)
+      restCall(Method.GET, "/api/scanner/xing/:keyword", getState _)
     ).withTopics(
       //topics this service pulishes
       topic(XingScannerService.TOPIC_STATUS, statusTopic),
