@@ -15,7 +15,7 @@ trait ScannerEntity extends PersistentEntity {
   override type State = ScannerState
 
   def scanStatusBehavior: Actions =  Actions().onCommand[StartScan, Done] {
-    case (StartScan(timestamp), ctx, state: ScannerState) if state.startedAt.isDefined && !state.finished =>
+    case (StartScan(timestamp), ctx, state: ScannerState) if state.startedat.isDefined && !state.finished =>
       ctx.invalidCommand(s"Scan for $entityId already running.")
       ctx.done
 
@@ -27,7 +27,7 @@ trait ScannerEntity extends PersistentEntity {
       }
 
   }.onCommand[FinishScan, Done] {
-    case (FinishScan(timestamp), ctx, state: ScannerState) if state.startedAt.isDefined && !state.finished =>
+    case (FinishScan(timestamp), ctx, state: ScannerState) if state.startedat.isDefined && !state.finished =>
       ctx.thenPersist(
         ScanFinished(timestamp)
       ) {
@@ -54,7 +54,7 @@ trait ScannerEntity extends PersistentEntity {
 }
 
 trait ScannerState {
-  val startedAt: Option[Instant]
+  val startedat: Option[Instant]
   val finished: Boolean
 
   def start(timestamp: Instant): ScannerState

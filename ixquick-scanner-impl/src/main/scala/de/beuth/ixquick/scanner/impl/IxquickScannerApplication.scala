@@ -1,7 +1,5 @@
 package de.beuth.ixquick.scanner.impl
 
-
-import akka.actor.Scheduler
 import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
 import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
@@ -14,7 +12,9 @@ import de.beuth.proxybrowser.api.ProxyBrowserService
 import de.beuth.scan.api.ScanService
 import play.api.libs.ws.ahc.AhcWSComponents
 
-
+/**
+  * THe application loader of the service
+  */
 class IxquickScannerLoader extends LagomApplicationLoader {
 
   override def load(context: LagomApplicationContext): LagomApplication =
@@ -37,17 +37,18 @@ abstract class IxquickScannerApplication(context: LagomApplicationContext)
     with LagomKafkaComponents
 {
 
+  //wire scan service for DI
   lazy val scanService = serviceClient.implement[ScanService]
+  //wire proxy browser service for DI
   lazy val proxyBrowserService = serviceClient.implement[ProxyBrowserService]
 
   // Bind the services that this server provides
-  override lazy val lagomServer = LagomServer.forServices(
-    bindService[IxquickScannerService].to(wire[IxquickScannerImpl])
-  )
+  override lazy val lagomServer = serverFor[IxquickScannerService](wire[IxquickScannerImpl])
 
   // Register the JSON serializer registry
   override lazy val jsonSerializerRegistry = IxquickScanSerializerRegistry
 
+  //register the write side
   persistentEntityRegistry.register(wire[IxquickScannerEntity])
 }
 

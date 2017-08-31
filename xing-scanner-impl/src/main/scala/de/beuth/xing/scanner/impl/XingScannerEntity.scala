@@ -18,11 +18,13 @@ import scala.collection.immutable.Seq
   */
 class XingScannerEntity extends ProfileScannerEntity {
 
+  //we just chain the already defined behavior of the supertypes
   override def behavior: Behavior =
     scanStatusBehavior.orElse(profileBehavior).orElse(getProfiles)
 }
 
 
+//we just chain the registry
 object XingScanSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: Seq[JsonSerializer[_]] = Seq() ++ ProfileScanSerializerRegistry.serializers
 }

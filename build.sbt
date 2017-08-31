@@ -5,77 +5,20 @@ version in ThisBuild := "1.0-SNAPSHOT"
 scalaVersion in ThisBuild := "2.11.11"
 
 val macwire = "com.softwaremill.macwire" %% "macros" % "2.2.5" % "provided"
-val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % Test
 val playJsonDerivedCodecs = "org.julienrf" %% "play-json-derived-codecs" % "4.0.0"
 val scalaScraper = "net.ruippeixotog" %% "scala-scraper" % "2.0.0-RC2"
 val selenium = "org.seleniumhq.selenium" % "selenium-java" % "3.4.0"
-//val dockerClient = "com.spotify" % "docker-client" % "LATEST-VERSION"
-
-
-//lazy val `gatherbox` = (project in file("."))
-//  .aggregate(`gatherbox-api`, `gatherbox-impl`, `gatherbox-stream-api`, `gatherbox-stream-impl`, `censys-api`)
-//
-//
-///**
-//  * PREDEFINED START
-//  */
-//lazy val `gatherbox-api` = (project in file("gatherbox-api"))
-//  .settings(
-//    libraryDependencies ++= Seq(
-//      lagomScaladslApi
-//    )
-//  )
-//
-//lazy val `gatherbox-impl` = (project in file("gatherbox-impl"))
-//  .enablePlugins(LagomScala)
-//  .settings(
-//    libraryDependencies ++= Seq(
-//      lagomScaladslPersistenceCassandra,
-//      lagomScaladslTestKit,
-//      lagomScaladslKafkaClient,
-//      macwire,
-//      scalaTest
-//    )
-//  )
-//  .settings(lagomForkedTestSettings: _*)
-//  .dependsOn(`gatherbox-api`, `scan-impl`,`scan-api`)
-
-//lazy val `gatherbox-stream-api` = (project in file("gatherbox-stream-api"))
-//  .settings(
-//    libraryDependencies ++= Seq(
-//      lagomScaladslApi
-//    )
-//  )
-//
-//lazy val `gatherbox-stream-impl` = (project in file("gatherbox-stream-impl"))
-//  .enablePlugins(LagomScala)
-//  .settings(
-//    libraryDependencies ++= Seq(
-//      lagomScaladslTestKit,
-//      macwire,
-//      scalaTest
-//    )
-//  )
-//  .dependsOn(`gatherbox-stream-api`, `gatherbox-api`)
-
-/**
-  * PREDEFINED END
-  */
-
 
 lazy val `utils`= (project in file("utils"))
   .settings(
-    version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
       lagomScaladslApi,
-      playJsonDerivedCodecs,
-      selenium
+      playJsonDerivedCodecs
     )
   )
 
 lazy val `scanner-commons`= (project in file("scanner-commons"))
   .settings(
-    version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
       lagomScaladslApi,
       lagomScaladslKafkaBroker,
@@ -107,12 +50,11 @@ lazy val `scan-impl` = (project in file("scan-impl"))
     )
   )
   .settings(lagomForkedTestSettings: _*)
-  .dependsOn(`scan-api`, `linkedin-scanner-api`,`censys-scanner-api`, `ixquick-scanner-api`, `utils`, `scanner-commons`)
+  .dependsOn(`scan-api`, `linkedin-scanner-api`,`censys-scanner-api`, `ixquick-scanner-api`, `xing-scanner-api`, `databreach-api`,`utils`, `scanner-commons`)
 
 
 lazy val `censys-scanner-api`= (project in file("censys-scanner-api"))
   .settings(
-    version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
       lagomScaladslApi,
       playJsonDerivedCodecs
@@ -133,7 +75,6 @@ lazy val `censys-scanner-impl` = (project in file("censys-scanner-impl"))
 
 lazy val `ixquick-scanner-api`= (project in file("ixquick-scanner-api"))
   .settings(
-    version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
       lagomScaladslApi,
       playJsonDerivedCodecs
@@ -155,12 +96,10 @@ lazy val `ixquick-scanner-impl` = (project in file("ixquick-scanner-impl"))
 
 lazy val `proxybrowser-api`= (project in file("proxybrowser-api"))
   .settings(
-    version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
       lagomScaladslApi,
       lagomScaladslServer % Optional,
-      playJsonDerivedCodecs,
-      scalaTest
+      playJsonDerivedCodecs
     )
   )
 
@@ -177,7 +116,6 @@ lazy val `proxybrowser-impl` = (project in file("proxybrowser-impl"))
 
 lazy val `xing-scanner-api`= (project in file("xing-scanner-api"))
   .settings(
-    version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
       lagomScaladslApi,
       playJsonDerivedCodecs
@@ -200,7 +138,6 @@ lazy val `xing-scanner-impl` = (project in file("xing-scanner-impl"))
 
 lazy val `linkedin-scanner-api`= (project in file("linkedin-scanner-api"))
   .settings(
-    version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
       lagomScaladslApi,
       playJsonDerivedCodecs
@@ -220,8 +157,58 @@ lazy val `linkedin-scanner-impl` = (project in file("linkedin-scanner-impl"))
   )
   .dependsOn(`scan-api`, `ixquick-scanner-api`, `utils`,`scanner-commons`, `linkedin-scanner-api`, `proxybrowser-impl`)
 
+
+lazy val `databreach-api`= (project in file("databreach-api"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslApi,
+      playJsonDerivedCodecs
+    )
+  ).dependsOn(`scanner-commons`, `databreach-scanner-api`)
+
+
+lazy val `databreach-impl` = (project in file("databreach-impl"))
+  .enablePlugins(LagomScala)
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslPersistenceCassandra,
+      lagomScaladslKafkaBroker,
+      macwire
+    )
+  )
+  .dependsOn(`scan-api`, `databreach-api` ,`linkedin-scanner-api`, `xing-scanner-api`, `utils`,`scanner-commons`, `databreach-scanner-api`)
+
+
+lazy val `databreach-scanner-api`= (project in file("databreach-scanner-api"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslApi,
+      playJsonDerivedCodecs
+    )
+  ).dependsOn(`scanner-commons`)
+
+
+lazy val `scan-result-api`= (project in file("scan-result-api"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslApi
+    )
+  ).dependsOn(`databreach-api`, `censys-scanner-api`, `scanner-commons`)
+
+lazy val `scan-result-impl` = (project in file("scan-result-impl"))
+  .enablePlugins(LagomScala)
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslPersistenceCassandra,
+      lagomScaladslKafkaClient,
+      macwire
+    )
+  )
+  .dependsOn(`scan-result-api`, `databreach-api` ,`censys-scanner-api`, `linkedin-scanner-api`, `xing-scanner-api`)
+
+
 /**
-  * Cleanup on start to not have events / data in queue
+  * Cleanup on start to not have events / data in qeue
   */
 lagomKafkaCleanOnStart in ThisBuild := true
 lagomCassandraCleanOnStart in ThisBuild := true
@@ -240,7 +227,9 @@ lagomCassandraCleanOnStart in ThisBuild := true
 /**
   * External Sevices
   */
-lagomUnmanagedServices in ThisBuild := Map("censys" -> "https://www.censys.io:443")
+lagomUnmanagedServices in ThisBuild := Map(
+  "censys" -> "https://www.censys.io:443"
+)
 
 /**
   * Cached update resolution

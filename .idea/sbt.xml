@@ -14,6 +14,12 @@
             <option value="$PROJECT_DIR$/censys-scanner-api/project" />
             <option value="$PROJECT_DIR$/censys-scanner-impl" />
             <option value="$PROJECT_DIR$/censys-scanner-impl/project" />
+            <option value="$PROJECT_DIR$/databreach-api" />
+            <option value="$PROJECT_DIR$/databreach-api/project" />
+            <option value="$PROJECT_DIR$/databreach-impl" />
+            <option value="$PROJECT_DIR$/databreach-impl/project" />
+            <option value="$PROJECT_DIR$/databreach-scanner-api" />
+            <option value="$PROJECT_DIR$/databreach-scanner-api/project" />
             <option value="$PROJECT_DIR$/ixquick-scanner-api" />
             <option value="$PROJECT_DIR$/ixquick-scanner-api/project" />
             <option value="$PROJECT_DIR$/ixquick-scanner-impl" />
@@ -31,6 +37,10 @@
             <option value="$PROJECT_DIR$/scan-api/project" />
             <option value="$PROJECT_DIR$/scan-impl" />
             <option value="$PROJECT_DIR$/scan-impl/project" />
+            <option value="$PROJECT_DIR$/scan-result-api" />
+            <option value="$PROJECT_DIR$/scan-result-api/project" />
+            <option value="$PROJECT_DIR$/scan-result-impl" />
+            <option value="$PROJECT_DIR$/scan-result-impl/project" />
             <option value="$PROJECT_DIR$/scanner-commons" />
             <option value="$PROJECT_DIR$/scanner-commons/project" />
             <option value="$PROJECT_DIR$/utils" />

@@ -3,7 +3,6 @@ package de.beuth.scan.impl
 import java.time.{Instant, LocalDateTime}
 
 import akka.Done
-import com.lightbend.lagom.scaladsl.persistence.{AggregateEvent, AggregateEventTag, PersistentEntity}
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 import de.beuth.scan.api.ScannerStatus
@@ -53,7 +52,7 @@ class ScanEntity extends ScannerEntity {
 
     //scanner already started and still running
     case (StartScanner(name, timestamp), ctx, state: Scan)
-      if !state.scanner.filter(_.name == name).head.startedAt.isEmpty && state.scanner.filter(_.name == name).filterNot(_.finished).isEmpty => {
+      if !state.scanner.filter(_.name == name).head.startedat.isEmpty && state.scanner.filter(_.name == name).filterNot(_.finished).isEmpty => {
       ctx.invalidCommand(s"Scanner <$name> can not start twice.")
       ctx.done
     }
@@ -99,10 +98,10 @@ class ScanEntity extends ScannerEntity {
   * The current state held by the persistent entity.
   * It holds the last time the scanner started and the state of each scanner
   *
-  * @param startedAt time the last scan got started
+  * @param startedat time the last scan got started
   * @param scanner list of scanners states
   */
-case class Scan(startedAt: Option[Instant], scanner: Seq[ScannerStatus], finished: Boolean) extends ScannerState {
+case class Scan(startedat: Option[Instant], scanner: Seq[ScannerStatus], finished: Boolean) extends ScannerState {
 
   def startScanner(name: String, timestamp: Instant): Scan =
     copy(scanner = scanner.updated(indexOfScanner(name), ScannerStatus(name, Some(timestamp), false)))
@@ -115,7 +114,7 @@ case class Scan(startedAt: Option[Instant], scanner: Seq[ScannerStatus], finishe
   def indexOfScanner(name:String): Int = scanner.indexWhere(_.name == name)
 
   def start(timestamp: Instant): Scan =
-    Scan(startedAt = Some(timestamp), scanner = Scanners.scanners, finished = false)
+    Scan(startedat = Some(timestamp), scanner = Scanners.scanners, finished = false)
 
   def finish = copy(finished = true)
 }

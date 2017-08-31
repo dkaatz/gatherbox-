@@ -7,10 +7,13 @@ import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 
 import scala.collection.immutable.Seq
 
-/**
-  * Created by David on 13.06.17.
-  */
 
+/**
+  * This Service scrapes linkedin profiles and publishes the updates to the message broker
+  * as well as the status of the scan
+  *
+  * provides one endpoint and 2 topics
+  */
 object LinkedinScannerService {
   val NAME = "linkedin"
   val TOPIC_STATUS = s"${NAME}Status"
@@ -28,10 +31,9 @@ trait LinkedinScannerService extends Service with ScanStatusTopic with ProfileUp
     */
   def scrape(keyword: String): ServiceCall[String, Done]
 
-
   override final def descriptor = {
     import Service._
-    named("linkedin-scanner").withCalls(
+    named(s"${LinkedinScannerService.NAME}-scanner").withCalls(
       restCall(Method.POST, "/api/scanner/linkedin/:keyword", scrape _)
     ).withTopics(
       topic(LinkedinScannerService.TOPIC_STATUS, statusTopic),

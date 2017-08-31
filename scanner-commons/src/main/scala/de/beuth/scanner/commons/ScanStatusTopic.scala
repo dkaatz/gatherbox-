@@ -65,6 +65,13 @@ sealed trait ScanStatusEvent {
   def timestamp: Instant
 }
 
+/**
+  * Polymorphic event stream support
+  *
+  * Here we add on writing the object to json an event_type
+  *
+  * On reading json to an object we decide wich event is used based on the event_type
+  */
 object ScanStatusEvent {
   implicit val reads: Reads[ScanStatusEvent] = {
     (__ \ "event_type").read[String].flatMap {

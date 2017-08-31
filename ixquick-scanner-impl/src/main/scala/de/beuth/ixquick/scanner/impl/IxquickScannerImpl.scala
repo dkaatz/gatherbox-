@@ -1,12 +1,12 @@
 package de.beuth.ixquick.scanner.impl
 
-import akka.actor.{ActorSystem}
+import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Flow
-import akka.{Done}
+import akka.Done
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.persistence.{EventStreamElement, PersistentEntityRegistry}
-import de.beuth.utils.{ UserAgentList}
+import de.beuth.utils.UserAgentList
 import de.beuth.ixquick.scanner.api.{IxquickScanUpdateEvent, IxquickScannerService}
 import org.slf4j.{Logger, LoggerFactory}
 import net.ruippeixotog.scalascraper.browser.{Browser, JsoupBrowser}
@@ -14,17 +14,15 @@ import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL.Parse._
 import org.jsoup.HttpStatusException
-import net.ruippeixotog.scalascraper.scraper.ContentExtractors.attr
+import net.ruippeixotog.scalascraper.scraper.ContentExtractors.{attr, element}
 import play.api.libs.json.{Format, Json}
 import play.api.libs.ws._
-
 import scala.concurrent.duration._
 import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 import de.beuth.proxybrowser.api.{ProxyBrowserService, ProxyServer}
 import de.beuth.scan.api.ScanService
 import java.time.Instant
-
 import akka.persistence.query.Offset
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.broker.TopicProducer
@@ -36,10 +34,16 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
   extends IxquickScannerService {
   private final val log: Logger = LoggerFactory.getLogger(classOf[IxquickScannerImpl])
 
+  /**
+    * Subscription to the status topic of the scan service
+    */
   scanService.statusTopic().subscribe.atLeastOnce(
     Flow[ScanStatusEvent].mapAsync(1) {
+
       case ev: ScanStartedEvent => {
         log.info(s"ScanStartedEvent received - Keywor: ${ev.keyword}")
+
+        //start the 3 scans in parallel
         val startScan = refFor(ev.keyword).ask(StartScan(Instant.now()))
         val linkedInFuture = this.scanLinkedin(ev.keyword).invoke()
         val xingFuture = this.scanXing(ev.keyword).invoke()
@@ -47,6 +51,7 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
           scanStarted <- startScan
           linkedin <- linkedInFuture
           xing <- xingFuture
+          //and wait for them to finish
           finish <- refFor(ev.keyword).ask(FinishScan(Instant.now()))
         } yield finish).recoverWith {
           case e: Exception => {
@@ -59,6 +64,12 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
     }
   )
 
+  /**
+    * Starts scanning for german and english profiles in parallel
+    *
+    * @param keyword associated keyword
+    * @return Done
+    */
   def scanLinkedin(keyword: String) = ServiceCall { _ => {
       log.info(s"Scanning Linkedin Profiles with keyword: $keyword")
       val linkedIn1 = processKeyword(keyword, "de.linkedin.com/in")
@@ -71,14 +82,30 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
     }
   }
 
+  /**
+    * Starts scanning for xing profiles
+    *
+    * @param keyword associated keyword
+    * @return Done
+    */
   def scanXing(keyword: String) = ServiceCall { _ => {
       log.info(s"Scanning Xing Profiles with keyword: $keyword")
       processKeyword(keyword, "www.xing.com/profile")
     }
   }
 
+  //shorthand
   private def refFor(keyword: String) = registry.refFor[IxquickScannerEntity](keyword)
 
+  /**
+    * Processing the keyword scan
+    *
+    * This method manages the scan flow,
+    *
+    * @param keyword associated keyword
+    * @param site
+    * @return
+    */
   private def processKeyword(keyword: String, site: String): Future[Done] = {
     val proxyFuture = proxyBrowserService.getAvailableProxy().invoke()
     (for {
@@ -107,6 +134,12 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
     }
   }
 
+  /**
+    * Tries to scan with the next proxy, first reporting the old one , then starting from beginning
+    * @param keyword keyword to scan for
+    * @param site site to scan for  eg. de.linkedin.com/in
+    * @param proxyFuture the not working proxy
+    */
   private def processKeywordWithNextProxy(keyword: String,
                                           site: String,
                                           proxyFuture: Future[ProxyServer]) =
@@ -157,20 +190,39 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
         //log.info(s"Response from Ixquick - status: ${wsResponse.status} - body: ${wsResponse.body}")
         val browser = JsoupBrowser().parseString(wsResponse.body);
         val linkList = (browser >> extractor("div.result h3 a", attrs("href"), seq(asIs[String]))).toList
-        val pnform = browser >?> element("#pnform")
 
-        //captcha scenario
-        //@todo change exception name
-        if (!pnform.isDefined) {
-          throw PnFormNotFoundException("Pn form not found!!")
+        /**
+          * Since Ixquick is changing the form names from time to time we try to fetch all forms and find the
+          * needed meta data in them
+          */
+        val forms = browser >?> elementList("form")
+
+        //captcha scenario, we got no forms at all so we got detected as a robot and we should report the proxy server
+        if (!forms.isDefined) {
+          throw PnFormNotFoundException(s"No forms found at all!! Something went wrong")
         }
 
-        val qid = pnform.get >?> element("input[name=qid]") >> attr("value")
-        val ppg = pnform.get >?> element("input[name=ppg]") >> attr("value")
-        val cpg = pnform.get >?> element("input[name=cpg]") >> attr("value")
-        val nj = pnform.get >?> element("input[name=nj]") >> attr("value")
-        val ixquickserver = browser >?> attr("action")("#pnform")
+        //try to get the qid from any of the forms
+        val qids = (forms.get >?> element("input[name=qid]") >> attr("value")).filter(_.isDefined)
+        val qid = qids.headOption.getOrElse(None)
 
+        //try to get the ppg from any of the forms
+        val ppgs = (forms.get >?> element("input[name=ppg]") >> attr("value")).filter(_.isDefined)
+        val ppg = ppgs.headOption.getOrElse(None)
+
+        //try to get the cpg from any of the forms
+        val cpgs = (forms.get >?> element("input[name=cpg]") >> attr("value")).filter(_.isDefined)
+        val cpg = cpgs.headOption.getOrElse(None)
+
+        //try to get the nj from any of the forms
+        val njs = (forms.get >?> element("input[name=nj]") >> attr("value")).filter(_.isDefined)
+        val nj = cpgs.headOption.getOrElse(None)
+
+        //try to get processing server from any of the forms
+        val ixquickservers = browser >?> attr("action")("form")
+        val ixquickserver = ixquickservers.filter(_.contains("eu")).headOption
+
+        //just log for information
         log.info("[Ixqucikform] qid: "
           + qid.toString
           + "server: " + ixquickserver
@@ -178,8 +230,10 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
           + "cpg: " + cpg.toString
           + "ppg: " + ppg.toString
         )
+        //return the updated query  and the links
         (query.copy(qid = qid.getOrElse(""), ppg = ppg.getOrElse(""), cpg = cpg.getOrElse(""), nj = nj.getOrElse("")), ixquickserver.getOrElse("https://www.ixquick.com/do/search"), linkList)
       }
+      //we got an unexpexted response code
       case wsResponse: WSResponse => {
         log.info(s"Received unexpected status code: ${wsResponse.status} with body: ${wsResponse.body}")
         throw new HttpStatusException("Received unexpected status code", wsResponse.status, url)
@@ -187,6 +241,8 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
     }.recoverWith {
       //proxy not reachable
       case e: java.io.IOException => throw e
+
+        //any other case we retry 3 times
       case e: Throwable if retry < 2 => {
         log.info(s"Exception while recurisve ixquick scan with retry $retry: ${e.toString}")
         proxiedPostWithRetry(url, query, retry + 1, proxy)
@@ -194,6 +250,15 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
     }
   }
 
+  /**
+    * This method performs a post request with the given ixquick query and the given proxy server to the given url
+    * Therfore it uses a random  user agent header to get not detected as a robot
+    *
+    * @param url url to call ( ixquick server endpoint )
+    * @param query the ixquick query
+    * @param proxy the proxy to use
+    * @return
+    */
   private def proxiedPost(url: String, query: IxquickQuery, proxy: ProxyServer): Future[WSResponse] = {
     log.info(s"firing post $url starting at " + query.startAt + " - with qid:" + query.qid)
     wsClient.url(url)
@@ -212,6 +277,7 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
       .post(query.asFormData)
   }
 
+
   /**
     * Message Broking
     */
@@ -228,6 +294,7 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
         }.map(ev => convertUpdateEvent(ev))
     }
 
+  //@todo no need for pattern match and extra method
   private def convertUpdateEvent(scanEvent: EventStreamElement[ScannerEvent]): (IxquickScanUpdateEvent, Offset) =
     scanEvent match {
       case EventStreamElement(keyword, SearchUpdated(site, page, links), offset) => (IxquickScanUpdateEvent(keyword, links), offset)
@@ -235,6 +302,9 @@ class IxquickScannerImpl(registry: PersistentEntityRegistry, system: ActorSystem
 }
 
 
+/**
+  * Meta data for the query send to ixquick to look like a human who was using the forms provided by ixquick
+  */
 case class IxquickQuery(
                   query: String,
                   qid: String = "",
@@ -253,6 +323,7 @@ case class IxquickQuery(
                   rl: String = "NONE",
                   cat: String = "web"
                        ) {
+  //transforms to a map
   def asFormData = {
     Map(
       "query" -> Seq(query),
@@ -279,4 +350,5 @@ object IxquickQuery {
   implicit val format: Format[IxquickQuery] = Json.format[IxquickQuery]
 }
 
+//no form found --> no meta data --> no way to scrape
 case class PnFormNotFoundException(message: String) extends Exception(message)

@@ -105,7 +105,5 @@
     <orderEntry type="library" name="SBT: javax.cache:cache-api:1.0.0:jar" level="project" />
     <orderEntry type="library" name="SBT: org.joda:joda-convert:1.7:jar" level="project" />
     <orderEntry type="library" name="SBT: org.pcollections:pcollections:2.1.2:jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="SBT: org.scalactic:scalactic_2.11:3.0.1:jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="SBT: org.scalatest:scalatest_2.11:3.0.1:jar" level="project" />
   </component>
 </module>

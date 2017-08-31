@@ -87,6 +87,7 @@ trait ProxyBrowserService extends Service {
       restCall(Method.GET,   "/api/proxybrowser/reported", listReported),
       restCall(Method.GET,   "/api/proxybrowser/inuse", listInUse)
     )
+      .withAutoAcl(true)
   }
 }
 

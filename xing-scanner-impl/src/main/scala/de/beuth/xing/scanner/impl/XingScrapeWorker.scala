@@ -7,7 +7,7 @@ import akka.actor.ActorRef
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRegistry
 import de.beuth.proxybrowser.api.{ProxyBrowserService, ProxyServer, RndProxyServer}
 import de.beuth.scanner.commons._
-import de.beuth.utils.{ProfileLink, ScrapingJob, UserAgentList, Worker}
+import de.beuth.utils.{ProfileLink, UserAgentList, Worker}
 import org.slf4j.LoggerFactory
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
@@ -20,11 +20,10 @@ import play.api.libs.json.Json
 
 import scala.collection.immutable.Seq
 import scala.concurrent.Future
-import scala.sys.process.processInternal.IOException
 
 
 /**
-  * Worker using the WorkPullingPattern who scans
+  * Worker using the WorkPullingPattern who scans the xing profiles
   *
   * @param master The master controlling the message distribution
   * @param manifest
@@ -38,13 +37,22 @@ class XingScrapeWorker(override val master: ActorRef,
 
   override protected final val log = LoggerFactory.getLogger(classOf[XingScrapeWorker])
 
+  /**
+    * Entry point for a scrape
+    * @param work the work payload
+    * @return returns a future of something
+    */
   def doWork(work: ScrapingJob): Future[Done] = {
     log.info(s"${self.hashCode()} - Working on: ${work.payload}")
+    //get a proxy here to be able to free it in the recover part
     val usedProxy = proxyService.getAvailableProxy().invoke()
     (for {
       proxy <- usedProxy
+      //start the scrape
       profile <- processXingProfile(work.payload, proxy, work.keyword)
+       //free the server
       free <- proxyService.free().invoke(proxy)
+      //udpate the profile
       done <- {
         log.debug(s"Updating Xing Profile ${Json.toJson(profile).toString()}")
         refFor(work.keyword).ask(UpdateProfile(Instant.now(), profile))
@@ -53,8 +61,10 @@ class XingScrapeWorker(override val master: ActorRef,
       case e: Exception =>
         for {
           proxy <- usedProxy
+        //fre the server
           free <- proxyService.free().invoke(proxy)
-          failed <- refFor(work.keyword).ask(ProfileScanFailed(work.payload, Instant.now(), e.toString))
+        //persist that the scan failed
+          failed <- refFor(work.keyword).ask(ProfileScanFailure(work.payload, Instant.now(), e.toString))
         } yield Done
     }
   }
@@ -98,29 +108,41 @@ class XingScrapeWorker(override val master: ActorRef,
         if(!response.status.equals(200)) {
           throw ProfileScrapingException("Unable to fetch profile. Unexpected Response code: " + response.status)
         }
+        //creting the jsoup brwoser from the html
         val browser = JsoupBrowser().parseString(response.body);
+
+        //get name, position and company
         val namePositionCompany = browser >> element("head > meta[property='og:title']") >> attr("content") split(" - ")
+
+        //try to geht the name
         val name: Option[String] = try {
           Some(namePositionCompany(0))
         } catch {
           case e: Exception => throw ProfileScrapingException("name not found")
         }
 
+        //try to geht the jobtitle
         val jobtitle: Option[String] = try {
           Some(namePositionCompany(1))
         } catch {
           case e: ArrayIndexOutOfBoundsException => None
         }
 
+        //try to geht the company
         val company: Option[String] = try {
           Some(namePositionCompany(2))
         } catch {
           case e: ArrayIndexOutOfBoundsException => None
         }
 
+        //get all the haves
         val haves = browser >> elementList("div.Haves ul span") map {
           have => have >> allText
         }
+
+        /**
+          * Extract the job expierience
+          */
         val workExperience = browser >> elementList(".WorkExperience-jobInfo")
         val experienceList: List[JobExperience] = workExperience.map {
           exp => JobExperience(
@@ -133,8 +155,10 @@ class XingScrapeWorker(override val master: ActorRef,
           )
         }
 
+        //split first and lastname
         val firstnameLastname = name.get.split(" ", 2)
 
+        //return the results
         Future.successful(Profile(
           scanned = true,
           firstname = Some(firstnameLastname(0)),
@@ -145,12 +169,17 @@ class XingScrapeWorker(override val master: ActorRef,
           exp = experienceList.toSeq))
       }
     } yield profile).recoverWith {
+      //we try again with the next proxy when the error was IO or
       case x@(_: java.io.IOException | _: ProfileScrapingException) =>
         for {
+          //report old proxy
           report <- proxyService.report().invoke(proxy)
+          //get next one
           nextProxy <- proxyService.getAvailableProxy().invoke()
+          // try again
           nextProfile <- processXingProfile(url, nextProxy, keyword)
         } yield nextProfile
+
       case e: Exception => {
         log.info(s"Failure while scraping xing profile: ${e.toString}")
         throw e

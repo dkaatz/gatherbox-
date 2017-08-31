@@ -15,15 +15,21 @@ import de.beuth.utils.ProfileLink
 import scala.collection.immutable.Seq
 
 /**
-  * Perstence Entity for a profile scan indexed by keyword
+  * Perstence Entity for a linkedin scan indexed by keyword
   */
 class LinkedinScannerEntity extends ProfileScannerEntity {
 
+  /**
+    * We just chain the already defined supertype behaviors
+    */
   override def behavior: Behavior =
     scanStatusBehavior.orElse(profileBehavior).orElse(getProfiles)
 }
 
 
+/**
+  * We just chain the already defined supertype serializers
+  */
 object LinkedinScanSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: Seq[JsonSerializer[_]] = Seq() ++ ProfileScanSerializerRegistry.serializers
 }

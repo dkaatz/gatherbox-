@@ -9,10 +9,15 @@ import com.lightbend.lagom.scaladsl.server._
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import play.api.libs.ws.ahc.AhcWSComponents
 import com.softwaremill.macwire._
+import de.beuh.databreach.api.DataBreachService
 import de.beuth.censys.scanner.api.CensysScannerService
 import de.beuth.ixquick.scanner.api.IxquickScannerService
 import de.beuth.linkedin.scanner.api.LinkedinScannerService
+import de.beuth.xing.scanner.api.XingScannerService
 
+/**
+  * Application Loader for the Service
+  */
 abstract class ScanApplication(context: LagomApplicationContext)
   extends LagomApplication(context)
     with CassandraPersistenceComponents
@@ -20,9 +25,13 @@ abstract class ScanApplication(context: LagomApplicationContext)
     with LagomKafkaComponents
 {
 
+  //wire services for DI
   lazy val censysScannerService = serviceClient.implement[CensysScannerService]
   lazy val linekedinScannerService = serviceClient.implement[LinkedinScannerService]
+  lazy val xingScannerService = serviceClient.implement[XingScannerService]
+  lazy val dataBreachService = serviceClient.implement[DataBreachService]
   lazy val ixquickScannerService = serviceClient.implement[IxquickScannerService]
+
   lazy val scanService = serviceClient.implement[ScanService]
 
   // Bind the services that this server provides

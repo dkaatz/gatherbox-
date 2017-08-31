@@ -3,132 +3,107 @@ package de.beuth.censys.scanner.impl
 import java.time.Instant
 
 import akka.Done
-import com.lightbend.lagom.scaladsl.persistence.{AggregateEvent, AggregateEventTag, PersistentEntity}
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntity.ReplyType
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
-import de.beuth.censys.api.{CensysIpv4Result, CensysIpv4SearchResult}
+import de.beuth.censys.api.{CensysIpv4Result}
+import de.beuth.scanner.commons._
 import de.beuth.utils.JsonFormats.singletonFormat
 import play.api.libs.json.{Format, Json}
 
 import scala.collection.immutable.Seq
 
 /**
-  * Created by David on 08.06.17.
+  * Write-Side Entity of the CensysScanner
+  *
+  * Extending the default scanner behavior with an update event
   */
-class CensysScannerEntity extends PersistentEntity {
-  override type Command = CensysScannerCommand
-  override type Event = CensysScannerEvent
-  override type State = Scan
+class CensysScannerEntity extends ScannerEntity {
 
+  /**
+    * We initalize the scanner with default values
+    */
   override def initialState: Scan = Scan(None, Seq[CensysIpv4Result](), false)
 
-  override def behavior: Behavior = {
-    case scan => Actions().onCommand[StartScan, Done] {
-      case (StartScan(timestamp), ctx, state) if isRunning(state) =>
-        ctx.invalidCommand(s"Scan for $entityId already running...")
-        ctx.done
-      case (StartScan(timestamp), ctx, state) =>
-        ctx.thenPersist(
-          ScanStarted(timestamp)
-        ) {
-          _ => ctx.reply(Done)
-        }
-    }.onCommand[UpdateScan, Done] {
-      case (UpdateScan(ipv4), ctx, state) =>
+  /**
+    * Behavior of the entity
+    */
+  override def behavior: Behavior =
+    //prepend the default scan status behavior
+    scanStatusBehavior.orElse(
+      Actions().onCommand[UpdateScan, Done] {
+      //we just update without any conditions
+      case (UpdateScan(ipv4), ctx, state: Scan) =>
         ctx.thenPersist(
           ScanUpdated(ipv4)
         ) {
           _ => ctx.reply(Done)
         }
-    }.onCommand[FinishScan, Done] {
-      case (FinishScan(timestamp), ctx, state)  if isRunning(state) =>
-        ctx.thenPersist(
-          ScanFinished(timestamp)
-        ) {
-          _ => ctx.reply(Done)
-        }
-      case (FinishScan(timestamp), ctx, state) =>
-        ctx.invalidCommand(s"Scan did not started yet or already finished...")
-        ctx.done
+      }.onEvent {
+      case (ScanUpdated(ipv4), state: Scan) => state.update(ipv4)
+      }).orElse(getScan)
 
-    }.onEvent {
-      case (ScanStarted(timestamp), state) => state.start(timestamp)
-      case (ScanUpdated(ipv4), state) => state.update(ipv4)
-      case (ScanFinished(timestamp), state) => state.finish
-    }.orElse(getScan)
-  }
-
-  private def isRunning(state: Scan): Boolean = !state.finished && state.startedAt.isDefined
-
-  private val getScan = Actions().onReadOnlyCommand[GetScan.type, Scan] {  case (GetScan, ctx, state) => ctx.reply(state) }
-
-
+  /**
+    * Returns the current state
+    */
+  private val getScan = Actions().onReadOnlyCommand[GetScan.type, Scan] {  case (GetScan, ctx, state: Scan) => ctx.reply(state) }
 }
 
-case class Scan(startedAt: Option[Instant], ipv4: Seq[CensysIpv4Result], finished: Boolean) {
-  def start(timestamp: Instant): Scan = copy(startedAt=Some(timestamp), ipv4 = Seq[CensysIpv4Result](), finished = false)
+/**
+  * The state of the entity, containing the possible changes on the state
+  *
+  * @param startedat start time of scanner
+  * @param ipv4  results of the scanner
+  * @param finished indicator if scanner is finished
+  */
+case class Scan(startedat: Option[Instant], ipv4: Seq[CensysIpv4Result], finished: Boolean) extends ScannerState {
+
+  //the scanner started
+  def start(timestamp: Instant): Scan = copy(startedat=Some(timestamp), ipv4 = Seq[CensysIpv4Result](), finished = false)
+
+  //the scanner received an update, so we join current results with the new results
   def update(ipv4: Seq[CensysIpv4Result]): Scan = copy(ipv4 = this.ipv4 ++ ipv4)
+
+  //the scanner finished the scan
   def finish = copy(finished = true)
 }
-
+//companion object providing serialization an deserialization
 object Scan {
   implicit val format: Format[Scan] = Json.format
 }
 
-sealed trait CensysScannerCommand
-
-case class StartScan(timestamp: Instant) extends CensysScannerCommand with ReplyType[Done]
-object StartScan {
-  implicit val format: Format[StartScan] = Json.format[StartScan]
-}
-
-case class FinishScan(time: Instant) extends CensysScannerCommand with ReplyType[Done]
-object FinishScan {
-  implicit val format: Format[FinishScan] = Json.format
-}
-
-case class UpdateScan(ipv4: Seq[CensysIpv4Result]) extends CensysScannerCommand with ReplyType[Done]
+/**
+  * Command for updating the scanner with a list of results
+  *
+  * @param ipv4 list of results
+  */
+case class UpdateScan(ipv4: Seq[CensysIpv4Result]) extends ScannerCommand with ReplyType[Done]
+//companion object providing serialization an deserialization
 object UpdateScan {
   implicit val format: Format[UpdateScan] = Json.format
 }
-
-case object GetScan extends CensysScannerCommand with ReplyType[Scan] {
+//case object providing serialization an deserialization
+case object GetScan extends ScannerCommand with ReplyType[Scan] {
   implicit val format: Format[GetScan.type] = singletonFormat(GetScan)
 }
 
-
-sealed trait CensysScannerEvent extends AggregateEvent[CensysScannerEvent] {
-  override def aggregateTag: AggregateEventTag[CensysScannerEvent] = CensysScannerEvent.Tag
-}
-
-object CensysScannerEvent {
-  val Tag = AggregateEventTag[CensysScannerEvent]
-}
-sealed trait CensysScannerStatusEvent extends CensysScannerEvent  {}
-
-sealed trait CensysScannerUpdateEvent extends CensysScannerEvent {}
-
-
-case class ScanStarted(timestamp: Instant) extends CensysScannerStatusEvent
-object ScanStarted { implicit val format: Format[ScanStarted] = Json.format }
-
-case class ScanFinished(timestamp: Instant) extends CensysScannerStatusEvent
-object ScanFinished { implicit val format: Format[ScanFinished] = Json.format }
-
-case class ScanUpdated(ipv4: Seq[CensysIpv4Result]) extends CensysScannerUpdateEvent
+/**
+  * Update event
+  *
+  * @param ipv4 list of results
+  */
+case class ScanUpdated(ipv4: Seq[CensysIpv4Result]) extends ScannerUpdateEvent
+//companion object providing serialization an deserialization
 object ScanUpdated { implicit val format: Format[ScanUpdated] = Json.format }
 
 
-
+/**
+  * The serializer registry of the service
+  */
 object ScanSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: Seq[JsonSerializer[_]] = Seq(
     JsonSerializer[Scan],
-    JsonSerializer[StartScan],
-    JsonSerializer[ScanStarted],
-    JsonSerializer[ScanFinished],
-    JsonSerializer[FinishScan],
     JsonSerializer[UpdateScan],
     JsonSerializer[ScanUpdated],
     JsonSerializer[GetScan.type]
-  )
+  ) ++ ScannerSerialzierRegistry.serializers
 }

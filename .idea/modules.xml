@@ -10,6 +10,11 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/censys-scanner-impl-build.iml" filepath="$PROJECT_DIR$/.idea/modules/censys-scanner-impl-build.iml" />
       <module fileurl="file://$PROJECT_DIR$/scan-api/censysscan-api.iml" filepath="$PROJECT_DIR$/scan-api/censysscan-api.iml" />
       <module fileurl="file://$PROJECT_DIR$/databreach-api/databreach-api.iml" filepath="$PROJECT_DIR$/databreach-api/databreach-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/databreach-api-build.iml" filepath="$PROJECT_DIR$/.idea/modules/databreach-api-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/databreach-impl/databreach-impl.iml" filepath="$PROJECT_DIR$/databreach-impl/databreach-impl.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/databreach-impl-build.iml" filepath="$PROJECT_DIR$/.idea/modules/databreach-impl-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/databreach-scanner-api/databreach-scanner-api.iml" filepath="$PROJECT_DIR$/databreach-scanner-api/databreach-scanner-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/databreach-scanner-api-build.iml" filepath="$PROJECT_DIR$/.idea/modules/databreach-scanner-api-build.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/gatherbox.iml" filepath="$PROJECT_DIR$/.idea/modules/gatherbox.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/gatherbox-build.iml" filepath="$PROJECT_DIR$/.idea/modules/gatherbox-build.iml" />
       <module fileurl="file://$PROJECT_DIR$/ixquick-scanner-api/ixquick-scanner-api.iml" filepath="$PROJECT_DIR$/ixquick-scanner-api/ixquick-scanner-api.iml" />
@@ -28,6 +33,10 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/scan-api-build.iml" filepath="$PROJECT_DIR$/.idea/modules/scan-api-build.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/scan-impl.iml" filepath="$PROJECT_DIR$/.idea/modules/scan-impl.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/scan-impl-build.iml" filepath="$PROJECT_DIR$/.idea/modules/scan-impl-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/scan-result-api/scan-result-api.iml" filepath="$PROJECT_DIR$/scan-result-api/scan-result-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/scan-result-api-build.iml" filepath="$PROJECT_DIR$/.idea/modules/scan-result-api-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/scan-result-impl/scan-result-impl.iml" filepath="$PROJECT_DIR$/scan-result-impl/scan-result-impl.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/scan-result-impl-build.iml" filepath="$PROJECT_DIR$/.idea/modules/scan-result-impl-build.iml" />
       <module fileurl="file://$PROJECT_DIR$/scanner-commons/scanner-commons.iml" filepath="$PROJECT_DIR$/scanner-commons/scanner-commons.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/scanner-commons-build.iml" filepath="$PROJECT_DIR$/.idea/modules/scanner-commons-build.iml" />
       <module fileurl="file://$PROJECT_DIR$/utils/utils.iml" filepath="$PROJECT_DIR$/utils/utils.iml" />

@@ -9,11 +9,10 @@ import com.softwaremill.macwire.wire
 import de.beuth.proxybrowser.api.ProxyBrowserService
 import play.api.libs.ws.ahc.AhcWSComponents
 
+
 /**
-  * Created by David on 20.06.17.
+  * Application Loader for the Service
   */
-
-
 class ProxyBrowserLoader extends LagomApplicationLoader {
 
   override def load(context: LagomApplicationContext): LagomApplication =
@@ -43,6 +42,7 @@ abstract class ProxyBrowserApplication(context: LagomApplicationContext)
   // Register the JSON serializer registry
   override lazy val jsonSerializerRegistry = ProxyBorwserSerializerRegistry
 
+  //bind the write side entity
   persistentEntityRegistry.register(wire[ProxyBrowserEntity])
 }
 

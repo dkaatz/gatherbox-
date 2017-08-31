@@ -12,7 +12,9 @@ import de.beuth.censys.api.CensysService
 import de.beuth.censys.scanner.api.CensysScannerService
 import play.api.libs.ws.ahc.AhcWSComponents
 
-
+/**
+  * This is the Application Loader for the Censys Service
+  */
 class CensysScannerLoader extends LagomApplicationLoader {
 
   override def load(context: LagomApplicationContext): LagomApplication =
@@ -34,17 +36,17 @@ abstract class CensysScannerApplication(context: LagomApplicationContext)
     with AhcWSComponents
     with LagomKafkaComponents
 {
-
+  //load the scan service for DI
   lazy val scanService = serviceClient.implement[ScanService]
+  //load the censys service for DI
   lazy val censysService = serviceClient.implement[CensysService]
 
-  // Bind the services that this server provides
-
+  //bind the service interface to the implementation
   override lazy val lagomServer = serverFor[CensysScannerService](wire[CensysScannerImpl])
 
   // Register the JSON serializer registry
   override lazy val jsonSerializerRegistry = ScanSerializerRegistry
 
-  // Register the gatherbox persistent entity
+  // Register the  persistent entity
   persistentEntityRegistry.register(wire[CensysScannerEntity])
 }

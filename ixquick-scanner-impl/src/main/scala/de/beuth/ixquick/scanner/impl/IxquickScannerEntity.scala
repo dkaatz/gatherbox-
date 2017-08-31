@@ -14,11 +14,15 @@ import de.beuth.scanner.commons._
 import scala.collection.immutable.Seq
 
 /**
-  * Created by David on 08.06.17.
+  * This is the Write-Side entity of the service representing the current state of a scan
   */
 class IxquickScannerEntity extends ScannerEntity {
   override def initialState: Scan = Scan(None, Seq(), false)
 
+
+  /**
+    * We just add the update command and event to the status handling
+    */
   override def behavior: Behavior = {
     scanStatusBehavior.orElse(
     Actions().onCommand[UpdateSearch, Done] {
@@ -33,16 +37,15 @@ class IxquickScannerEntity extends ScannerEntity {
     }).orElse(getScan)
   }
 
+  //just returns the current state
   private val getScan = Actions().onReadOnlyCommand[GetScan.type, Scan] { case (GetScan, ctx, state: Scan) => ctx.reply(state) }
 }
 
 /**
-  * State
-  * @param startedAt
-  * @param searches
+  * State of the entity
   */
-case class Scan(startedAt: Option[Instant], searches: Seq[IxquickSearch], finished: Boolean) extends ScannerState {
-  def start(timestamp: Instant): Scan = copy(startedAt = Some(timestamp), searches = Seq(), finished = false)
+case class Scan(startedat: Option[Instant], searches: Seq[IxquickSearch], finished: Boolean) extends ScannerState {
+  def start(timestamp: Instant): Scan = copy(startedat = Some(timestamp), searches = Seq(), finished = false)
 
   def updateSearch(site: String, page: Int, links: Seq[String]): Scan = {
     val idx = searches.indexWhere(_.site == site)
@@ -61,6 +64,12 @@ object Scan {
   implicit val format: Format[Scan] = Json.format
 }
 
+/**
+  * Belongs to the sate and represents one search. So we store 3 of them per scan
+  * @param site the site we are scanning  e.g. de.linkedin.com/in
+  * @param last_scanned_page the last scanned page
+  * @param links the collected links
+  */
 case class IxquickSearch(site: String, last_scanned_page: Int, links: Seq[String])
 object IxquickSearch {
   implicit val format: Format[IxquickSearch] = Json.format

@@ -2,6 +2,9 @@ package de.beuth.utils
 
 import scala.util.Random
 
+/**
+  * List of common user agent headers and a method to get a random one
+  */
 object UserAgentList {
   def getRnd(): String = userAgents(0 + Random.nextInt(userAgents.length))
 

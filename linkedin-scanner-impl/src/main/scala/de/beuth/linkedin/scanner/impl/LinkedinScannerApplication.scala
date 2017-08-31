@@ -13,6 +13,9 @@ import de.beuth.proxybrowser.api.ProxyBrowserService
 import de.beuth.scan.api.ScanService
 import play.api.libs.ws.ahc.AhcWSComponents
 
+/**
+  * Application Loader of the Service
+  */
 class LinkedinScannerLoader extends LagomApplicationLoader {
 
   override def load(context: LagomApplicationContext): LagomApplication =
@@ -35,19 +38,24 @@ abstract class LinkedinScannerApplication(context: LagomApplicationContext)
     with LagomKafkaComponents
 {
 
+  //wire the repo for DI
   lazy val reposiotry = wire[LinkedinRepository]
+  //wire scan service  for DI
   lazy val scanService = serviceClient.implement[ScanService]
+  //wire ixquickscanner for DI
   lazy val ixquickScannerService = serviceClient.implement[IxquickScannerService]
+  //wire the proxy browser service for DI
   lazy val proxyBrowserService = serviceClient.implement[ProxyBrowserService]
 
   // Bind the services that this server provides
   override lazy val lagomServer = serverFor[LinkedinScannerService](wire[LinkedinScannerImpl])
 
-
   // Register the JSON serializer registry
   override lazy val jsonSerializerRegistry = LinkedinScanSerializerRegistry
 
+  //wire the write side
   persistentEntityRegistry.register(wire[LinkedinScannerEntity])
+  //wire the read side
   readSide.register(wire[LinkedinEventProcessor])
 }
 

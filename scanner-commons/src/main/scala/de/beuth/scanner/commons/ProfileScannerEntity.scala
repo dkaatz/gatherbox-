@@ -107,13 +107,13 @@ trait ProfileScannerEntity extends ScannerEntity {
 }
 
 case class ProfileScannerState(
-                        startedAt: Option[Instant],
+                        startedat: Option[Instant],
                         finished: Boolean,
                         collected: Boolean,
                         profiles: Seq[Profile]) extends ScannerState {
 
 
-  def start(timestamp: Instant): ProfileScannerState = copy(startedAt=Some(timestamp), finished = false, collected = false)
+  def start(timestamp: Instant): ProfileScannerState = copy(startedat=Some(timestamp), finished = false, collected = false)
 
   def finish: ProfileScannerState = copy(finished = true)
 
@@ -150,11 +150,14 @@ case class ProfileScannerState(
     * @return the updated entity
     */
   def updateProfile(timestamp: Instant, profile: Profile): ProfileScannerState = {
+    //@Outcomment this if you want to test Profile Scanner Only
     val pIdx = profiles.indexWhere(_.url == profile.url)
     if(pIdx == -1) throw ProfileScrapingException("Trying to update uninitialized Profile: " + Json.toJson(profile).toString())
     copy(
       profiles = profiles.updated(pIdx, profile)
     )
+    //@Incomment this if you want to test Profile Scanner Only
+    //copy(profiles = profiles :+ profile)
   }
 
   def removeProfile(url: String): ProfileScannerState =

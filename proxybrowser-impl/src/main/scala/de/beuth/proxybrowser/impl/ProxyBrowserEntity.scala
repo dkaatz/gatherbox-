@@ -13,11 +13,15 @@ import play.api.libs.json.{Format, Json}
 
 import scala.collection.immutable.Seq
 
+/**
+  * The write side entity of the service
+  */
 class ProxyBrowserEntity extends PersistentEntity {
   override type Command = ProxyBrowserCommand
   override type Event = ProxyBrowserEvent
   override type State = ProxyBrowserServerRepository
 
+  //we initialize without any servers
   override def initialState: ProxyBrowserServerRepository = ProxyBrowserServerRepository(
     Seq[ProxyServer](),
     Seq[ProxyServer](),
@@ -78,6 +82,7 @@ class ProxyBrowserEntity extends PersistentEntity {
           _ => ctx.reply(Done)
         }
     }.onEvent {
+      //call the corresponding state cahnges
       case (InUseUpdated(proxy), state) => state.updateInUse(proxy)
       case (FreeUpdated(proxy), state) => state.updateFree(proxy)
       case (Added(servers), state) => state.add(servers)
@@ -94,14 +99,22 @@ class ProxyBrowserEntity extends PersistentEntity {
   }
 }
 
+/**
+  * The state of the entity
+  */
 case class ProxyBrowserServerRepository(free: Seq[ProxyServer], inUse: Seq[ProxyServer], reports: Seq[ProxyServer]) {
   private final val log: Logger = LoggerFactory.getLogger(classOf[ProxyBrowserServerRepository])
+
+  //adds a server to in use and remove from free
   def updateInUse(proxy: ProxyServer) = copy(free = free.filter(!_.host.equals(proxy.host)), inUse = inUse :+ proxy)
 
+  //adds to reported and removes form in use
   def updateReported(proxy: ProxyServer) = copy(inUse = inUse.filter(!_.host.equals(proxy.host)) , reports = reports :+ proxy)
 
+  //adds to free and removes from in use
   def updateFree(proxy: ProxyServer) = copy(inUse = inUse.filter(!_.host.equals(proxy.host)), free = free :+ proxy)
 
+  //adds a new server
   def add(servers: Seq[ProxyServer]) = copy(free = free ++ servers)
 }
 
@@ -109,6 +122,10 @@ object ProxyBrowserServerRepository {
   implicit val format: Format[ProxyBrowserServerRepository] = Json.format[ProxyBrowserServerRepository]
 }
 
+
+/**
+  * Commands
+  */
 sealed trait ProxyBrowserCommand
 
 case class Add(servers: Seq[ProxyServer]) extends ProxyBrowserCommand with ReplyType[Done]
@@ -168,6 +185,7 @@ object ReportedUpdated {
 }
 
 
+//serializer registery
 object ProxyBorwserSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: Seq[JsonSerializer[_]] = Seq(
     JsonSerializer[ProxyBrowserServerRepository],

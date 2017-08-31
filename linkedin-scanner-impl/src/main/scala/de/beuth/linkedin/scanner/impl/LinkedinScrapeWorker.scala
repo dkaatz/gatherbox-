@@ -3,20 +3,17 @@ package de.beuth.linkedin.scanner.impl
 import java.io.IOException
 import java.time.Instant
 import java.util.concurrent.TimeUnit
-
 import akka.Done
 import akka.actor.ActorRef
 import com.google.common.base.{Function => GFunction}
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRegistry
 import de.beuth.proxybrowser.api.{ProxyBrowserService, ProxyServer}
 import de.beuth.scanner.commons._
-import de.beuth.utils.{FutureHelper, ScrapingJob, Worker}
+import de.beuth.utils.{FutureHelper, Worker}
 import org.openqa.selenium._
 import org.openqa.selenium.support.ui.FluentWait
 import org.slf4j.LoggerFactory
-
 import scala.collection.JavaConversions
-import scala.collection.immutable.Seq
 import scala.concurrent.Future
 
 
@@ -36,11 +33,17 @@ class LinkedinScrapeWorker(override val master: ActorRef,
 
   def doWork(work: ScrapingJob): Future[Done] = {
     log.info(s"${self.hashCode()} - Working on: ${work.payload}")
+    //get a proxy
     val usedProxy = proxyService.getAvailableProxy().invoke()
     (for {
       proxy <- usedProxy
+      //scrape the profile
       profile <- processLinkedinProfile(work.payload, proxy)
+
+      //free the proxy
       free <- proxyService.free().invoke(proxy)
+
+      //update the entity
       updated <- {
         refFor(work.keyword).ask(ScannedProfile(Instant.now(), profile))
       }
@@ -48,8 +51,10 @@ class LinkedinScrapeWorker(override val master: ActorRef,
       case e: Exception =>
         for {
           proxy <- usedProxy
+          //free the proxy
           free <- proxyService.free().invoke(proxy)
-          failed <- refFor(work.keyword).ask(ProfileScanFailed(work.payload, Instant.now(), e.toString))
+          //persist a failure
+          failed <- refFor(work.keyword).ask(ProfileScanFailure(work.payload, Instant.now(), e.toString))
         } yield Done
 
     }
@@ -66,7 +71,9 @@ class LinkedinScrapeWorker(override val master: ActorRef,
     */
   private def processLinkedinProfile(url: String, proxyServer: ProxyServer): Future[Profile] = {
     (for {
+      //get the webdriver with the iframe focused
       driver <- getFocusedWebdriver(url, proxyServer)
+      // try to scrape the profile
       profile <- {
         try {
           val wait = new FluentWait[WebDriver](driver).withTimeout(20, TimeUnit.SECONDS).pollingEvery(5, TimeUnit.SECONDS).ignoring(classOf[NoSuchElementException])
@@ -80,11 +87,13 @@ class LinkedinScrapeWorker(override val master: ActorRef,
         } catch {
           case e: Exception =>
           {
+            //close the driver
             closeWebDriver(driver)
             throw e
           }
         }
       }
+    //close the driver
       close <- {
         Future {
           closeWebDriver(driver)
@@ -92,15 +101,25 @@ class LinkedinScrapeWorker(override val master: ActorRef,
         }
       }
     } yield profile).recoverWith {
+      //in this cases we try again
       case x@(_: IOException
               | _: org.openqa.selenium.TimeoutException) => retryWithNextProxy(url, proxyServer)
     }
   }
 
+  /**
+    * Retry with the next proxy server
+    * @param url  url of the profile
+    * @param currentProxy proxy used before
+    * @return
+    */
   private def retryWithNextProxy(url: String, currentProxy: ProxyServer):  Future[Profile] = {
     for {
+      //report the old proxy
       report <- proxyService.report().invoke(currentProxy)
+      //get a new one
       ps <- proxyService.getAvailableProxy().invoke()
+      //retry
       results <- processLinkedinProfile(url, ps)
     } yield results
   }
@@ -223,14 +242,19 @@ class LinkedinScrapeWorker(override val master: ActorRef,
       FutureHelper().allSuccessful(JavaConversions.asScalaBuffer(driver.findElement(By.id("experience")).findElements(By.className("position"))).toList map {
         case position: WebElement => {
           log.info("Linedin - scanning position")
+
+          //concurrently try to extract the data from the profiles
           val titleF = extractOrNone(position.findElement(By.className("item-title")).findElement(By.className("google-src-text")).getAttribute("textContent"))
           val isCurrentF = extractOrNone(position.getAttribute("data-section").startsWith("current"))
           val fromToF = extractOrNone(position.findElements(By.className("date-range")))
           val companyF = extractOrNone(position.findElement(By.className("item-subtitle")).findElement(By.className("google-src-text")).getAttribute("textContent"))
+
+          //gets the description wich is in mulptiple html tags and joins them by using mkstring
           val descriptionF = extractOrNone((JavaConversions.asScalaBuffer(position.findElement(By.className("description")).findElements(By.className("google-src-text"))
           ).toList map {
             case description: WebElement => description.getAttribute("textContent")
           }).mkString(" "))
+          //resolving the results of the futures and building the job exp object  out of them
           for {
             title <- titleF
             isCurrent <- isCurrentF
@@ -260,12 +284,14 @@ class LinkedinScrapeWorker(override val master: ActorRef,
           } yield jobExperience
         }
       }).recover {
-        case e: Exception => {
+        case e: NoSuchElementException => {
+          // we return a empty list in this case because there are just no job experiences
           log.info("Linedin - a jobexp creation failed ")
           List()
         }
       }
     } catch {
+      // we return a empty list in this case because there are just no job experiences
       case e: NoSuchElementException => Future.successful(List())
     }
 
@@ -297,6 +323,9 @@ class LinkedinScrapeWorker(override val master: ActorRef,
     override def apply(t: U): V = f(t)
   }
 
+  /**
+    * Helper for closing the web browser
+    */
   private def closeWebDriver(driver: WebDriver) = {
     driver.close()
     driver.quit()
