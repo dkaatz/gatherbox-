@@ -1,0 +1,317 @@
+{
+	"variables": [],
+	"info": {
+		"name": "Gatherbox ",
+		"_postman_id": "ef0469b6-9527-403a-cd5e-55ef2f197028",
+		"description": "Gatherbox Endpoints\n",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "List free proxies",
+			"request": {
+				"url": "http://localhost:9000/api/proxybrowser/list/free",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "List Proxies in use",
+			"request": {
+				"url": "http://localhost:9000/api/proxybrowser/list/inuse",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "List Reported Proxies",
+			"request": {
+				"url": "http://localhost:9000/api/proxybrowser/list/reported",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Get Next Available Proxy",
+			"request": {
+				"url": "http://localhost:9000/api/proxybrowser",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Mark proxy as free",
+			"request": {
+				"url": "http://localhost:9000/api/proxybrowser/free",
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"ip\": \"50.3.134.31\",\n  \"port\": \"80\",\n  \"country\": \"Germany\",\n  \"username\": \"gatherbox\",\n  \"password\": \"gatherbox\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Add a Proxy",
+			"request": {
+				"url": "http://localhost:9000/api/proxybrowser/add",
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[{\n\t\"ip\":\"50.3.134.94\",\n\t\"port\":\"80\",\n\t\"country\":\"Germany\",\n\t\"username\":\"gatherbox\",\n\t\"password\":\"gatherbox\"\n}]"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Report Proxy",
+			"request": {
+				"url": "http://localhost:9000/api/proxybrowser/report",
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"ip\":\"50.3.134.9213131131314\",\n\t\"port\":\"80\",\n\t\"country\":\"Germany\",\n\t\"username\":\"gatherbox\",\n\t\"password\":\"gatherbox\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Scan Linkedin - Single Profile",
+			"request": {
+				"url": "http://localhost:9000/api/scanner/linkedin/rocket-internet-se",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "text/plain",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "https://www.linkedin.com/in/david-kaatz-27418159"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Scan Xing - Single Profile",
+			"request": {
+				"url": "http://localhost:9000/api/scanner/xing/rocket-internet-se",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "text/plain",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "https://www.xing.com/profile/Ronny_Rentner"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Scan DataBreach for Profile",
+			"request": {
+				"url": "http://localhost:9000/api/databreach/rocket-internet-se",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"url\": \"https://www.linkedin.com/in/david-kaatz-27418159\",\n\t\"firstname\": \"David\",\n\t\"lastname\": \"Kaatz\",\n\t\"updatedat\": \"2017-09-01T13:45:30Z\",\n\t\"skills\": [ \"a\", \"b\" ],\n\t\"scanned\": true,\n\t\"exp\": []\n}\n"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Full Scan",
+			"request": {
+				"url": "http://localhost:9000/api/scan/Acteos GmbH & Co. KG/start",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"url\": \"https://www.linkedin.com/in/david-kaatz-27418159\",\n\t\"firstname\": \"David\",\n\t\"lastname\": \"Kaatz\",\n\t\"updatedat\": \"2017-09-01T13:45:30Z\",\n\t\"skills\": [ \"a\", \"b\" ],\n\t\"scanned\": true,\n\t\"exp\": []\n}\n"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Scan Censys",
+			"request": {
+				"url": "http://localhost:9000/api/scanner/censys/rocket-internet-se",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"url\": \"https://www.linkedin.com/in/david-kaatz-27418159\",\n\t\"firstname\": \"David\",\n\t\"lastname\": \"Kaatz\",\n\t\"updatedat\": \"2017-09-01T13:45:30Z\",\n\t\"skills\": [ \"a\", \"b\" ],\n\t\"scanned\": true,\n\t\"exp\": []\n}\n"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Full Xing Profiles - Entrypoint Ixquick",
+			"request": {
+				"url": "http://localhost:9000/api/scanner/ixquick/xing/Acteos GmbH & Co. KG",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"url\": \"https://www.linkedin.com/in/david-kaatz-27418159\",\n\t\"firstname\": \"David\",\n\t\"lastname\": \"Kaatz\",\n\t\"updatedat\": \"2017-09-01T13:45:30Z\",\n\t\"skills\": [ \"a\", \"b\" ],\n\t\"scanned\": true,\n\t\"exp\": []\n}\n"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Full Linkedin Profiles - Entrypoint ixquick",
+			"request": {
+				"url": "http://localhost:9000/api/scanner/ixquick/linkedin/Acteos GmbH & Co. KG",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"url\": \"https://www.linkedin.com/in/david-kaatz-27418159\",\n\t\"firstname\": \"David\",\n\t\"lastname\": \"Kaatz\",\n\t\"updatedat\": \"2017-09-01T13:45:30Z\",\n\t\"skills\": [ \"a\", \"b\" ],\n\t\"scanned\": true,\n\t\"exp\": []\n}\n"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "RESULTS OF SCAN",
+			"request": {
+				"url": "http://localhost:9000/api/scan/Acteos GmbH & Co. KG/results",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"url\": \"https://www.linkedin.com/in/david-kaatz-27418159\",\n\t\"firstname\": \"David\",\n\t\"lastname\": \"Kaatz\",\n\t\"updatedat\": \"2017-09-01T13:45:30Z\",\n\t\"skills\": [ \"a\", \"b\" ],\n\t\"scanned\": true,\n\t\"exp\": []\n}\n"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "STATUS OF SCAN",
+			"request": {
+				"url": "http://localhost:9000/api/scan/rocket-internet-se/results",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"url\": \"https://www.linkedin.com/in/david-kaatz-27418159\",\n\t\"firstname\": \"David\",\n\t\"lastname\": \"Kaatz\",\n\t\"updatedat\": \"2017-09-01T13:45:30Z\",\n\t\"skills\": [ \"a\", \"b\" ],\n\t\"scanned\": true,\n\t\"exp\": []\n}\n"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "GET Linkedin - STATE",
+			"request": {
+				"url": "http://localhost:9000/api/scanner/linkedin/Acteos GmbH & Co. KG",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "text/plain",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "https://www.linkedin.com/in/david-kaatz-27418159"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "GET Xing - STATE",
+			"request": {
+				"url": "http://localhost:9000/api/scanner/linkedin/Acteos GmbH & Co. KG",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "text/plain",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "https://www.linkedin.com/in/david-kaatz-27418159"
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}

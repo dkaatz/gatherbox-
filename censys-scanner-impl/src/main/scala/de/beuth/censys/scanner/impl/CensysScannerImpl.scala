@@ -71,7 +71,7 @@ class CensysScannerImpl(registry: PersistentEntityRegistry, censysService: Censy
       //update the entity
       update: Done <- refFor(keyword).ask(UpdateScan(ipv4Result.results))
       // fetch the next page if its not the last page already
-      nextPage: Done <- if(ipv4Result.metadata.pages >= ipv4Result.metadata.page) scanIpv4(keyword, page + 1) else Future.successful(Done)
+      nextPage: Done <- if(ipv4Result.metadata.pages > ipv4Result.metadata.page) scanIpv4(keyword, page + 1) else Future.successful(Done)
     } yield nextPage
   }
 

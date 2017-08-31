@@ -2,11 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="69949877-869e-4f9d-a6b2-1d6bbbe96116" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/chromdriver-docker.sh" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/chromedriver.sh" afterPath="" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/postman.json" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/kafkasetup.sh" afterPath="$PROJECT_DIR$/kafkasetup.sh" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/scan-result-impl/src/main/scala/de/beuth/scan/results/impl/ScanResultImpl.scala" afterPath="$PROJECT_DIR$/scan-result-impl/src/main/scala/de/beuth/scan/results/impl/ScanResultImpl.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/censys-scanner-impl/src/main/scala/de/beuth/censys/scanner/impl/CensysScannerImpl.scala" afterPath="$PROJECT_DIR$/censys-scanner-impl/src/main/scala/de/beuth/censys/scanner/impl/CensysScannerImpl.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/linkedin-scanner-api/src/main/scala/de/beuth/linkedin/scanner/api/LinkedinScannerService.scala" afterPath="$PROJECT_DIR$/linkedin-scanner-api/src/main/scala/de/beuth/linkedin/scanner/api/LinkedinScannerService.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/LinkedinScannerImpl.scala" afterPath="$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/LinkedinScannerImpl.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/resources/logback.xml" afterPath="$PROJECT_DIR$/resources/logback.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/scanner-commons/src/main/scala/de/beuth/scanner/commons/ProfileScannerEntity.scala" afterPath="$PROJECT_DIR$/scanner-commons/src/main/scala/de/beuth/scanner/commons/ProfileScannerEntity.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/xing-scanner-api/src/main/scala/de/beuth/xing/scanner/api/XingScannerService.scala" afterPath="$PROJECT_DIR$/xing-scanner-api/src/main/scala/de/beuth/xing/scanner/api/XingScannerService.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/xing-scanner-impl/src/main/scala/de/beuth/xing/scanner/impl/XingScannerImpl.scala" afterPath="$PROJECT_DIR$/xing-scanner-impl/src/main/scala/de/beuth/xing/scanner/impl/XingScannerImpl.scala" />
     </list>
     <ignored path="$PROJECT_DIR$/target/" />
     <ignored path="$PROJECT_DIR$/gatherbox-api/target/" />
@@ -132,13 +136,65 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="CensysService.scala" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/censys-api/src/main/scala/de/beuth/censys/api/CensysService.scala">
+      <file leaf-file-name="ScanResultImpl.scala" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/scan-result-impl/src/main/scala/de/beuth/scan/results/impl/ScanResultImpl.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-85">
-              <caret line="28" column="5" lean-forward="false" selection-start-line="28" selection-start-column="5" selection-end-line="28" selection-end-column="5" />
+            <state relative-caret-position="464">
+              <caret line="66" column="36" lean-forward="false" selection-start-line="66" selection-start-column="36" selection-end-line="66" selection-end-column="36" />
               <folding>
-                <element signature="e#29#94#0" expanded="true" />
+                <element signature="e#37#64#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ProfileScannerEntity.scala" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/scanner-commons/src/main/scala/de/beuth/scanner/commons/ProfileScannerEntity.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="378">
+              <caret line="111" column="41" lean-forward="false" selection-start-line="111" selection-start-column="41" selection-end-line="111" selection-end-column="41" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="CensysScannerImpl.scala" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/censys-scanner-impl/src/main/scala/de/beuth/censys/scanner/impl/CensysScannerImpl.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="396">
+              <caret line="73" column="54" lean-forward="false" selection-start-line="73" selection-start-column="54" selection-end-line="73" selection-end-column="54" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="postman.json" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/postman.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-3820">
+              <caret line="27" column="19" lean-forward="false" selection-start-line="27" selection-start-column="19" selection-end-line="27" selection-end-column="19" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="LinkedinScannerEntity.scala" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/LinkedinScannerEntity.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="270">
+              <caret line="30" column="59" lean-forward="false" selection-start-line="30" selection-start-column="59" selection-end-line="30" selection-end-column="59" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="LinkedinScannerImpl.scala" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/LinkedinScannerImpl.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="410">
+              <caret line="64" column="139" lean-forward="false" selection-start-line="63" selection-start-column="2" selection-end-line="64" selection-end-column="139" />
+              <folding>
+                <element signature="e#40#67#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -147,41 +203,11 @@
       <file leaf-file-name="XingScannerService.scala" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/xing-scanner-api/src/main/scala/de/beuth/xing/scanner/api/XingScannerService.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="630">
-              <caret line="45" column="43" lean-forward="false" selection-start-line="45" selection-start-column="43" selection-end-line="45" selection-end-column="43" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ScanResultService.scala" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/scan-result-api/src/main/scala/de/beuth/scan/results/api/ScanResultService.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="597">
-              <caret line="72" column="106" lean-forward="false" selection-start-line="72" selection-start-column="106" selection-end-line="72" selection-end-column="106" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ScanResultImpl.scala" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/scan-result-impl/src/main/scala/de/beuth/scan/results/impl/ScanResultImpl.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="414">
-              <caret line="54" column="7" lean-forward="true" selection-start-line="54" selection-start-column="7" selection-end-line="54" selection-end-column="7" />
+            <state relative-caret-position="284">
+              <caret line="37" column="29" lean-forward="false" selection-start-line="37" selection-start-column="29" selection-end-line="37" selection-end-column="29" />
               <folding>
-                <element signature="e#37#64#0" expanded="true" />
+                <element signature="e#35#62#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="FutureHelper.scala" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/utils/src/main/scala/de/beuth/utils/FutureHelper.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="135">
-              <caret line="10" column="11" lean-forward="false" selection-start-line="10" selection-start-column="11" selection-end-line="10" selection-end-column="11" />
-              <folding />
             </state>
           </provider>
         </entry>
@@ -199,8 +225,8 @@
       <file leaf-file-name="ScanResultEntity.scala" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/scan-result-impl/src/main/scala/de/beuth/scan/results/impl/ScanResultEntity.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="237">
-              <caret line="150" column="24" lean-forward="true" selection-start-line="150" selection-start-column="24" selection-end-line="150" selection-end-column="24" />
+            <state relative-caret-position="555">
+              <caret line="37" column="9" lean-forward="false" selection-start-line="37" selection-start-column="9" selection-end-line="37" selection-end-column="9" />
               <folding>
                 <element signature="e#36#60#0" expanded="true" />
               </folding>
@@ -208,62 +234,44 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="logback.xml" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/resources/logback.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="375">
+              <caret line="25" column="54" lean-forward="false" selection-start-line="25" selection-start-column="54" selection-end-line="25" selection-end-column="54" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="application.conf" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/resources/application.conf">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="30">
+              <caret line="2" column="1" lean-forward="false" selection-start-line="2" selection-start-column="1" selection-end-line="2" selection-end-column="1" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="LinkedinScrapeWorker.scala" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/LinkedinScrapeWorker.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="270">
+            <state relative-caret-position="-2018">
               <caret line="32" column="0" lean-forward="false" selection-start-line="32" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="UserAgentList.scala" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/utils/src/main/scala/de/beuth/utils/UserAgentList.scala">
+      <file leaf-file-name="LinkedinScannerService.scala" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/linkedin-scanner-api/src/main/scala/de/beuth/linkedin/scanner/api/LinkedinScannerService.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-730">
-              <caret line="5" column="70" lean-forward="false" selection-start-line="5" selection-start-column="70" selection-end-line="5" selection-end-column="70" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="WorkPullingPattern.scala" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/utils/src/main/scala/de/beuth/utils/WorkPullingPattern.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="kafkasetup.sh" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/kafkasetup.sh">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="223">
-              <caret line="20" column="20" lean-forward="true" selection-start-line="20" selection-start-column="20" selection-end-line="20" selection-end-column="20" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ProfileLink.scala" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/utils/src/main/scala/de/beuth/utils/ProfileLink.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-85">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="XingScannerEntity.scala" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/xing-scanner-impl/src/main/scala/de/beuth/xing/scanner/impl/XingScannerEntity.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="26" column="28" lean-forward="false" selection-start-line="26" selection-start-column="28" selection-end-line="26" selection-end-column="28" />
-              <folding />
+            <state relative-caret-position="201">
+              <caret line="22" column="6" lean-forward="false" selection-start-line="22" selection-start-column="6" selection-end-line="22" selection-end-column="6" />
+              <folding>
+                <element signature="e#39#66#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -271,18 +279,20 @@
       <file leaf-file-name="XingScannerImpl.scala" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/xing-scanner-impl/src/main/scala/de/beuth/xing/scanner/impl/XingScannerImpl.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="485">
-              <caret line="79" column="13" lean-forward="false" selection-start-line="79" selection-start-column="13" selection-end-line="79" selection-end-column="13" />
-              <folding />
+            <state relative-caret-position="493">
+              <caret line="81" column="42" lean-forward="false" selection-start-line="81" selection-start-column="42" selection-end-line="81" selection-end-column="42" />
+              <folding>
+                <element signature="e#36#60#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="XingScrapeWorker.scala" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/xing-scanner-impl/src/main/scala/de/beuth/xing/scanner/impl/XingScrapeWorker.scala">
+      <file leaf-file-name="ScanStatusTopic.scala" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/scanner-commons/src/main/scala/de/beuth/scanner/commons/ScanStatusTopic.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1617">
-              <caret line="189" column="46" lean-forward="false" selection-start-line="189" selection-start-column="46" selection-end-line="189" selection-end-column="46" />
+            <state relative-caret-position="209">
+              <caret line="25" column="6" lean-forward="false" selection-start-line="25" selection-start-column="6" selection-end-line="25" selection-end-column="6" />
               <folding />
             </state>
           </provider>
@@ -372,19 +382,15 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/scan-result-impl/src/main/resources/application.conf" />
         <option value="$PROJECT_DIR$/utils/src/main/scala/de/beuth/utils/FutureHelper.scala" />
         <option value="$PROJECT_DIR$/utils/src/main/scala/de/beuth/utils/WorkPullingPattern.scala" />
         <option value="$PROJECT_DIR$/proxybrowser-api/src/main/scala/de/beuth/proxybrowser/api/ProxyBrowserService.scala" />
-        <option value="$PROJECT_DIR$/scanner-commons/src/main/scala/de/beuth/scanner/commons/ProfileScannerEntity.scala" />
         <option value="$PROJECT_DIR$/build.sbt" />
         <option value="$PROJECT_DIR$/.sbtopts" />
         <option value="$PROJECT_DIR$/resources/application.conf" />
-        <option value="$PROJECT_DIR$/xing-scanner-api/src/main/scala/de/beuth/xing/scanner/api/XingScannerService.scala" />
         <option value="$PROJECT_DIR$/censys-api/src/main/scala/de/beuth/censys/api/CensysService.scala" />
         <option value="$PROJECT_DIR$/censys-scanner-impl/src/main/scala/de/beuth/censys/scanner/impl/CensysScannerApplication.scala" />
         <option value="$PROJECT_DIR$/censys-scanner-api/src/main/scala/de/beuth/censys/scanner/api/CensysScannerService.scala" />
-        <option value="$PROJECT_DIR$/censys-scanner-impl/src/main/scala/de/beuth/censys/scanner/impl/CensysScannerImpl.scala" />
         <option value="$PROJECT_DIR$/databreach-api/src/main/scala/de/beuh/databreach/api/DataBreachService.scala" />
         <option value="$PROJECT_DIR$/censys-scanner-impl/src/main/scala/de/beuth/censys/scanner/impl/CensysScannerEntity.scala" />
         <option value="$PROJECT_DIR$/databreach-impl/src/main/scala/de/beuth/databreach/impl/DataBreachApplication.scala" />
@@ -396,11 +402,9 @@
         <option value="$PROJECT_DIR$/ixquick-scanner-impl/src/main/scala/de/beuth/ixquick/scanner/impl/IxquickScannerApplication.scala" />
         <option value="$PROJECT_DIR$/ixquick-scanner-impl/src/main/scala/de/beuth/ixquick/scanner/impl/IxquickScannerEntity.scala" />
         <option value="$PROJECT_DIR$/ixquick-scanner-impl/src/main/scala/de/beuth/ixquick/scanner/impl/IxquickScannerImpl.scala" />
-        <option value="$PROJECT_DIR$/linkedin-scanner-api/src/main/scala/de/beuth/linkedin/scanner/api/LinkedinScannerService.scala" />
         <option value="$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/LinkedinRepository.scala" />
         <option value="$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/LinkedinScannerApplication.scala" />
         <option value="$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/LinkedinScannerEntity.scala" />
-        <option value="$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/LinkedinScannerImpl.scala" />
         <option value="$PROJECT_DIR$/proxybrowser-impl/src/main/scala/de/beuth/proxybrowser/impl/ProxyBrowser.scala" />
         <option value="$PROJECT_DIR$/proxybrowser-impl/src/main/scala/de/beuth/proxybrowser/impl/ProxyBrowserApplication.scala" />
         <option value="$PROJECT_DIR$/proxybrowser-impl/src/main/scala/de/beuth/proxybrowser/impl/ProxyBrowserEntity.scala" />
@@ -409,20 +413,26 @@
         <option value="$PROJECT_DIR$/scan-impl/src/main/scala/de/beuth/scan/impl/ScanServiceImpl.scala" />
         <option value="$PROJECT_DIR$/scan-result-api/src/main/scala/de/beuth/scan/results/api/ScanResultService.scala" />
         <option value="$PROJECT_DIR$/scan-result-impl/src/main/scala/de/beuth/scan/results/impl/ScanResultApplication.scala" />
-        <option value="$PROJECT_DIR$/scan-result-impl/src/main/scala/de/beuth/scan/results/impl/ScanResultEntity.scala" />
         <option value="$PROJECT_DIR$/scanner-commons/src/main/scala/de/beuth/scanner/commons/ProfileReadSideProcessor.scala" />
         <option value="$PROJECT_DIR$/scanner-commons/src/main/scala/de/beuth/scanner/commons/ProfileUpdateTopic.scala" />
         <option value="$PROJECT_DIR$/scanner-commons/src/main/scala/de/beuth/scanner/commons/ScanStatusTopic.scala" />
         <option value="$PROJECT_DIR$/scanner-commons/src/main/scala/de/beuth/scanner/commons/Job.scala" />
         <option value="$PROJECT_DIR$/scanner-commons/src/main/scala/de/beuth/scanner/commons/WorkPullingScanner.scala" />
         <option value="$PROJECT_DIR$/xing-scanner-impl/src/main/scala/de/beuth/xing/scanner/impl/XingScannerEntity.scala" />
-        <option value="$PROJECT_DIR$/xing-scanner-impl/src/main/scala/de/beuth/xing/scanner/impl/XingScannerImpl.scala" />
         <option value="$PROJECT_DIR$/xing-scanner-impl/src/main/scala/de/beuth/xing/scanner/impl/XingScrapeWorker.scala" />
         <option value="$PROJECT_DIR$/utils/src/main/scala/de/beuth/utils/JsonFormats.scala" />
         <option value="$PROJECT_DIR$/utils/src/main/scala/de/beuth/utils/UserAgentList.scala" />
         <option value="$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/LinkedinScrapeWorker.scala" />
         <option value="$PROJECT_DIR$/kafkasetup.sh" />
         <option value="$PROJECT_DIR$/scan-result-impl/src/main/scala/de/beuth/scan/results/impl/ScanResultImpl.scala" />
+        <option value="$PROJECT_DIR$/scanner-commons/src/main/scala/de/beuth/scanner/commons/ProfileScannerEntity.scala" />
+        <option value="$PROJECT_DIR$/scan-result-impl/src/main/scala/de/beuth/scan/results/impl/ScanResultEntity.scala" />
+        <option value="$PROJECT_DIR$/resources/logback.xml" />
+        <option value="$PROJECT_DIR$/linkedin-scanner-api/src/main/scala/de/beuth/linkedin/scanner/api/LinkedinScannerService.scala" />
+        <option value="$PROJECT_DIR$/xing-scanner-api/src/main/scala/de/beuth/xing/scanner/api/XingScannerService.scala" />
+        <option value="$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/LinkedinScannerImpl.scala" />
+        <option value="$PROJECT_DIR$/xing-scanner-impl/src/main/scala/de/beuth/xing/scanner/impl/XingScannerImpl.scala" />
+        <option value="$PROJECT_DIR$/censys-scanner-impl/src/main/scala/de/beuth/censys/scanner/impl/CensysScannerImpl.scala" />
       </list>
     </option>
   </component>
@@ -824,6 +834,11 @@
               <item name="main" type="462c0819:PsiDirectoryNode" />
               <item name="scala" type="462c0819:PsiDirectoryNode" />
               <item name="api" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="gatherbox" type="b2602c69:ProjectViewProjectNode" />
+              <item name="gatherbox" type="462c0819:PsiDirectoryNode" />
+              <item name="resources" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -1358,7 +1373,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1680" height="1050" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33879223" sideWeight="0.495116" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="SBT" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32967034" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -1369,7 +1383,7 @@
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32958034" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32959184" sideWeight="0.495116" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.23015873" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.23015873" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="sbt-shell-toolwindow" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32958034" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32958034" sideWeight="0.490232" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24969475" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -1422,7 +1436,9 @@
     <MESSAGE value="Refactoring" />
     <MESSAGE value="Added documentation to Work Pulling Pattern" />
     <MESSAGE value="Added documentation and comments" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added documentation and comments" />
+    <MESSAGE value="Comments, removed old chromedriver setups" />
+    <MESSAGE value="Fixed bug that caused xing profile appearing in the linkedin list" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed bug that caused xing profile appearing in the linkedin list" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1435,42 +1451,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/databreach-api/src/main/scala/de/beuh/databreach/api/DataBreachService.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="500">
-          <caret line="94" column="35" lean-forward="true" selection-start-line="94" selection-start-column="35" selection-end-line="94" selection-end-column="35" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/databreach-impl/src/main/scala/de/beuth/databreach/impl/DataBreachReadSideProcessor.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-850">
-          <caret line="49" column="1" lean-forward="true" selection-start-line="49" selection-start-column="1" selection-end-line="49" selection-end-column="1" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/databreach-impl/src/main/scala/de/beuth/databreach/impl/DataBreachImpl.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2520">
-          <caret line="168" column="62" lean-forward="true" selection-start-line="168" selection-start-column="62" selection-end-line="168" selection-end-column="62" />
-          <folding>
-            <element signature="e#35#51#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/databreach-impl/src/main/scala/de/beuth/databreach/impl/DataBreachEntity.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-4077">
-          <caret line="17" column="40" lean-forward="true" selection-start-line="17" selection-start-column="40" selection-end-line="17" selection-end-column="40" />
-          <folding>
-            <element signature="e#34#58#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/databreach-impl/src/main/scala/de/beuth/databreach/impl/DataBreachApplication.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="114">
@@ -1525,30 +1505,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/linkedin-scanner-api/src/main/scala/de/beuth/linkedin/scanner/api/LinkedinScannerService.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="470">
-          <caret line="40" column="23" lean-forward="true" selection-start-line="40" selection-start-column="23" selection-end-line="40" selection-end-column="23" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/LinkedinScannerApplication.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="365">
-          <caret line="51" column="0" lean-forward="false" selection-start-line="51" selection-start-column="0" selection-end-line="51" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/LinkedinScannerEntity.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="30" column="59" lean-forward="false" selection-start-line="30" selection-start-column="59" selection-end-line="30" selection-end-column="59" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/WebDriverFactory.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="60">
@@ -1562,16 +1518,6 @@
         <state relative-caret-position="60">
           <caret line="7" column="0" lean-forward="true" selection-start-line="7" selection-start-column="0" selection-end-line="9" selection-end-column="4" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/LinkedinScannerImpl.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-398">
-          <caret line="0" column="38" lean-forward="false" selection-start-line="0" selection-start-column="38" selection-end-line="0" selection-end-column="38" />
-          <folding>
-            <element signature="e#40#58#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1669,34 +1615,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/scanner-commons/src/main/scala/de/beuth/scanner/commons/ProfileScannerEntity.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1665">
-          <caret line="147" column="40" lean-forward="false" selection-start-line="147" selection-start-column="40" selection-end-line="147" selection-end-column="40" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/scanner-commons/src/main/scala/de/beuth/scanner/commons/ScannerEntity.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="733">
           <caret line="55" column="18" lean-forward="false" selection-start-line="55" selection-start-column="6" selection-end-line="55" selection-end-column="18" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/scanner-commons/src/main/scala/de/beuth/scanner/commons/ProfileUpdateTopic.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="425">
-          <caret line="36" column="49" lean-forward="false" selection-start-line="36" selection-start-column="49" selection-end-line="36" selection-end-column="49" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/scanner-commons/src/main/scala/de/beuth/scanner/commons/ScanStatusTopic.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="365">
-          <caret line="82" column="3" lean-forward="false" selection-start-line="82" selection-start-column="3" selection-end-line="82" selection-end-column="3" />
           <folding />
         </state>
       </provider>
@@ -1725,26 +1647,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/xing-scanner-impl/src/main/scala/de/beuth/xing/scanner/impl/XingScannerImpl.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="485">
-          <caret line="79" column="13" lean-forward="false" selection-start-line="79" selection-start-column="13" selection-end-line="79" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/xing-scanner-impl/src/main/scala/de/beuth/xing/scanner/impl/XingScrapeWorker.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1617">
           <caret line="189" column="46" lean-forward="false" selection-start-line="189" selection-start-column="46" selection-end-line="189" selection-end-column="46" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/xing-scanner-api/src/main/scala/de/beuth/xing/scanner/api/XingScannerService.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="630">
-          <caret line="45" column="43" lean-forward="false" selection-start-line="45" selection-start-column="43" selection-end-line="45" selection-end-column="43" />
           <folding />
         </state>
       </provider>
@@ -1777,22 +1683,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-85">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/utils/src/main/scala/de/beuth/utils/JsonFormats.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="8" column="7" lean-forward="false" selection-start-line="8" selection-start-column="7" selection-end-line="8" selection-end-column="7" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/LinkedinScrapeWorker.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="32" column="0" lean-forward="false" selection-start-line="32" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -1839,16 +1729,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/scan-result-impl/src/main/scala/de/beuth/scan/results/impl/ScanResultEntity.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="237">
-          <caret line="150" column="24" lean-forward="true" selection-start-line="150" selection-start-column="24" selection-end-line="150" selection-end-column="24" />
-          <folding>
-            <element signature="e#36#60#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/scan-result-api/src/main/scala/de/beuth/scan/results/api/ScanResultService.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="597">
@@ -1857,13 +1737,151 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/LinkedinScannerApplication.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="404">
+          <caret line="50" column="62" lean-forward="false" selection-start-line="50" selection-start-column="62" selection-end-line="50" selection-end-column="62" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scanner-commons/src/main/scala/de/beuth/scanner/commons/ProfileUpdateTopic.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="370">
+          <caret line="28" column="27" lean-forward="false" selection-start-line="28" selection-start-column="27" selection-end-line="28" selection-end-column="27" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/scan-result-impl/src/main/scala/de/beuth/scan/results/impl/ScanResultImpl.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="414">
-          <caret line="54" column="7" lean-forward="true" selection-start-line="54" selection-start-column="7" selection-end-line="54" selection-end-column="7" />
+        <state relative-caret-position="464">
+          <caret line="66" column="36" lean-forward="false" selection-start-line="66" selection-start-column="36" selection-end-line="66" selection-end-column="36" />
           <folding>
             <element signature="e#37#64#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scan-result-impl/src/main/scala/de/beuth/scan/results/impl/ScanResultEntity.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="555">
+          <caret line="37" column="9" lean-forward="false" selection-start-line="37" selection-start-column="9" selection-end-line="37" selection-end-column="9" />
+          <folding>
+            <element signature="e#36#60#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/logback.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="375">
+          <caret line="25" column="54" lean-forward="false" selection-start-line="25" selection-start-column="54" selection-end-line="25" selection-end-column="54" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/application.conf">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="2" column="1" lean-forward="false" selection-start-line="2" selection-start-column="1" selection-end-line="2" selection-end-column="1" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/src/main/scala/de/beuth/utils/JsonFormats.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="8" column="7" lean-forward="false" selection-start-line="8" selection-start-column="7" selection-end-line="8" selection-end-column="7" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/LinkedinScannerEntity.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="270">
+          <caret line="30" column="59" lean-forward="false" selection-start-line="30" selection-start-column="59" selection-end-line="30" selection-end-column="59" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/xing-scanner-api/src/main/scala/de/beuth/xing/scanner/api/XingScannerService.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="284">
+          <caret line="37" column="29" lean-forward="false" selection-start-line="37" selection-start-column="29" selection-end-line="37" selection-end-column="29" />
+          <folding>
+            <element signature="e#35#62#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/LinkedinScrapeWorker.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-2018">
+          <caret line="32" column="0" lean-forward="false" selection-start-line="32" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/linkedin-scanner-api/src/main/scala/de/beuth/linkedin/scanner/api/LinkedinScannerService.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="201">
+          <caret line="22" column="6" lean-forward="false" selection-start-line="22" selection-start-column="6" selection-end-line="22" selection-end-column="6" />
+          <folding>
+            <element signature="e#39#66#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/linkedin-scanner-impl/src/main/scala/de/beuth/linkedin/scanner/impl/LinkedinScannerImpl.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="410">
+          <caret line="64" column="139" lean-forward="false" selection-start-line="63" selection-start-column="2" selection-end-line="64" selection-end-column="139" />
+          <folding>
+            <element signature="e#40#67#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/xing-scanner-impl/src/main/scala/de/beuth/xing/scanner/impl/XingScannerImpl.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="493">
+          <caret line="81" column="42" lean-forward="false" selection-start-line="81" selection-start-column="42" selection-end-line="81" selection-end-column="42" />
+          <folding>
+            <element signature="e#36#60#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scanner-commons/src/main/scala/de/beuth/scanner/commons/ScanStatusTopic.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="209">
+          <caret line="25" column="6" lean-forward="false" selection-start-line="25" selection-start-column="6" selection-end-line="25" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scanner-commons/src/main/scala/de/beuth/scanner/commons/ProfileScannerEntity.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="378">
+          <caret line="111" column="41" lean-forward="false" selection-start-line="111" selection-start-column="41" selection-end-line="111" selection-end-column="41" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/censys-scanner-impl/src/main/scala/de/beuth/censys/scanner/impl/CensysScannerImpl.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="396">
+          <caret line="73" column="54" lean-forward="false" selection-start-line="73" selection-start-column="54" selection-end-line="73" selection-end-column="54" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/postman.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-3820">
+          <caret line="27" column="19" lean-forward="false" selection-start-line="27" selection-start-column="19" selection-end-line="27" selection-end-column="19" />
+          <folding />
         </state>
       </provider>
     </entry>

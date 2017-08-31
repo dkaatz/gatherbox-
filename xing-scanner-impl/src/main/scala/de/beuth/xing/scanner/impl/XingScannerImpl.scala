@@ -2,7 +2,7 @@ package de.beuth.xing.scanner.impl
 
 import java.time.Instant
 
-import akka.Done
+import akka.{Done, NotUsed}
 import akka.actor.{ActorSystem, Props}
 import akka.stream.Materializer
 import akka.stream.scaladsl.Flow
@@ -22,6 +22,7 @@ import de.beuth.utils.{Master, ProfileLink}
 import de.beuth.utils.WorkPullingPattern.Epic
 import de.beuth.xing.scanner.api.XingScannerService
 import play.api.Configuration
+
 import scala.collection.immutable.Seq
 
 /**
@@ -71,6 +72,10 @@ class XingScannerImpl(val registry: PersistentEntityRegistry,
      scrapeProfiles(keyword, Seq(url))
    }
   }
+
+  //used for debugging to see actual state of the entity
+  override def getState(keyword: String): ServiceCall[NotUsed, ProfileScannerState] = ServiceCall { _ => refFor(keyword).ask(GetProfiles) }
+
   /**
     * Message Brocking
     */

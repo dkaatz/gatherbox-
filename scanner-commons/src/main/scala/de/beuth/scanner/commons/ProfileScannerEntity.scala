@@ -151,13 +151,13 @@ case class ProfileScannerState(
     */
   def updateProfile(timestamp: Instant, profile: Profile): ProfileScannerState = {
     //@Outcomment this if you want to test Profile Scanner Only
-    val pIdx = profiles.indexWhere(_.url == profile.url)
-    if(pIdx == -1) throw ProfileScrapingException("Trying to update uninitialized Profile: " + Json.toJson(profile).toString())
-    copy(
-      profiles = profiles.updated(pIdx, profile)
-    )
+//    val pIdx = profiles.indexWhere(_.url == profile.url)
+//    if(pIdx == -1) throw ProfileScrapingException("Trying to update uninitialized Profile: " + Json.toJson(profile).toString())
+//    copy(
+//      profiles = profiles.updated(pIdx, profile)
+//    )
     //@Incomment this if you want to test Profile Scanner Only
-    //copy(profiles = profiles :+ profile)
+    copy(profiles = profiles :+ profile)
   }
 
   def removeProfile(url: String): ProfileScannerState =

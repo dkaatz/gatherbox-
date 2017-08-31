@@ -1,9 +1,9 @@
 package de.beuth.xing.scanner.api
 
-import akka.{Done}
+import akka.{Done, NotUsed}
 import com.lightbend.lagom.scaladsl.api.transport.Method
 import com.lightbend.lagom.scaladsl.api.{Descriptor, Service, ServiceCall}
-import de.beuth.scanner.commons.{ProfileUpdateTopic, ScanStatusTopic}
+import de.beuth.scanner.commons.{ProfileScannerState, ProfileUpdateTopic, ScanStatusTopic}
 
 /**
   * This Service scrapes Xing Profiles, storing and publishing the extracted Data
@@ -32,12 +32,16 @@ trait XingScannerService extends Service with ScanStatusTopic with ProfileUpdate
     */
   def scrape(keyword: String): ServiceCall[String, Done]
 
+  //used for debugging getting actual state of scanner
+  def getState(keyword: String): ServiceCall[NotUsed, ProfileScannerState]
+
   override def descriptor: Descriptor = {
     import Service._
     //name of the service
     named(s"${XingScannerService.NAME}-scanner").withCalls(
-      //api's this service procidds
-      restCall(Method.POST, "/api/scanner/xing/:keyword", scrape _)
+      //api's this service provides
+      restCall(Method.POST, "/api/scanner/xing/:keyword", scrape _),
+      restCall(Method.GET, "/api/scanner/xing/:keyword", scrape _)
     ).withTopics(
       //topics this service pulishes
       topic(XingScannerService.TOPIC_STATUS, statusTopic),

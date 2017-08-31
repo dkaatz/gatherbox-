@@ -1,6 +1,6 @@
 package de.beuth.linkedin.scanner.impl
 
-import akka.{Done}
+import akka.{Done, NotUsed}
 import akka.actor.{ActorSystem, Props}
 import akka.stream.Materializer
 import akka.stream.scaladsl.Flow
@@ -12,10 +12,12 @@ import de.beuth.scan.api.ScanService
 import de.beuth.scanner.commons._
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.ws.WSClient
-import scala.concurrent.{ ExecutionContext, Future}
+
+import scala.concurrent.{ExecutionContext, Future}
 import de.beuth.utils.{Master, ProfileLink}
 import de.beuth.linkedin.scanner.api.LinkedinScannerService
 import play.api.Configuration
+
 import scala.collection.immutable.Seq
 
 class LinkedinScannerImpl(val registry: PersistentEntityRegistry,
@@ -58,6 +60,9 @@ class LinkedinScannerImpl(val registry: PersistentEntityRegistry,
 
   //just calls the supertype method scrapProfiles
   override def scrape(keyword: String): ServiceCall[String, Done] = ServiceCall { url: String => scrapeProfiles(keyword, Seq(url)) }
+
+  //used for debugging to see actual state of the entity
+  override def getState(keyword: String): ServiceCall[NotUsed, ProfileScannerState] = ServiceCall { _ => refFor(keyword).ask(GetProfiles) }
 
   /**
     * Message Broker

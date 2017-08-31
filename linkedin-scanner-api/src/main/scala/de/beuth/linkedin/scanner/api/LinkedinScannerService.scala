@@ -1,6 +1,6 @@
 package de.beuth.linkedin.scanner.api
 
-import akka.{Done}
+import akka.{Done, NotUsed}
 import de.beuth.scanner.commons._
 import com.lightbend.lagom.scaladsl.api.transport.Method
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
@@ -31,10 +31,14 @@ trait LinkedinScannerService extends Service with ScanStatusTopic with ProfileUp
     */
   def scrape(keyword: String): ServiceCall[String, Done]
 
+  //used for debugging getting actual state of scanner
+  def getState(keyword: String): ServiceCall[NotUsed, ProfileScannerState]
+
   override final def descriptor = {
     import Service._
     named(s"${LinkedinScannerService.NAME}-scanner").withCalls(
-      restCall(Method.POST, "/api/scanner/linkedin/:keyword", scrape _)
+      restCall(Method.POST, "/api/scanner/linkedin/:keyword", scrape _),
+      restCall(Method.GET, "/api/scanner/linkedin/:keyword", scrape _)
     ).withTopics(
       topic(LinkedinScannerService.TOPIC_STATUS, statusTopic),
       topic(LinkedinScannerService.TOPIC_UPDATE, updateTopic)
