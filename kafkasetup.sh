@@ -1,5 +1,7 @@
 #!/bin/bash
 # Simple Bash script for initialization of a not clustered Kafka Broker
+# if you have performance implications with the build in broker and lost messages you should consider using an
+# external one wich is setup like this to work with this tool
 
 KAFKA_ROOT='/opt/kafka_2.11-0.11.0.0'
 KAFKA_LOGS='/tmp/kafka-logs'

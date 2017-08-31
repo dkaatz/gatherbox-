@@ -44,7 +44,7 @@ class ScanResultImpl(registry: PersistentEntityRegistry,
   )
 
   /**
-    * Handle update evnets from xing
+    * Handle update evnets from linkedin
     */
   linkedinScannerService.updateTopic().subscribe.atLeastOnce(
     Flow[ProfileUpdateEvent].mapAsync(1) {
