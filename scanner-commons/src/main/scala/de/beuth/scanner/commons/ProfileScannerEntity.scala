@@ -157,7 +157,11 @@ case class ProfileScannerState(
 //      profiles = profiles.updated(pIdx, profile)
 //    )
     //@Incomment this if you want to test Profile Scanner Only
-    copy(profiles = profiles :+ profile)
+    val pIdx = profiles.indexWhere(_.url == profile.url)
+    if(pIdx == -1)
+      copy(profiles = profiles :+ profile)
+    else
+      copy(profiles = profiles.updated(pIdx, profile))
   }
 
   def removeProfile(url: String): ProfileScannerState =

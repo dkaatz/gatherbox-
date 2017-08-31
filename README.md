@@ -6,8 +6,7 @@ about Servers, Networks and Employees of companies by keywords.
 ### Requirements: 
 - SBT installed  (~0.13) 
 - scala (~2.11)
-- bunch of working proxy servers
-- 
+- bunch of working proxy servers 
 
 ### Preparing Chrome Remote Webdrivers (Headless)
 ####1. Install docker 
@@ -26,9 +25,6 @@ git clone git@github.com:SeleniumHQ/docker-selenium.git
 ```
 
 ####3. Start Docker Container
-
 ```bash
 docker run -d -p 4444:4444 selenium/standalone-chrome
 ```
-
-###4. Use chromeR
