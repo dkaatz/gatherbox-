@@ -54,7 +54,7 @@ class ScanResultEntity extends PersistentEntity {
    }.onEvent{
       case (CensysAdded(c), state) => state.addCensys(c)
       case (LinkedinAdded(l), state) => state.addLinkedin(l)
-      case (XingAdded(x), state) => state.addLinkedin(x)
+      case (XingAdded(x), state) => state.addXing(x)
       case (BreachAdded(b), state) => state.addBreach(b)
    }.orElse(getScanResult)
 
